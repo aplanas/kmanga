@@ -19,19 +19,19 @@
   <manifest>
     <item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>
     <item href="cover.jpg" id="cover-image" media-type="image/jpg"/>
-    <item href="test/fixtures/dummy/html/page-000.html" id="page-000" media-type="application/xhtml+xml"/>
-    <item href="test/fixtures/dummy/html/page-001.html" id="page-001" media-type="application/xhtml+xml"/>
-    <item href="test/fixtures/dummy/html/page-002.html" id="page-002" media-type="application/xhtml+xml"/>
-    <item href="test/fixtures/dummy/html/page-003.html" id="page-003" media-type="application/xhtml+xml"/>
-    <item href="test/fixtures/dummy/html/page-004.html" id="page-004" media-type="application/xhtml+xml"/>
-    <item href="test/fixtures/dummy/html/page-005.html" id="page-005" media-type="application/xhtml+xml"/>
+    <item href="html/page-000.html" id="page-000" media-type="application/xhtml+xml"/>
+    <item href="html/page-001.html" id="page-001" media-type="application/xhtml+xml"/>
+    <item href="html/page-002.html" id="page-002" media-type="application/xhtml+xml"/>
+    <item href="html/page-003.html" id="page-003" media-type="application/xhtml+xml"/>
+    <item href="html/page-004.html" id="page-004" media-type="application/xhtml+xml"/>
+    <item href="html/page-005.html" id="page-005" media-type="application/xhtml+xml"/>
   </manifest>
   <spine toc="ncx">
-    <itemref idhref="page-000" linear="yes"/>
-    <itemref idhref="page-001" linear="yes"/>
-    <itemref idhref="page-002" linear="yes"/>
-    <itemref idhref="page-003" linear="yes"/>
-    <itemref idhref="page-004" linear="yes"/>
-    <itemref idhref="page-005" linear="yes"/>
+    <itemref idref="page-000" linear="yes"/>
+    <itemref idref="page-001" linear="yes"/>
+    <itemref idref="page-002" linear="yes"/>
+    <itemref idref="page-003" linear="yes"/>
+    <itemref idref="page-004" linear="yes"/>
+    <itemref idref="page-005" linear="yes"/>
   </spine>
 </package>

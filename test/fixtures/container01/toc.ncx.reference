@@ -21,37 +21,37 @@
       <navLabel>
         <text>Page-000</text>
       </navLabel>
-      <content src="test/fixtures/dummy/html/page-000.html"/>
+      <content src="html/page-000.html"/>
     </navPoint>
     <navPoint id="toc-001" playOrder="2">
       <navLabel>
         <text>Page-001</text>
       </navLabel>
-      <content src="test/fixtures/dummy/html/page-001.html"/>
+      <content src="html/page-001.html"/>
     </navPoint>
     <navPoint id="toc-002" playOrder="3">
       <navLabel>
         <text>Page-002</text>
       </navLabel>
-      <content src="test/fixtures/dummy/html/page-002.html"/>
+      <content src="html/page-002.html"/>
     </navPoint>
     <navPoint id="toc-003" playOrder="4">
       <navLabel>
         <text>Page-003</text>
       </navLabel>
-      <content src="test/fixtures/dummy/html/page-003.html"/>
+      <content src="html/page-003.html"/>
     </navPoint>
     <navPoint id="toc-004" playOrder="5">
       <navLabel>
         <text>Page-004</text>
       </navLabel>
-      <content src="test/fixtures/dummy/html/page-004.html"/>
+      <content src="html/page-004.html"/>
     </navPoint>
     <navPoint id="toc-005" playOrder="6">
       <navLabel>
         <text>Page-005</text>
       </navLabel>
-      <content src="test/fixtures/dummy/html/page-005.html"/>
+      <content src="html/page-005.html"/>
     </navPoint>
   </navMap>
 </ncx>
