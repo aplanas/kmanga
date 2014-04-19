@@ -4,6 +4,7 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import os.path
 
+from scrapy.mail import MailSender
 from scrapy.utils.decorator import inthread
 
 from mobi import Container, MangaMobi
@@ -15,14 +16,15 @@ class FansitePipeline(object):
 
 
 class MobiContainer(object):
-    def __init__(self, images_store, mobi_store):
+    def __init__(self, images_store, mobi_store, settings):
         self.images_store = images_store
         self.mobi_store = mobi_store
+        self.settings = settings
         self.items = {}
 
     @classmethod
     def from_settings(cls, settings):
-        return cls(settings['IMAGES_STORE'], settings['MOBI_STORE'])
+        return cls(settings['IMAGES_STORE'], settings['MOBI_STORE'], settings)
 
     def process_item(self, item, spider):
         if hasattr(spider, 'manga') and hasattr(spider, 'issue'):
@@ -58,8 +60,15 @@ class MobiContainer(object):
             info.pages = images
 
             mobi = MangaMobi(container, info)
-            mobi.create()
+            name, mobi_file = mobi.create()
             # XXX TODO - Can I cache the mobi?
             # mobi.clean()
+            mail = MailSender.from_settings(self.settings)
+            mail.send(
+                to=['aplanas_73@free.kindle.com'],
+                subject=info.title,
+                body='',
+                attachs=((name, 'application/x-mobipocket-ebook',
+                          open(mobi_file, 'rb')),))
 
         # XXX TODO - Send email when errors

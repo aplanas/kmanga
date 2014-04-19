@@ -23,3 +23,11 @@ MOBI_STORE = os.path.join(os.path.dirname(__file__), '..', 'mobi_store')
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'fansite (+http://www.yourdomain.com)'
+
+# Mail configuration
+MAIL_FROM = ''
+MAIL_HOST = 'smtp.gmail.com'
+MAIL_PORT = 465
+MAIL_USER = ''
+MAIL_PASS = ''
+MAIL_SSL = True
