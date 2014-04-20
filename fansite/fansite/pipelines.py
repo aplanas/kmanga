@@ -44,6 +44,7 @@ class MobiContainer(object):
             dir_name = '%s_%s' % key
             container = Container(os.path.join(self.mobi_store, dir_name))
             container.create()
+            value = sorted(value, key=lambda x: x['number'])
             images = [os.path.join(self.images_store, i['images'][0]['path'])
                       for i in value]
             container.add_image_files(images, as_link=True)
