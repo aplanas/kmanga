@@ -39,6 +39,7 @@ class Container(object):
         self.path = path
         self.image_info = None
         self._npages = 0
+        self._has_cover = False
 
     def create(self):
         """Create an empty container."""
@@ -60,7 +61,7 @@ class Container(object):
     #         self.add_image(image)
 
     def add_image_file(self, image, order, as_link=False):
-        """Add a image into the container."""
+        """Add an image into the container."""
         img_dir = os.path.join(self.path, 'html/images')
         img_name = '%03d%s' % (order, os.path.splitext(image)[1])
         img_dst = os.path.join(img_dir, img_name)
@@ -74,6 +75,16 @@ class Container(object):
         """Add a list of images into the container."""
         for order, image in enumerate(images):
             self.add_image_file(image, order, as_link)
+
+    def set_cover_file(self, image, as_link=False):
+        """Add an image as image cover."""
+        img_name = 'cover%s' % os.path.splitext(image)[1]
+        img_dst = os.path.join(self.path, img_name)
+        if as_link:
+            os.link(image, img_dst)
+        else:
+            shutil.copyfile(image, img_dst)
+        self._has_cover = True
 
     def npages(self):
         """Return the total number of pages / images."""
@@ -93,6 +104,13 @@ class Container(object):
             self.image_info = [(f, Image.open(os.path.join(html_path, f)).size)
                                for f in sorted(files)]
         return self.image_info
+
+    def get_image_path(self, number, relative=False):
+        """Get the path an image."""
+        image_path = os.path.join('html', 'images', '%03d.jpg' % number)
+        if not relative:
+            image_path = os.path.join(self.path, image_path)
+        return image_path
 
     def get_content_opf_path(self):
         """Get the path for content.opf."""
@@ -121,6 +139,9 @@ class MangaMobi(object):
         for i in range(len(self.info.pages)):
             self.page(i)
         self.toc_ncx()
+        if not self.container._has_cover:
+            cover = self.container.get_image_path(0)
+            self.container.set_cover_file(cover)
         subprocess.call([KINDLEGEN, self.container.get_content_opf_path(),
                          '-o', 'tmp.mobi'])
 
