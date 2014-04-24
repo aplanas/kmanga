@@ -38,8 +38,8 @@ class Container(object):
     def __init__(self, path):
         self.path = path
         self.image_info = None
+        self.has_cover = False
         self._npages = 0
-        self._has_cover = False
 
     def create(self):
         """Create an empty container."""
@@ -78,13 +78,12 @@ class Container(object):
 
     def set_cover_file(self, image, as_link=False):
         """Add an image as image cover."""
-        img_name = 'cover%s' % os.path.splitext(image)[1]
-        img_dst = os.path.join(self.path, img_name)
+        cover_path = self.get_cover_path()
         if as_link:
-            os.link(image, img_dst)
+            os.link(image, cover_path)
         else:
-            shutil.copyfile(image, img_dst)
-        self._has_cover = True
+            shutil.copyfile(image, cover_path)
+        self.has_cover = True
 
     def npages(self):
         """Return the total number of pages / images."""
@@ -108,6 +107,14 @@ class Container(object):
     def get_image_path(self, number, relative=False):
         """Get the path an image."""
         image_path = os.path.join('html', 'images', '%03d.jpg' % number)
+        if not relative:
+            image_path = os.path.join(self.path, image_path)
+        return image_path
+
+    def get_cover_path(self, relative=False):
+        """Get the path of the cover image."""
+        # XXX TODO -- The cover image can be of a different type
+        image_path = 'cover.jpg'
         if not relative:
             image_path = os.path.join(self.path, image_path)
         return image_path
@@ -139,7 +146,7 @@ class MangaMobi(object):
         for i in range(len(self.info.pages)):
             self.page(i)
         self.toc_ncx()
-        if not self.container._has_cover:
+        if not self.container.has_cover:
             cover = self.container.get_image_path(0)
             self.container.set_cover_file(cover)
         subprocess.call([KINDLEGEN, self.container.get_content_opf_path(),
