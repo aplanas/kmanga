@@ -41,7 +41,9 @@ class MobiContainer(object):
     @inthread
     def create_mobi(self):
         for key, value in self.items.items():
-            dir_name = '%s_%s' % key
+            name, number = key
+
+            dir_name = '%s_%03d' % (name, int(number))
             container = Container(os.path.join(self.mobi_store, dir_name))
             container.create()
             value = sorted(value, key=lambda x: x['number'])
@@ -54,7 +56,7 @@ class MobiContainer(object):
                 pass
 
             info = Info()
-            info.title = '%s %s' % key
+            info.title = '%s %03d' % (name, int(number))
             info.language = 'en'
             info.author = 'author'
             info.publisher = 'publisher'
