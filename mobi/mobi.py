@@ -208,7 +208,7 @@ class MangaMobi(object):
         manifest = ET.SubElement(package, 'manifest')
         items = (
             ('toc.ncx', 'ncx', 'application/x-dtbncx+xml'),
-            ('cover.jpg', 'cover-image', 'image/jpg'),
+            ('cover.jpg', 'cover-image', 'image/jpeg'),
         )
         pages = [(self.container.get_page_path(n, relative=True),
                   'page-%03d' % n, 'application/xhtml+xml')
