@@ -149,6 +149,7 @@ class MangaMobi(object):
         if not self.container.has_cover:
             cover = self.container.get_image_path(0)
             self.container.set_cover_file(cover)
+            self._fix_cover_size()
         subprocess.call([KINDLEGEN, self.container.get_content_opf_path(),
                          '-o', 'tmp.mobi'])
 
@@ -317,3 +318,22 @@ class MangaMobi(object):
             print >>f, '<?xml version="1.0" encoding="UTF-8"?>'
             print >>f, '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">'
             tree.write(f, encoding='utf-8', xml_declaration=False)
+
+    def _fix_cover_size(self):
+        """Adjust the size of the cover."""
+        cover_path = self.container.get_cover_path()
+        cover = Image.open(cover_path)
+        size = cover.size
+        mode = cover.mode
+
+        # Resize the current cover image
+        width, height = size
+        ratio = min((WIDTH/float(width), HEIGHT/float(height)))
+        width, height = int(ratio*width+0.5), int(ratio*height+0.5)
+        resized_cover = cover.resize((width, height))
+
+        # Create a new white image and paste the resized cover
+        x, y = (WIDTH - width) / 2, (HEIGHT - height) / 2
+        cover = Image.new(mode, (WIDTH, HEIGHT), '#ffffff')
+        cover.paste(resized_cover, (x, y))
+        cover.save(cover_path)
