@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block page_title%}History{% endblock page_title %}
+{% block content %}
+<ul>
+  {% for history in object_list %}
+  <li>{{ history }}</li>
+  {% endfor %}
+</ul>
+{% endblock %}
