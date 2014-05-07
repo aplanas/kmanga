@@ -22,7 +22,7 @@ from urlparse import urljoin
 from scrapy.http import Request
 from scrapy.selector import Selector
 
-from fansite.items import Genres, Manga, Issue, IssuePage
+from scraper.items import Genres, Manga, Issue, IssuePage
 
 from .mangaspider import MangaSpider
 

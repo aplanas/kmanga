@@ -26,6 +26,9 @@ class MangaSpider(Spider):
 
     def __init__(self, *args, **kwargs):
         super(MangaSpider, self).__init__(*args, **kwargs)
+
+        error_msg = False
+
         if 'genres' in kwargs:
             self.start_urls = [self.get_genres_url()]
         elif 'catalog' in kwargs:
@@ -37,11 +40,23 @@ class MangaSpider(Spider):
         elif 'manga' in kwargs and 'issue' in kwargs:
             self.start_urls = [self.get_manga_url(self.manga, self.issue)]
         else:
-            msg = ' '.join(('[genres=1]',
-                            '[catalog=1]',
-                            '[manga=name issue=number]',
-                            '[lasts=DD-MM-YYYY]'))
-            print 'scrapy crawl SPIDER -a', msg
+            error_msg = True
+
+        self.from_email = kwargs.get('from', None)
+        try:
+            self.to_email = kwargs['to']
+        except:
+            error_msg = True
+
+        if error_msg:
+            msg = ' '.join(('[-a genres=1]',
+                            '[-a catalog=1]',
+                            '[-a manga=name -a issue=number]',
+                            '[-a lasts=DD-MM-YYYY]',
+                            '[-a from=email]',
+                            '-a to=email'))
+            print 'scrapy crawl SPIDER', msg
+            exit(1)
 
     def parse(self, response):
         if hasattr(self, 'genres'):

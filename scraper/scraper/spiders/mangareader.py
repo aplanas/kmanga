@@ -23,7 +23,7 @@ from scrapy.http import Request
 from scrapy.selector import Selector
 from scrapy.utils.markup import remove_entities
 
-from fansite.items import Genres, Manga, Issue, IssuePage
+from scraper.items import Genres, Manga, Issue, IssuePage
 
 from .mangaspider import MangaSpider
 

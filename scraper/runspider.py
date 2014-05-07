@@ -1,7 +1,7 @@
 from twisted.internet import reactor
 from scrapy.crawler import Crawler
 from scrapy import log, signals
-from fansite.spiders.mangareader import MangaReader
+from scraper.spiders.mangareader import MangaReader
 from scrapy.utils.project import get_project_settings
 
 spider = MangaReader()
