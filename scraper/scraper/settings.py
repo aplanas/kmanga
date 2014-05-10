@@ -31,3 +31,7 @@ MAIL_PORT = 465
 MAIL_USER = ''
 MAIL_PASS = ''
 MAIL_SSL = True
+# MAIL_TO = None
+
+# Admin configuration
+ADMIN_MAIL = ''

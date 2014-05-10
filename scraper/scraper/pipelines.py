@@ -68,7 +68,7 @@ class MobiContainer(object):
             # mobi.clean()
             mail = MailSender.from_settings(self.settings)
             mail.send(
-                to=['aplanas_73@free.kindle.com'],
+                to=[self.settings['MAIL_TO']],
                 subject=info.title,
                 body='',
                 attachs=((name, 'application/x-mobipocket-ebook',
