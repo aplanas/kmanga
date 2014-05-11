@@ -8,7 +8,7 @@ class History(models.Model):
     to_issue = models.IntegerField()
     from_email = models.EmailField()
     to_email = models.EmailField()
-    send_date = models.DateTimeField()
+    send_date = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return '%s [%03d-%03d]' % (self.name, self.from_issue, self.to_issue)
