@@ -67,11 +67,21 @@ class MobiContainer(object):
             # XXX TODO - Can I cache the mobi?
             # mobi.clean()
             mail = MailSender.from_settings(self.settings)
-            mail.send(
+            deferred = mail.send(
                 to=[self.settings['MAIL_TO']],
                 subject=info.title,
                 body='',
                 attachs=((name, 'application/x-mobipocket-ebook',
                           open(mobi_file, 'rb')),))
-
+            cb_data = [self.settings['MAIL_FROM'], self.settings['MAIL_TO'],
+                       name, number]
+            deferred.addCallbacks(self.mail_ok, self.mail_err,
+                                  callbackArgs=cb_data,
+                                  errbackArgs=cb_data)
         # XXX TODO - Send email when errors
+
+    def mail_ok(self, result, from_mail, to_mail, manga_name, manga_issue):
+        print 'Mail OK', from_mail, to_mail, manga_name, manga_issue
+
+    def mail_err(self, result, from_mail, to_mail, manga_name, manga_issue):
+        print 'Mail ERROR', from_mail, to_mail, manga_name, manga_issue
