@@ -1,6 +1,8 @@
 from django.core.urlresolvers import reverse
 from django.db import models
 
+from scraper import run_spider
+
 
 class History(models.Model):
     name = models.CharField(max_length=200)
@@ -15,3 +17,6 @@ class History(models.Model):
 
     def get_absolute_url(self):
         return reverse('history-detail', kwargs={'pk': self.pk})
+
+    def send_mobi(self):
+        run_spider()

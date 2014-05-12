@@ -3,6 +3,9 @@ from django.core.urlresolvers import reverse_lazy
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
+import django_rq
+
+from main.forms import HistoryForm
 from main.models import History
 
 
@@ -16,6 +19,11 @@ class HistoryDetail(DetailView):
 
 class HistoryCreate(CreateView):
     model = History
+    form_class = HistoryForm
+
+    def form_valid(self, form):
+        django_rq.get_queue('default').enqueue(form.instance.send_mobi)
+        return super(HistoryCreate, self).form_valid(form)
 
 
 class HistoryUpdate(UpdateView):
