@@ -22,8 +22,11 @@ class HistoryCreate(CreateView):
     form_class = HistoryForm
 
     def form_valid(self, form):
-        django_rq.get_queue('default').enqueue(form.instance.send_mobi)
-        return super(HistoryCreate, self).form_valid(form)
+        result = super(HistoryCreate, self).form_valid(form)
+        for issue in range(form.instance.from_issue, form.instance.to_issue+1):
+            line = form.instance.historyline_set.create(issue=issue)
+            django_rq.get_queue('default').enqueue(line.send_mobi)
+        return result
 
 
 class HistoryUpdate(UpdateView):
