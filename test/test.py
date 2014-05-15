@@ -47,9 +47,9 @@ class TestMangaMobi(unittest.TestCase):
     def test_container_get_image_info(self):
         info = self.container.get_image_info()
         self.assertEqual(len(info), 6)
-        e1 = ('images/000.jpg', (800, 1280))
+        e1 = ('images/000.jpg', (800, 1280), 12547)
         self.assertEqual(info[0], e1)
-        e5 = ('images/005.jpg', (800, 1280))
+        e5 = ('images/005.jpg', (800, 1280), 12547)
         self.assertEqual(info[-1], e5)
 
     def test_container_get_X_path(self):

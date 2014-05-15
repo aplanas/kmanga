@@ -43,7 +43,7 @@ class Container(object):
 
     def __init__(self, path):
         self.path = path
-        self.image_info = None
+        self.image_info = []
         self.has_cover = False
         self._npages = 0
 
@@ -107,8 +107,11 @@ class Container(object):
             images_path = os.path.join(self.path, 'html', 'images')
             files = [os.path.join('images', f)
                      for f in os.listdir(images_path) if f.endswith('jpg')]
-            self.image_info = [(f, Image.open(os.path.join(html_path, f)).size)
-                               for f in sorted(files)]
+            for file_ in sorted(files):
+                file_path = os.path.join(html_path, file_)
+                self.image_info.append(
+                    (file_, Image.open(file_path).size,
+                     os.path.getsize(file_path)))
         return self.image_info
 
     def get_image_path(self, number, relative=False):
