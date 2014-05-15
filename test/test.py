@@ -22,6 +22,7 @@ import shutil
 import xml.dom.minidom
 
 from mobi import Container, MangaMobi
+from mobi.mobi import WIDTH, HEIGHT
 
 _xml_pretty = lambda x: xml.dom.minidom.parseString(x).toprettyxml(indent='  ')
 
@@ -80,6 +81,23 @@ class TestMangaMobi(unittest.TestCase):
         self.assertTrue('width:800px;height:562px;' in style)
         self.assertTrue('margin-top:359px;margin-bottom:359px;' in style)
         self.assertTrue('margin-left:0px;margin-right:0px;' in style)
+
+    def test_adjust_image(self):
+        for name in ('width-small.jpg', 'width-large.jpg',
+                     'height-small.jpg', 'height-large.jpg',
+                     'height-small-horizontal.jpg',
+                     'height-large-horizontal.jpg'):
+            img_path = 'test/fixtures/images/%s' % name
+            img = self.container.adjust_image(img_path, Container.RESIZE)
+            self.assertTrue(img.size[0] <= WIDTH and img.size[1] <= HEIGHT)
+            self.assertTrue(img.size[0] == WIDTH or img.size[1] == HEIGHT)
+
+            img = self.container.adjust_image(img_path, Container.RESIZE_CROP)
+            self.assertTrue(img.size[0] == WIDTH and img.size[1] == HEIGHT)
+
+            img = self.container.adjust_image(img_path, Container.ROTATE)
+            self.assertTrue(img.size[0] < img.size[1])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -35,6 +35,12 @@ HEIGHT = 1280
 
 
 class Container(object):
+    # Values for 'adjust' parameter
+    RESIZE = 'resize'
+    RESIZE_CROP = 'resize_crop'
+    ROTATE = 'rotate'
+    # SPLIT = 'split'
+
     def __init__(self, path):
         self.path = path
         self.image_info = None
@@ -51,36 +57,37 @@ class Container(object):
         """Remove the container directoy and all the content."""
         os.removedirs(self.path)
 
-    # def add_image(self, image):
-    #     """Add a new PIL image into the container."""
-    #     pass
-
-    # def add_images(self, images):
-    #     """Add a list of PIL images into the container."""
-    #     for image in images:
-    #         self.add_image(image)
-
-    def add_image_file(self, image, order, as_link=False):
+    def add_image(self, image, order, adjust=None, as_link=False):
         """Add an image into the container."""
         img_dir = os.path.join(self.path, 'html/images')
         img_name = '%03d%s' % (order, os.path.splitext(image)[1])
         img_dst = os.path.join(img_dir, img_name)
-        if as_link:
+
+        img_adjusted = self.adjust_image(image, adjust)
+
+        if as_link and not img_adjusted:
             os.link(image, img_dst)
+        elif img_adjusted:
+            img_adjusted.save(img_dst)
         else:
             shutil.copyfile(image, img_dst)
         self._npages += 1
 
-    def add_image_files(self, images, as_link=False):
+    def add_images(self, images, adjust=None, as_link=False):
         """Add a list of images into the container."""
         for order, image in enumerate(images):
-            self.add_image_file(image, order, as_link)
+            self.add_image(image, order, adjust, as_link)
 
-    def set_cover_file(self, image, as_link=False):
+    def set_cover(self, image, adjust=None, as_link=False):
         """Add an image as image cover."""
         cover_path = self.get_cover_path()
-        if as_link:
+
+        img_adjusted = self.adjust_image(image, adjust)
+
+        if as_link and not img_adjusted:
             os.link(image, cover_path)
+        elif img_adjusted:
+            img_adjusted.save(cover_path)
         else:
             shutil.copyfile(image, cover_path)
         self.has_cover = True
@@ -134,6 +141,55 @@ class Container(object):
         """Get the path for the toc.ncx."""
         return os.path.join(self.path, 'toc.ncx')
 
+    def adjust_image(self, image, adjust):
+        """Adjust an image and return None or an Image instance."""
+        if not adjust:
+            return None
+
+        img = Image.open(image)
+        if adjust == Container.RESIZE:
+            # RESIZE adjust the longest size of the image to size of a
+            # page. The net result is:
+            #
+            #   new_width <= WIDTH
+            #   new_height <= HEIGHT
+            #
+            width, height = img.size
+            ratio = min((WIDTH/float(width), HEIGHT/float(height)))
+            width, height = int(ratio*width+0.5), int(ratio*height+0.5)
+            resample = Image.BICUBIC if ratio > 1 else Image.ANTIALIAS
+            img = img.resize((width, height), resample)
+        elif adjust == Container.RESIZE_CROP:
+            # RESIZE_CROP resize first the image as RESIZE, and create
+            # a new white image of page size, and paste the image in
+            # the new one.  Used to adjust the cover image without
+            # losing the aspect ratio.
+            size = img.size
+            mode = img.mode
+
+            # Resize the current image
+            width, height = size
+            ratio = min((WIDTH/float(width), HEIGHT/float(height)))
+            width, height = int(ratio*width+0.5), int(ratio*height+0.5)
+            resample = Image.BICUBIC if ratio > 1 else Image.ANTIALIAS
+            resized_img = img.resize((width, height), resample)
+
+            # Create a new white image and paste the resized image
+            x, y = (WIDTH - width) / 2, (HEIGHT - height) / 2
+            img = Image.new(mode, (WIDTH, HEIGHT), '#ffffff')
+            img.paste(resized_img, (x, y))
+        elif adjust == Container.ROTATE:
+            # ROTATE check first if the image is widther than heigher,
+            # and rotate the image in this case.  Used for double page
+            # images.
+            width, height = img.size
+            if float(width) / float(height) > 1.0:
+                img = img.transpose(Image.ROTATE_270)
+        # elif adjust == Container.SPLIT:
+        #     pass
+
+        return img
+
 
 class MangaMobi(object):
     def __init__(self, container, info):
@@ -148,8 +204,7 @@ class MangaMobi(object):
         self.toc_ncx()
         if not self.container.has_cover:
             cover = self.container.get_image_path(0)
-            self.container.set_cover_file(cover)
-            self._fix_cover_size()
+            self.container.set_cover(cover, adjust=Container.RESIZE_CROP)
         subprocess.call([KINDLEGEN, self.container.get_content_opf_path(),
                          '-o', 'tmp.mobi'])
 
@@ -318,22 +373,3 @@ class MangaMobi(object):
             print >>f, '<?xml version="1.0" encoding="UTF-8"?>'
             print >>f, '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">'
             tree.write(f, encoding='utf-8', xml_declaration=False)
-
-    def _fix_cover_size(self):
-        """Adjust the size of the cover."""
-        cover_path = self.container.get_cover_path()
-        cover = Image.open(cover_path)
-        size = cover.size
-        mode = cover.mode
-
-        # Resize the current cover image
-        width, height = size
-        ratio = min((WIDTH/float(width), HEIGHT/float(height)))
-        width, height = int(ratio*width+0.5), int(ratio*height+0.5)
-        resized_cover = cover.resize((width, height))
-
-        # Create a new white image and paste the resized cover
-        x, y = (WIDTH - width) / 2, (HEIGHT - height) / 2
-        cover = Image.new(mode, (WIDTH, HEIGHT), '#ffffff')
-        cover.paste(resized_cover, (x, y))
-        cover.save(cover_path)

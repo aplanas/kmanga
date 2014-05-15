@@ -49,7 +49,7 @@ class MobiContainer(object):
             value = sorted(value, key=lambda x: x['number'])
             images = [os.path.join(self.images_store, i['images'][0]['path'])
                       for i in value]
-            container.add_image_files(images, as_link=True)
+            container.add_images(images, adjust=Container.ROTATE, as_link=True)
 
             # XXX TODO - Recover the info from the database
             class Info(object):
