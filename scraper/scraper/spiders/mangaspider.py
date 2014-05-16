@@ -63,7 +63,8 @@ class MangaSpider(Spider):
         # Store the parameters as a settings configuration, so
         # pipelines can read the parameters too.
         super(MangaSpider, self).set_crawler(crawler)
-        self.settings.overrides['MAIL_FROM'] = self.from_email
+        if self.from_email:
+            self.settings.overrides['MAIL_FROM'] = self.from_email
         self.settings.overrides['MAIL_TO'] = self.to_email
 
     def parse(self, response):
