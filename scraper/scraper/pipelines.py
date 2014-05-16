@@ -16,15 +16,17 @@ class FansitePipeline(object):
 
 
 class MobiContainer(object):
-    def __init__(self, images_store, mobi_store, settings):
+    def __init__(self, images_store, mobi_store, volume_max_size, settings):
         self.images_store = images_store
         self.mobi_store = mobi_store
+        self.volume_max_size = volume_max_size
         self.settings = settings
         self.items = {}
 
     @classmethod
     def from_settings(cls, settings):
-        return cls(settings['IMAGES_STORE'], settings['MOBI_STORE'], settings)
+        return cls(settings['IMAGES_STORE'], settings['MOBI_STORE'],
+                   settings['VOLUME_MAX_SIZE'], settings)
 
     def process_item(self, item, spider):
         if hasattr(spider, 'manga') and hasattr(spider, 'issue'):
@@ -51,34 +53,45 @@ class MobiContainer(object):
                       for i in value]
             container.add_images(images, adjust=Container.ROTATE, as_link=True)
 
+            if container.get_size() > self.volume_max_size:
+                containers = container.split(self.volume_max_size)
+                container.clean()
+            else:
+                containers = [container]
+
             # XXX TODO - Recover the info from the database
             class Info(object):
                 pass
 
-            info = Info()
-            info.title = '%s %03d' % (name, int(number))
-            info.language = 'en'
-            info.author = 'author'
-            info.publisher = 'publisher'
-            info.pages = images
+            for volume, container in enumerate(containers):
+                info = Info()
+                if len(containers) > 1:
+                    info.title = '%s %03d V%02d' % (name, int(number),
+                                                    volume+1)
+                else:
+                    info.title = '%s %03d' % (name, int(number))
+                info.language = 'en'
+                info.author = 'author'
+                info.publisher = 'publisher'
 
-            mobi = MangaMobi(container, info)
-            name, mobi_file = mobi.create()
-            # XXX TODO - Can I cache the mobi?
-            # mobi.clean()
-            mail = MailSender.from_settings(self.settings)
-            deferred = mail.send(
-                to=[self.settings['MAIL_TO']],
-                subject=info.title,
-                body='',
-                attachs=((name, 'application/x-mobipocket-ebook',
-                          open(mobi_file, 'rb')),))
-            cb_data = [self.settings['MAIL_FROM'], self.settings['MAIL_TO'],
-                       name, number]
-            deferred.addCallbacks(self.mail_ok, self.mail_err,
-                                  callbackArgs=cb_data,
-                                  errbackArgs=cb_data)
-        # XXX TODO - Send email when errors
+                mobi = MangaMobi(container, info)
+                name, mobi_file = mobi.create()
+                mail = MailSender.from_settings(self.settings)
+                deferred = mail.send(
+                    to=[self.settings['MAIL_TO']],
+                    subject=info.title,
+                    body='',
+                    attachs=((name, 'application/x-mobipocket-ebook',
+                              open(mobi_file, 'rb')),))
+                cb_data = [self.settings['MAIL_FROM'],
+                           self.settings['MAIL_TO'],
+                           name, number]
+                deferred.addCallbacks(self.mail_ok, self.mail_err,
+                                      callbackArgs=cb_data,
+                                      errbackArgs=cb_data)
+                # XXX TODO - Send email when errors
+                # XXX TODO - Can I cache the mobi?
+                container.clean()
 
     def mail_ok(self, result, from_mail, to_mail, manga_name, manga_issue):
         print 'Mail OK', from_mail, to_mail, manga_name, manga_issue

@@ -102,7 +102,7 @@ class Container(object):
         return self._npages
 
     def get_image_info(self):
-        """Get the list of (image_path, (size_x, size_y))."""
+        """Get the list of (image_path, (size_x, size_y), image_size)."""
         if not self._image_info:
             html_path = os.path.join(self.path, 'html')
             images_path = os.path.join(self.path, 'html', 'images')
@@ -214,14 +214,15 @@ class Container(object):
             if end >= len(images):
                 break
 
-            while current_size <= volume_size and end <= len(images):
+            while current_size <= volume_size and end < len(images):
                 end += 1
                 current_size = sum(i[2] for i in images[begin:end])
 
             image_slice = [self.get_image_path(i) for i in range(begin, end)]
             container.create()
             container.add_images(image_slice, as_link=True)
-            container.set_cover(self.get_cover_path(), as_link=True)
+            if self.has_cover:
+                container.set_cover(self.get_cover_path(), as_link=True)
             containers_used += 1
             begin = end
 
@@ -236,7 +237,7 @@ class MangaMobi(object):
     def create(self):
         """Create the mobi file calling kindlegen."""
         self.content_opf()
-        for i in range(len(self.info.pages)):
+        for i in range(self.container.npages()):
             self.page(i)
         self.toc_ncx()
         if not self.container.has_cover:
