@@ -55,7 +55,7 @@ class Container(object):
 
     def clean(self):
         """Remove the container directoy and all the content."""
-        os.removedirs(self.path)
+        shutil.rmtree(self.path)
 
     def add_image(self, image, order, adjust=None, as_link=False):
         """Add an image into the container."""
@@ -197,6 +197,35 @@ class Container(object):
         #     pass
 
         return img
+
+    def split(self, size):
+        """Split the container in volumes of same size."""
+        current_size = self.get_size()
+        nvolumes = 1 + current_size / size
+        volume_size = 1 + current_size / nvolumes
+
+        containers = [Container('%s_V%02d' % (self.path, i+1))
+                      for i in range(nvolumes)]
+        images = self.get_image_info()
+        containers_used, begin = 0, 0
+        for container in containers:
+            end, current_size = begin, 0
+
+            if end >= len(images):
+                break
+
+            while current_size <= volume_size and end <= len(images):
+                end += 1
+                current_size = sum(i[2] for i in images[begin:end])
+
+            image_slice = [self.get_image_path(i) for i in range(begin, end)]
+            container.create()
+            container.add_images(image_slice, as_link=True)
+            container.set_cover(self.get_cover_path(), as_link=True)
+            containers_used += 1
+            begin = end
+
+        return containers[:containers_used]
 
 
 class MangaMobi(object):

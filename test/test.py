@@ -42,7 +42,7 @@ class TestMangaMobi(unittest.TestCase):
         self.mangamobi = MangaMobi(self.container, self.info)
 
     def tearDown(self):
-        shutil.rmtree('test/fixtures/dummy')
+        self.container.clean()
 
     def test_container_get_image_info(self):
         info = self.container.get_image_info()
@@ -86,9 +86,6 @@ class TestMangaMobi(unittest.TestCase):
         self.assertTrue('margin-top:0px;margin-bottom:0px;' in style)
         self.assertTrue('margin-left:0px;margin-right:0px;' in style)
 
-    def test_size(self):
-        self.assertTrue(self.container.get_size(), 75282)
-
     def test_adjust_image(self):
         for name in ('width-small.jpg', 'width-large.jpg',
                      'height-small.jpg', 'height-large.jpg',
@@ -105,6 +102,17 @@ class TestMangaMobi(unittest.TestCase):
             img = self.container.adjust_image(img_path, Container.ROTATE)
             self.assertTrue(img.size[0] < img.size[1])
 
+    def test_size(self):
+        self.assertTrue(self.container.get_size(), 75282)
+
+    def test_split(self):
+        containers = self.container.split(12547*2)
+        self.assertTrue(len(containers) == 3)
+        for c in containers:
+            self.assertTrue(c.get_size() <= 12547*2)
+            self.assertTrue(len(c.get_image_info()) == 2)
+            self.assertTrue(c.get_cover_path())
+            c.clean()
 
 if __name__ == '__main__':
     unittest.main()
