@@ -81,6 +81,13 @@ class TestMangaMobi(unittest.TestCase):
         self.assertTrue('width:800px;height:562px;' in style)
         self.assertTrue('margin-top:359px;margin-bottom:359px;' in style)
         self.assertTrue('margin-left:0px;margin-right:0px;' in style)
+        style = self.mangamobi._img_style((800, 1280))
+        self.assertTrue('width:800px;height:1280px;' in style)
+        self.assertTrue('margin-top:0px;margin-bottom:0px;' in style)
+        self.assertTrue('margin-left:0px;margin-right:0px;' in style)
+
+    def test_size(self):
+        self.assertTrue(self.container.get_size(), 75282)
 
     def test_adjust_image(self):
         for name in ('width-small.jpg', 'width-large.jpg',

@@ -43,8 +43,8 @@ class Container(object):
 
     def __init__(self, path):
         self.path = path
-        self.image_info = []
         self.has_cover = False
+        self._image_info = []
         self._npages = 0
 
     def create(self):
@@ -72,6 +72,7 @@ class Container(object):
         else:
             shutil.copyfile(image, img_dst)
         self._npages += 1
+        self._image_info = []
 
     def add_images(self, images, adjust=None, as_link=False):
         """Add a list of images into the container."""
@@ -102,17 +103,17 @@ class Container(object):
 
     def get_image_info(self):
         """Get the list of (image_path, (size_x, size_y))."""
-        if not self.image_info:
+        if not self._image_info:
             html_path = os.path.join(self.path, 'html')
             images_path = os.path.join(self.path, 'html', 'images')
             files = [os.path.join('images', f)
                      for f in os.listdir(images_path) if f.endswith('jpg')]
             for file_ in sorted(files):
                 file_path = os.path.join(html_path, file_)
-                self.image_info.append(
+                self._image_info.append(
                     (file_, Image.open(file_path).size,
                      os.path.getsize(file_path)))
-        return self.image_info
+        return self._image_info
 
     def get_image_path(self, number, relative=False):
         """Get the path an image."""
@@ -143,6 +144,10 @@ class Container(object):
     def get_toc_ncx_path(self):
         """Get the path for the toc.ncx."""
         return os.path.join(self.path, 'toc.ncx')
+
+    def get_size(self):
+        """Get the size of the images in bytes."""
+        return sum(i[2] for i in self.get_image_info())
 
     def adjust_image(self, image, adjust):
         """Adjust an image and return None or an Image instance."""
