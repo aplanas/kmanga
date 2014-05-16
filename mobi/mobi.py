@@ -319,7 +319,7 @@ class MangaMobi(object):
         body = ET.SubElement(html, 'body')
         div = ET.SubElement(body, 'div')
 
-        img_path, img_size = self.container.get_image_info()[number]
+        img_path, img_size, _ = self.container.get_image_info()[number]
         ET.SubElement(div, 'img', {
             'style': self._img_style(img_size),
             'src': img_path,
