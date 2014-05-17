@@ -142,8 +142,8 @@ class MobiContainer(object):
             info.publisher = 'publisher'
 
             mobi = MangaMobi(container, info)
-            name, mobi_file = mobi.create()
-            values_and_containers.append(((name, mobi_file), container))
+            mobi_name, mobi_file = mobi.create()
+            values_and_containers.append(((mobi_name, mobi_file), container))
             # Containers are cleaned by the caller.
             # container.clean()
         return values_and_containers
