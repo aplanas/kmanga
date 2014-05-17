@@ -168,7 +168,7 @@ class MobiContainer(object):
                     to=[self.settings['MAIL_TO']],
                     subject='Your kmanga.net request',
                     body='',
-                    attachs=((name, 'application/x-mobipocket-ebook',
+                    attachs=((mobi_name, 'application/x-mobipocket-ebook',
                               open(mobi_file, 'rb')),))
                 cb_data = [self.settings['MAIL_FROM'],
                            self.settings['MAIL_TO'],
