@@ -23,6 +23,8 @@ import xml.dom.minidom
 
 from mobi import Container, MangaMobi
 from mobi.mobi import WIDTH, HEIGHT
+from scraper.pipelines import MobiCache
+
 
 _xml_pretty = lambda x: xml.dom.minidom.parseString(x).toprettyxml(indent='  ')
 
@@ -113,6 +115,32 @@ class TestMangaMobi(unittest.TestCase):
             self.assertTrue(len(c.get_image_info()) == 2)
             self.assertTrue(c.get_cover_path())
             c.clean()
+
+
+class TestMobiCache(unittest.TestCase):
+
+    def setUp(self):
+        self.cache = MobiCache('test/fixtures/cache/cache')
+
+    def tearDown(self):
+        shutil.rmtree('test/fixtures/cache/cache')
+
+    def test_cache(self):
+        self.cache[('spider', 'mobi', '1')] = [
+            ('mobi1.mobi', 'test/fixtures/cache/mobi1.mobi')]
+        self.cache[('spider', 'mobi', '2')] = [
+            ('mobi2.1.mobi', 'test/fixtures/cache/mobi2.1.mobi'),
+            ('mobi2.2.mobi', 'test/fixtures/cache/mobi2.2.mobi')]
+        self.cache[('spider', 'mobi', '3')] = [
+            ('mobi3.mobi', 'test/fixtures/cache/mobi3.mobi')]
+        self.assertTrue(len(self.cache) == 3)
+        for key in self.cache:
+            self.assertTrue(len(key) == 3)
+        del self.cache[('spider', 'mobi', '1')]
+        self.assertTrue(len(self.cache) == 2)
+        self.assertTrue(('spider', 'mobi', '1') not in self.cache)
+        self.assertTrue(('spider', 'mobi', '2') in self.cache)
+
 
 if __name__ == '__main__':
     unittest.main()
