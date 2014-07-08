@@ -2,6 +2,11 @@
 
 {% block page_title%}History{% endblock page_title %}
 {% block content %}
+{% if view.request %}
+<p>Hi {{ view.request.user }}</p>
+{% else %}
+<p>No request</p>
+{% endif %}
 <ul>
   {% for history in object_list %}
   <li>{{ history }}</li>

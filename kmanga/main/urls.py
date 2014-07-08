@@ -1,11 +1,24 @@
 from django.conf.urls import patterns, url
+from django.contrib.auth.decorators import login_required
 
-from main.views import HistoryList, HistoryDetail, HistoryCreate, HistoryUpdate, HistoryDelete
+from main.views import (HistoryListView,
+                        HistoryDetailView,
+                        HistoryCreateView,
+                        HistoryUpdateView,
+                        HistoryDeleteView)
 
-urlpatterns = patterns('',
-    url(r'^history/$', HistoryList.as_view(), name='history-list'),
-    url(r'^history/add/$', HistoryCreate.as_view(), name='history-create'),
-    url(r'^history/(?P<pk>\d+)/$', HistoryUpdate.as_view(), name='history-update'),
-    url(r'^history/(?P<pk>\d+)/view$', HistoryDetail.as_view(), name='history-detail'),
-    url(r'^history/(?P<pk>\d+)/delete/$', HistoryDelete.as_view(), name='history-delete'),
-)
+
+urlpatterns = [
+    url(r'^history/$', login_required(HistoryListView.as_view()),
+        name='history-list'),
+    url(r'^history/add/$', login_required(HistoryCreateView.as_view()),
+        name='history-create'),
+    url(r'^history/(?P<pk>\d+)/$', login_required(HistoryUpdateView.as_view()),
+        name='history-update'),
+    url(r'^history/(?P<pk>\d+)/view$', login_required(HistoryDetailView.as_view()),
+        name='history-detail'),
+    url(r'^history/(?P<pk>\d+)/delete/$',
+        login_required(HistoryDeleteView.as_view()), name='history-delete'),
+    ]
+
+urlpatterns = patterns('', *urlpatterns)

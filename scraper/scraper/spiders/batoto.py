@@ -19,38 +19,40 @@
 
 from urlparse import urljoin
 
-import scrapy
-# from scrapy.utils.markup import remove_entities
+from scrapy.http import Request
+from scrapy.selector import Selector
 
 from scraper.items import Genres, Manga, Issue, IssuePage
 
 from .mangaspider import MangaSpider
 
 
-class MangaReader(MangaSpider):
-    name = 'mangareader'
-    allowed_domains = ['mangareader.net']
+class Batoto(MangaSpider):
+    name = 'batoto'
+    allowed_domains = ['batoto.net']
 
     def get_genres_url(self):
-        return'http://www.mangareader.net/popular'
+        return 'http://www.batoto.net/search?advanced=1'
 
     get_catalog_url = get_genres_url
 
     def get_lasts_url(self, sice):
-        return 'http://www.mangareader.net/latest'
+        return 'http://www.batoto.net/'
 
     def get_manga_url(self, manga, issue):
         return 'http://www.mangareader.net/%s/%d' % (manga, int(issue))
 
     def parse_genres(self, response):
+        sel = Selector(response)
         xp = '//div[@class="listeyan"]/ul/li/a/text()'
         genres = Genres()
-        genres['names'] = response.xpath(xp).extract()
+        genres['names'] = sel.xpath(xp).extract()
         return genres
 
     def parse_catalog(self, response):
+        sel = Selector(response)
         xp = '//div[@class="mangaresultitem"]'
-        for item in response.xpath(xp):
+        for item in sel.xpath(xp):
             manga = Manga()
             # Rank
             xp = './/div[@class="c1"]/text()'
@@ -60,54 +62,54 @@ class MangaReader(MangaSpider):
             manga['slug'] = item.xpath(xp).extract()[0].split('/')[-2]
             # URL
             xp = './/div[@class="manga_name"]//a/@href'
-            # Check doc, this can be absolute now
             manga['url'] = urljoin(response.url, item.xpath(xp).extract()[0])
-            request = scrapy.Request(manga['url'], self._parse_catalog_item)
+            request = Request(manga['url'], self._parse_catalog_item)
             request.meta['manga'] = manga
             yield request
 
         # Next page
         xp = '//div[@id="sp"]/a[contains(text(), ">")]/@href'
-        next_url = response.xpath(xp).extract()
+        next_url = sel.xpath(xp).extract()
         if next_url:
             next_url = urljoin(response.url, next_url[0])
             # yield Request(next_url, self.parse_catalog)
 
     def _parse_catalog_item(self, response):
+        sel = Selector(response)
         manga = response.meta['manga']
         # Name
         xp = '//h2[@class="aname"]/text()'
-        manga['name'] = response.xpath(xp).extract()
+        manga['name'] = sel.xpath(xp).extract()
         # Alternate name
         xp = '//td[contains(text(),"%s")]/following-sibling::td/text()'
-        manga['alt_name'] = response.xpath(xp % 'Alternate Name:').extract()
+        manga['alt_name'] = sel.xpath(xp % 'Alternate Name:').extract()
         # Year or release
-        manga['release'] = response.xpath(xp % 'Year of Release:').extract()
+        manga['release'] = sel.xpath(xp % 'Year of Release:').extract()
         # Author
-        manga['author'] = response.xpath(xp % 'Author:').extract()
+        manga['author'] = sel.xpath(xp % 'Author:').extract()
         # Artist
-        manga['artist'] = response.xpath(xp % 'Artist:').extract()
+        manga['artist'] = sel.xpath(xp % 'Artist:').extract()
         # Reading direction
-        rd = response.xpath(xp % 'Reading Direction:').extract()
+        rd = sel.xpath(xp % 'Reading Direction:').extract()
         manga['reading_direction'] = ('RL' if rd == 'Right to Left'
                                       else 'LR')
         # Status
-        manga['status'] = response.xpath(xp % 'Status:').extract()
+        manga['status'] = sel.xpath(xp % 'Status:').extract()
         # Genres
         xp = '//span[@class="genretags"]/text()'
-        manga['genres'] = response.xpath(xp).extract()
+        manga['genres'] = sel.xpath(xp).extract()
         # Description
         # XXX TODO - Clean HTML tags and scape codes
         xp = '//div[@id="readmangasum"]/p/text()'
-        manga['description'] = '\n'.join(response.xpath(xp).extract())
+        manga['description'] = '\n'.join(sel.xpath(xp).extract())
         # Cover image
         xp = '//div[@id="mangaimg"]/img/@src'
-        manga['image_urls'] = response.xpath(xp).extract()
+        manga['image_urls'] = sel.xpath(xp).extract()
 
         # Parse the manga issues list
         manga['issues'] = []
         xp = '//table[@id="listing"]/tr[td]'
-        for line in response.xpath(xp):
+        for line in sel.xpath(xp):
             issue = Issue()
             # Name
             xp = './/a/text()'
@@ -132,21 +134,23 @@ class MangaReader(MangaSpider):
         pass
 
     def parse_manga(self, response, manga, issue):
+        sel = Selector(response)
         xp = '//select[@id="pageMenu"]/option/@value'
-        for number, url in enumerate(response.xpath(xp).extract()):
+        for number, url in enumerate(sel.xpath(xp).extract()):
             meta = (('manga', manga),
                     ('issue', issue),
                     ('number', number + 1),)
-            yield scrapy.Request(urljoin(response.url, url),
-                                 self._parse_page, meta=meta)
+            yield Request(urljoin(response.url, url),
+                          self._parse_page, meta=meta)
 
     def _parse_page(self, response):
+        sel = Selector(response)
         manga = response.meta['manga']
         issue = response.meta['issue']
         number = response.meta['number']
 
         xp = '//img[@id="img"]/@src'
-        url = response.xpath(xp).extract()[0]
+        url = sel.xpath(xp).extract()[0]
         issue_page = IssuePage(
             manga=manga,
             issue=issue,

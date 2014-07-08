@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Scrapy settings for scraper project
 #
 # For simplicity, this file contains only the most important settings by
@@ -5,6 +7,7 @@
 #
 #     http://doc.scrapy.org/en/latest/topics/settings.html
 #
+
 import os.path
 
 

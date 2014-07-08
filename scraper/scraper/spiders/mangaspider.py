@@ -19,10 +19,10 @@
 
 from datetime import date
 
-from scrapy.spider import Spider
+import scrapy
 
 
-class MangaSpider(Spider):
+class MangaSpider(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(MangaSpider, self).__init__(*args, **kwargs)

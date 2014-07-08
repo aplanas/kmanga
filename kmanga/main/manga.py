@@ -7,11 +7,11 @@ from twisted.internet import reactor
 from scraper.spiders.mangareader import MangaReader
 
 
-def run_spider(spider, manga, issue, from_mail, to_mail):
+def run_spider(spider, manga, issue, to_mail):
     kwargs = {
         'manga': manga,
         'issue': issue,
-        'from': 'kindle@kmanga.net',
+        'from': None,
         'to': to_mail,
     }
 

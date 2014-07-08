@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
+
 # Define your item pipelines here
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
+
 import collections
 import hashlib
 import os
@@ -15,6 +18,13 @@ from scrapy.mail import MailSender
 from scrapy.utils.decorator import inthread
 
 from mobi import Container, MangaMobi
+
+from main.models import HistoryLine
+
+
+# class ScraperPipeline(object):
+#     def process_item(self, item, spider):
+#         return item
 
 
 class MobiCache(collections.MutableMapping):
@@ -179,6 +189,12 @@ class MobiContainer(object):
                 # XXX TODO - Send email when errors
 
     def mail_ok(self, result, from_mail, to_mail, manga_name, manga_issue):
+        hl = HistoryLine.objects.filter(
+            history__name=manga_name,
+            history__from_issue__lte=manga_issue,
+            history__to_issue__gte=manga_issue)
+        for h in hl:
+            print 'HEEEEEEEEEEEEEEEEEEEEEEEERE', h
         print 'Mail OK', from_mail, to_mail, manga_name, manga_issue
 
     def mail_err(self, result, from_mail, to_mail, manga_name, manga_issue):

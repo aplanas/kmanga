@@ -86,6 +86,7 @@ STATIC_URL = '/static/'
 INSTALLED_APPS += (
     'django_rq',
     'main',
+    'accounts',
 )
 
 TEMPLATE_DIRS = (

@@ -9,30 +9,30 @@ from main.forms import HistoryForm
 from main.models import History
 
 
-class HistoryList(ListView):
+class HistoryListView(ListView):
     model = History
 
 
-class HistoryDetail(DetailView):
+class HistoryDetailView(DetailView):
     model = History
 
 
-class HistoryCreate(CreateView):
+class HistoryCreateView(CreateView):
     model = History
     form_class = HistoryForm
 
     def form_valid(self, form):
-        result = super(HistoryCreate, self).form_valid(form)
+        result = super(HistoryCreateView, self).form_valid(form)
         for issue in range(form.instance.from_issue, form.instance.to_issue+1):
             line = form.instance.historyline_set.create(issue=issue)
             django_rq.get_queue('default').enqueue(line.send_mobi)
         return result
 
 
-class HistoryUpdate(UpdateView):
+class HistoryUpdateView(UpdateView):
     model = History
 
 
-class HistoryDelete(DeleteView):
+class HistoryDeleteView(DeleteView):
     model = History
     success_url = reverse_lazy('history-list')
