@@ -37,6 +37,11 @@ class MangaSpider(scrapy.Spider):
             day, month, year = [int(x) for x in self.lasts.split('-')]
             since = date(year=year, month=month, day=day)
             self.start_urls = [self.get_lasts_url(since)]
+        elif 'urls' in kwargs:
+            if isinstance(self.urls, basestring):
+                self.start_urls = [url.strip() for url in self.urls.split(',')]
+            else:
+                self.start_urls = self.urls
         elif 'manga' in kwargs and 'issue' in kwargs:
             self.start_urls = [self.get_manga_url(self.manga, self.issue)]
         else:
@@ -52,10 +57,11 @@ class MangaSpider(scrapy.Spider):
             msg = ' '.join(('[-a genres=1]',
                             '[-a catalog=1]',
                             '[-a manga=name -a issue=number]',
+                            '[-a urls=URL1,URL2]',
                             '[-a lasts=DD-MM-YYYY]',
                             '[-a from=email]',
                             '-a to=email'))
-            print 'scrapy crawl SPIDER', msg
+            print 'scrapy crawl %s SPIDER' % msg
             exit(1)
 
     def set_crawler(self, crawler):

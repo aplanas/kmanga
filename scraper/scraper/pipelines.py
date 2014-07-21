@@ -19,7 +19,7 @@ from scrapy.utils.decorator import inthread
 
 from mobi import Container, MangaMobi
 
-from main.models import HistoryLine
+# from main.models import HistoryLine
 
 
 # class ScraperPipeline(object):
@@ -172,29 +172,29 @@ class MobiContainer(object):
                 for _, container in values_and_containers:
                     container.clean()
 
-            for mobi_name, mobi_file in cache[key]:
-                mail = MailSender.from_settings(self.settings)
-                deferred = mail.send(
-                    to=[self.settings['MAIL_TO']],
-                    subject='Your kmanga.net request',
-                    body='',
-                    attachs=((mobi_name, 'application/x-mobipocket-ebook',
-                              open(mobi_file, 'rb')),))
-                cb_data = [self.settings['MAIL_FROM'],
-                           self.settings['MAIL_TO'],
-                           name, number]
-                deferred.addCallbacks(self.mail_ok, self.mail_err,
-                                      callbackArgs=cb_data,
-                                      errbackArgs=cb_data)
-                # XXX TODO - Send email when errors
+            # for mobi_name, mobi_file in cache[key]:
+            #     mail = MailSender.from_settings(self.settings)
+            #     deferred = mail.send(
+            #         to=[self.settings['MAIL_TO']],
+            #         subject='Your kmanga.net request',
+            #         body='',
+            #         attachs=((mobi_name, 'application/x-mobipocket-ebook',
+            #                   open(mobi_file, 'rb')),))
+            #     cb_data = [self.settings['MAIL_FROM'],
+            #                self.settings['MAIL_TO'],
+            #                name, number]
+            #     deferred.addCallbacks(self.mail_ok, self.mail_err,
+            #                           callbackArgs=cb_data,
+            #                           errbackArgs=cb_data)
+            #     # XXX TODO - Send email when errors
 
     def mail_ok(self, result, from_mail, to_mail, manga_name, manga_issue):
-        hl = HistoryLine.objects.filter(
-            history__name=manga_name,
-            history__from_issue__lte=manga_issue,
-            history__to_issue__gte=manga_issue)
-        for h in hl:
-            print 'HEEEEEEEEEEEEEEEEEEEEEEEERE', h
+        # hl = HistoryLine.objects.filter(
+        #     history__name=manga_name,
+        #     history__from_issue__lte=manga_issue,
+        #     history__to_issue__gte=manga_issue)
+        # for h in hl:
+        #     print 'HEEEEEEEEEEEEEEEEEEEEEEEERE', h
         print 'Mail OK', from_mail, to_mail, manga_name, manga_issue
 
     def mail_err(self, result, from_mail, to_mail, manga_name, manga_issue):
