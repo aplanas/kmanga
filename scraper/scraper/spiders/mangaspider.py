@@ -1,4 +1,4 @@
-# -*- coding: utf-8; -*-
+# -*- coding: utf-8 -*-
 #
 # (c) 2014 Alberto Planas <aplanas@gmail.com>
 #
@@ -27,6 +27,24 @@ class MangaSpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         super(MangaSpider, self).__init__(*args, **kwargs)
 
+        #
+        # Parameters for MangaSpider childrens:
+        #
+        # - genres: (OPTIONAL) If True, indicate that the spider needs
+        #           to download the catalog of genres.  The spider
+        #           knows where is this URL.
+        # - catalog: (OPTIONAL) If True, indicate that the spider
+        #            needs to download the catalog of mangas.  The
+        #            spider also knows where is this URL.
+        # - lasts: (OPTIONAL) If the value is a date, the spider will
+        #          download a catalog update since this date.
+        # - manga: (OPTIONAL) Name of the manga pointed by `url`.
+        # - issue: (OPTIONAL) Issue number of the manga pointed by `url`.
+        # - url: (OPTIONAL) URL of the manga to be downloaded.
+        # - from: (OPTIONAL) Email address set in the FROM field.
+        # - to: (OPTIONAL) Email address set in the TO field.
+        #
+
         error_msg = False
 
         if 'genres' in kwargs:
@@ -35,32 +53,25 @@ class MangaSpider(scrapy.Spider):
             self.start_urls = [self.get_catalog_url()]
         elif 'lasts' in kwargs:
             day, month, year = [int(x) for x in self.lasts.split('-')]
-            since = date(year=year, month=month, day=day)
-            self.start_urls = [self.get_lasts_url(since)]
-        elif 'urls' in kwargs:
-            if isinstance(self.urls, basestring):
-                self.start_urls = [url.strip() for url in self.urls.split(',')]
-            else:
-                self.start_urls = self.urls
-        elif 'manga' in kwargs and 'issue' in kwargs:
-            self.start_urls = [self.get_manga_url(self.manga, self.issue)]
+            self.since = date(year=year, month=month, day=day)
+            self.start_urls = [self.get_last_url(self.since)]
+        elif 'manga' in kwargs and 'issue' in kwargs and 'url' in kwargs:
+            self.start_urls = [self.url]
+            self.from_email = kwargs.get('from', None)
+            try:
+                self.to_email = kwargs['to']
+            except:
+                error_msg = True
         else:
-            error_msg = True
-
-        self.from_email = kwargs.get('from', None)
-        try:
-            self.to_email = kwargs['to']
-        except:
             error_msg = True
 
         if error_msg:
             msg = ' '.join(('[-a genres=1]',
                             '[-a catalog=1]',
-                            '[-a manga=name -a issue=number]',
-                            '[-a urls=URL1,URL2]',
                             '[-a lasts=DD-MM-YYYY]',
+                            '[-a manga=name -a issue=number -a url-URL]',
                             '[-a from=email]',
-                            '-a to=email'))
+                            '[-a to=email]'))
             print 'scrapy crawl %s SPIDER' % msg
             exit(1)
 
@@ -69,9 +80,10 @@ class MangaSpider(scrapy.Spider):
         # Store the parameters as a settings configuration, so
         # pipelines can read the parameters too.
         super(MangaSpider, self).set_crawler(crawler)
-        if self.from_email:
+        if hasattr(self, 'from_email'):
             self.settings.overrides['MAIL_FROM'] = self.from_email
-        self.settings.overrides['MAIL_TO'] = self.to_email
+        if hasattr(self, 'to_email'):
+            self.settings.overrides['MAIL_TO'] = self.to_email
 
     def parse(self, response):
         if hasattr(self, 'genres'):
@@ -81,11 +93,9 @@ class MangaSpider(scrapy.Spider):
             return self.parse_catalog(response)
 
         if hasattr(self, 'lasts'):
-            day, month, year = [int(x) for x in self.lasts.split('-')]
-            since = date(year=year, month=month, day=day)
-            return self.parse_lasts(response, since)
+            return self.parse_lasts(response, self.since)
 
-        if hasattr(self, 'manga') and hasattr(self, 'issue'):
+        if all(hasattr(self, attr) for attr in ('manga', 'issue', 'url')):
             return self.parse_manga(response, self.manga, self.issue)
 
     def get_genres_url(self):
@@ -97,8 +107,8 @@ class MangaSpider(scrapy.Spider):
     def get_lasts_url(self, since):
         raise NotImplementedError
 
-    def get_manga_url(self, manga, issue):
-        raise NotImplementedError
+    # def get_manga_url(self, manga, issue):
+    #     raise NotImplementedError
 
     def parse_genres(self, response):
         raise NotImplementedError

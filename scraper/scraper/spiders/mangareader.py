@@ -1,4 +1,4 @@
-# -*- coding: utf-8; -*-
+# -*- coding: utf-8 -*-
 #
 # (c) 2014 Alberto Planas <aplanas@gmail.com>
 #
@@ -20,7 +20,6 @@
 from urlparse import urljoin
 
 import scrapy
-# from scrapy.utils.markup import remove_entities
 
 from scraper.items import Genres, Manga, Issue, IssuePage
 
@@ -55,23 +54,19 @@ class MangaReader(MangaSpider):
             # Rank
             xp = './/div[@class="c1"]/text()'
             manga['rank'] = item.xpath(xp).re(r'(\d+).')
-            # Slug
-            xp = './/div[@class="imgsearchresults"]/@style'
-            manga['slug'] = item.xpath(xp).extract()[0].split('/')[-2]
             # URL
             xp = './/div[@class="manga_name"]//a/@href'
-            # Check doc, this can be absolute now
             manga['url'] = urljoin(response.url, item.xpath(xp).extract()[0])
             request = scrapy.Request(manga['url'], self._parse_catalog_item)
             request.meta['manga'] = manga
             yield request
 
         # Next page
-        xp = '//div[@id="sp"]/a[contains(text(), ">")]/@href'
+        xp = '//div[@id="sp"]/a[contains(., ">")]/@href'
         next_url = response.xpath(xp).extract()
         if next_url:
             next_url = urljoin(response.url, next_url[0])
-            # yield Request(next_url, self.parse_catalog)
+            yield scrapy.Request(next_url, self.parse_catalog)
 
     def _parse_catalog_item(self, response):
         manga = response.meta['manga']
@@ -81,7 +76,7 @@ class MangaReader(MangaSpider):
         # Alternate name
         xp = '//td[contains(text(),"%s")]/following-sibling::td/text()'
         manga['alt_name'] = response.xpath(xp % 'Alternate Name:').extract()
-        # Year or release
+        # Year of release
         manga['release'] = response.xpath(xp % 'Year of Release:').extract()
         # Author
         manga['author'] = response.xpath(xp % 'Author:').extract()
@@ -97,18 +92,19 @@ class MangaReader(MangaSpider):
         xp = '//span[@class="genretags"]/text()'
         manga['genres'] = response.xpath(xp).extract()
         # Description
-        # XXX TODO - Clean HTML tags and scape codes
         xp = '//div[@id="readmangasum"]/p/text()'
         manga['description'] = '\n'.join(response.xpath(xp).extract())
         # Cover image
         xp = '//div[@id="mangaimg"]/img/@src'
         manga['image_urls'] = response.xpath(xp).extract()
+        # URL
+        manga['url'] = response.url
 
         # Parse the manga issues list
         manga['issues'] = []
         xp = '//table[@id="listing"]/tr[td]'
         for line in response.xpath(xp):
-            issue = Issue()
+            issue = Issue(language='en')
             # Name
             xp = './/a/text()'
             name_1 = line.xpath(xp).extract()
@@ -146,11 +142,11 @@ class MangaReader(MangaSpider):
         number = response.meta['number']
 
         xp = '//img[@id="img"]/@src'
-        url = response.xpath(xp).extract()[0]
+        url = response.xpath(xp).extract()
         issue_page = IssuePage(
             manga=manga,
             issue=issue,
             number=number,
-            image_urls=[urljoin(response.url, url)]
+            image_urls=[urljoin(response.url, url[0])]
         )
         return issue_page

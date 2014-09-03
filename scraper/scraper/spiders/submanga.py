@@ -1,4 +1,4 @@
-# -*- coding: utf-8; -*-
+# -*- coding: utf-8 -*-
 #
 # (c) 2014 Alberto Planas <aplanas@gmail.com>
 #
@@ -19,8 +19,7 @@
 
 from urlparse import urljoin
 
-from scrapy.http import Request
-from scrapy.selector import Selector
+import scrapy
 
 from scraper.items import Genres, Manga, Issue, IssuePage
 

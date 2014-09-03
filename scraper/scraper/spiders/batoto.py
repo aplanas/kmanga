@@ -1,4 +1,4 @@
-# -*- coding: utf-8; -*-
+# -*- coding: utf-8 -*-
 #
 # (c) 2014 Alberto Planas <aplanas@gmail.com>
 #
@@ -19,114 +19,128 @@
 
 from urlparse import urljoin
 
-from scrapy.http import Request
-from scrapy.selector import Selector
+import scrapy
 
 from scraper.items import Genres, Manga, Issue, IssuePage
 
 from .mangaspider import MangaSpider
 
 
+AJAX_SEARCH = 'http://bato.to/search_ajax?p=%d'
+
+
+def _v2i(viewers):
+    """Convert vievers to integer."""
+    if 'k' in viewers:
+        return int(1000 * float(viewers[:-1]))
+    elif 'm' in viewers:
+        return int(1000 * 1000 * float(viewers[:-1]))
+    else:
+        return int(viewers)
+
+
 class Batoto(MangaSpider):
     name = 'batoto'
-    allowed_domains = ['batoto.net']
+    allowed_domains = ['bato.to']
+
+    # download_delay = 1
 
     def get_genres_url(self):
-        return 'http://www.batoto.net/search?advanced=1'
+        return 'http://bato.to/search?advanced=1'
 
-    get_catalog_url = get_genres_url
+    def get_catalog_url(self):
+        return AJAX_SEARCH % 1
 
     def get_lasts_url(self, sice):
-        return 'http://www.batoto.net/'
-
-    def get_manga_url(self, manga, issue):
-        return 'http://www.mangareader.net/%s/%d' % (manga, int(issue))
+        return 'http://bato.to/'
 
     def parse_genres(self, response):
-        sel = Selector(response)
-        xp = '//div[@class="listeyan"]/ul/li/a/text()'
+        xp = '//div[@class="genre_buttons"]/text()'
         genres = Genres()
-        genres['names'] = sel.xpath(xp).extract()
+        genres['names'] = response.xpath(xp).extract()
         return genres
 
     def parse_catalog(self, response):
-        sel = Selector(response)
-        xp = '//div[@class="mangaresultitem"]'
-        for item in sel.xpath(xp):
+        xp = '//tr[not(@class) and not(@id)]'
+        for item in response.xpath(xp):
             manga = Manga()
-            # Rank
-            xp = './/div[@class="c1"]/text()'
-            manga['rank'] = item.xpath(xp).re(r'(\d+).')
-            # Slug
-            xp = './/div[@class="imgsearchresults"]/@style'
-            manga['slug'] = item.xpath(xp).extract()[0].split('/')[-2]
             # URL
-            xp = './/div[@class="manga_name"]//a/@href'
-            manga['url'] = urljoin(response.url, item.xpath(xp).extract()[0])
-            request = Request(manga['url'], self._parse_catalog_item)
+            xp = './td[1]/strong/a/@href'
+            manga['url'] = item.xpath(xp).extract()
+            # In Batoto there is not rank, but a combination of
+            # rating, viewers and followers.
+            xp = './td[3]/div/@title'
+            rating = float(item.xpath(xp).re(r'([.\d]+)/5')[0])
+            xp = './td[4]/text()'
+            viewers = _v2i(item.xpath(xp).extract()[0])
+            xp = './td[5]/text()'
+            followers = int(item.xpath(xp).extract()[0])
+            manga['rank'] = (rating + 0.1) * viewers * followers
+            # URL Hack to avoid a redirection. This is used because
+            # the download_delay is also added to the redirector.  The
+            # other solution is to assign to request this:
+            # scrapy.Request(manga['url'][0], self._parse_catalog_item)
+            url = manga['url'][0].split('_/')[-1]
+            url = 'http://bato.to/comic/_/comics/%s' % url
+            request = scrapy.Request(url, self._parse_catalog_item)
             request.meta['manga'] = manga
             yield request
 
         # Next page
-        xp = '//div[@id="sp"]/a[contains(text(), ">")]/@href'
-        next_url = sel.xpath(xp).extract()
-        if next_url:
-            next_url = urljoin(response.url, next_url[0])
-            # yield Request(next_url, self.parse_catalog)
+        xp = '//tr[@id="show_more_row"]/td/input/@onclick'
+        next_page_number = response.xpath(xp).re(r'.*, (\d+)\)')
+        if next_page_number:
+            next_page_number = int(next_page_number[0]) + 1
+            next_url = AJAX_SEARCH % next_page_number
+            yield scrapy.Request(next_url, self.parse_catalog)
 
     def _parse_catalog_item(self, response):
-        sel = Selector(response)
         manga = response.meta['manga']
         # Name
-        xp = '//h2[@class="aname"]/text()'
-        manga['name'] = sel.xpath(xp).extract()
+        xp = '//h1[@class="ipsType_pagetitle"]/text()'
+        manga['name'] = response.xpath(xp).extract()
         # Alternate name
-        xp = '//td[contains(text(),"%s")]/following-sibling::td/text()'
-        manga['alt_name'] = sel.xpath(xp % 'Alternate Name:').extract()
-        # Year or release
-        manga['release'] = sel.xpath(xp % 'Year of Release:').extract()
+        xp = '//td[contains(text(),"%s")]/following-sibling::td/.//text()'
+        manga['alt_name'] = response.xpath(xp % 'Alt Names:').extract()
+        # Year of release
+        manga['release'] = None
         # Author
-        manga['author'] = sel.xpath(xp % 'Author:').extract()
+        manga['author'] = response.xpath(xp % 'Author:').extract()
         # Artist
-        manga['artist'] = sel.xpath(xp % 'Artist:').extract()
+        manga['artist'] = response.xpath(xp % 'Artist:').extract()
         # Reading direction
-        rd = sel.xpath(xp % 'Reading Direction:').extract()
-        manga['reading_direction'] = ('RL' if rd == 'Right to Left'
-                                      else 'LR')
+        manga['reading_direction'] = 'LR'
         # Status
-        manga['status'] = sel.xpath(xp % 'Status:').extract()
+        manga['status'] = response.xpath(xp % 'Status:').extract()
         # Genres
-        xp = '//span[@class="genretags"]/text()'
-        manga['genres'] = sel.xpath(xp).extract()
+        manga['genres'] = response.xpath(xp % 'Genres:').extract()
         # Description
-        # XXX TODO - Clean HTML tags and scape codes
-        xp = '//div[@id="readmangasum"]/p/text()'
-        manga['description'] = '\n'.join(sel.xpath(xp).extract())
+        manga['description'] = response.xpath(xp % 'Description:').extract()
         # Cover image
-        xp = '//div[@id="mangaimg"]/img/@src'
-        manga['image_urls'] = sel.xpath(xp).extract()
+        xp = '//div[@class="ipsBox"]/div/div/img/@src'
+        manga['image_urls'] = response.xpath(xp).extract()
+        # URL
+        manga['url'] = response.url
 
         # Parse the manga issues list
         manga['issues'] = []
-        xp = '//table[@id="listing"]/tr[td]'
-        for line in sel.xpath(xp):
+        xp = '//tr[contains(@class,"chapter_row")]'
+        for line in response.xpath(xp):
             issue = Issue()
             # Name
-            xp = './/a/text()'
-            name_1 = line.xpath(xp).extract()
-            xp = './/a/following-sibling::text()'
-            name_2 = line.xpath(xp).extract()
-            issue['name'] = name_1 + name_2
+            xp = './td[1]/a/text()'
+            issue['name'] = line.xpath(xp).extract()
             # Number
-            xp = './/a/text()'
-            issue['number'] = line.xpath(xp).re(r'(\d+)')
+            issue['number'] = line.xpath(xp).re(r'Ch.(\d+)')
+            # language
+            xp = './td[2]/div/@title'
+            issue['language'] = line.xpath(xp).extract()
             # Added
-            xp = './td[2]/text()'
-            issue['added'] = line.xpath(xp).extract()
+            # xp =
+            # issue['added'] = line.xpath(xp).extract()
             # URL
-            xp = './/a/@href'
-            url = line.xpath(xp).extract()
-            issue['url'] = urljoin(response.url, url[0])
+            xp = './td[1]/a/@href'
+            issue['url'] = line.xpath(xp).extract()
             manga['issues'].append(issue)
         yield manga
 
@@ -134,27 +148,24 @@ class Batoto(MangaSpider):
         pass
 
     def parse_manga(self, response, manga, issue):
-        sel = Selector(response)
-        xp = '//select[@id="pageMenu"]/option/@value'
-        for number, url in enumerate(sel.xpath(xp).extract()):
+        xp = '//select[@id="page_select"]/option/@value'
+        for number, url in enumerate(response.xpath(xp).extract()):
             meta = (('manga', manga),
                     ('issue', issue),
                     ('number', number + 1),)
-            yield Request(urljoin(response.url, url),
-                          self._parse_page, meta=meta)
+            yield scrapy.Request(url, self._parse_page, meta=meta)
 
     def _parse_page(self, response):
-        sel = Selector(response)
         manga = response.meta['manga']
         issue = response.meta['issue']
         number = response.meta['number']
 
-        xp = '//img[@id="img"]/@src'
-        url = sel.xpath(xp).extract()[0]
+        xp = '//img[@id="comic_page"]/@src'
+        url = response.xpath(xp).extract()
         issue_page = IssuePage(
             manga=manga,
             issue=issue,
             number=number,
-            image_urls=[urljoin(response.url, url)]
+            image_urls=[urljoin(response.url, url[0])]
         )
         return issue_page
