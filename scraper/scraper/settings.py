@@ -21,8 +21,11 @@ ITEM_PIPELINES = {
     'scraper.pipelines.MobiContainer': 500,
 }
 
-IMAGES_STORE = os.path.join(os.path.dirname(__file__), '..', 'img_store')
-MOBI_STORE = os.path.join(os.path.dirname(__file__), '..', 'mobi_store')
+_dirname = os.path.dirname(__file__)
+KINDLEGEN = os.path.join(_dirname, '..', '..', 'bin', 'kindlegen')
+
+IMAGES_STORE = os.path.join(_dirname, '..', 'img_store')
+MOBI_STORE = os.path.join(_dirname, '..', 'mobi_store')
 
 VOLUME_MAX_SIZE = 15 * 1024**2
 

@@ -90,13 +90,10 @@ class MobiCache(collections.MutableMapping):
         return len(os.listdir(self.index))
 
 
-class FansitePipeline(object):
-    def process_item(self, item, spider):
-        return item
-
-
 class MobiContainer(object):
-    def __init__(self, images_store, mobi_store, volume_max_size, settings):
+    def __init__(self, kindlegen, images_store, mobi_store,
+                 volume_max_size, settings):
+        self.kindlegen = kindlegen
         self.images_store = images_store
         self.mobi_store = mobi_store
         self.volume_max_size = volume_max_size
@@ -105,8 +102,11 @@ class MobiContainer(object):
 
     @classmethod
     def from_settings(cls, settings):
-        return cls(settings['IMAGES_STORE'], settings['MOBI_STORE'],
-                   settings['VOLUME_MAX_SIZE'], settings)
+        return cls(settings['KINDLEGEN'],
+                   settings['IMAGES_STORE'],
+                   settings['MOBI_STORE'],
+                   settings['VOLUME_MAX_SIZE'],
+                   settings)
 
     def process_item(self, item, spider):
         if hasattr(spider, 'manga') and hasattr(spider, 'issue'):
@@ -151,7 +151,7 @@ class MobiContainer(object):
             info.author = 'author'
             info.publisher = 'publisher'
 
-            mobi = MangaMobi(container, info)
+            mobi = MangaMobi(container, info, kindlegen=self.kindlegen)
             mobi_name, mobi_file = mobi.create()
             values_and_containers.append(((mobi_name, mobi_file), container))
             # Containers are cleaned by the caller.
