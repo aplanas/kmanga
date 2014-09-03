@@ -1,4 +1,4 @@
-# -*- coding: utf-8; -*-
+# -*- coding: utf-8 -*-
 #
 # (c) 2014 Alberto Planas <aplanas@gmail.com>
 #
@@ -17,41 +17,41 @@
 # You should have received a copy of the GNU General Public License
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
-from scrapy.item import Item, Field
+import scrapy
 
 
-class Genres(Item):
-    names = Field()
+class Genres(scrapy.Item):
+    names = scrapy.Field()
 
 
-class Manga(Item):
-    name = Field()
-    alt_name = Field()
-    slug = Field()
-    release = Field()
-    author = Field()
-    artist = Field()
-    reading_direction = Field()
-    status = Field()
-    genres = Field()
-    rank = Field()
-    description = Field()
-    image_urls = Field()
-    images = Field()
-    issues = Field()
-    url = Field()
+class Manga(scrapy.Item):
+    name = scrapy.Field()
+    alt_name = scrapy.Field()
+    release = scrapy.Field()
+    author = scrapy.Field()
+    artist = scrapy.Field()
+    reading_direction = scrapy.Field()
+    status = scrapy.Field()
+    genres = scrapy.Field()
+    rank = scrapy.Field()
+    description = scrapy.Field()
+    image_urls = scrapy.Field()
+    images = scrapy.Field()
+    issues = scrapy.Field()
+    url = scrapy.Field()
 
 
-class Issue(Item):
-    name = Field()
-    number = Field()
-    added = Field()
-    url = Field()
+class Issue(scrapy.Item):
+    name = scrapy.Field()
+    number = scrapy.Field()
+    language = scrapy.Field()
+    added = scrapy.Field()
+    url = scrapy.Field()
 
 
-class IssuePage(Item):
-    manga = Field()
-    issue = Field()
-    number = Field()
-    image_urls = Field()
-    images = Field()
+class IssuePage(scrapy.Item):
+    manga = scrapy.Field()
+    issue = scrapy.Field()
+    number = scrapy.Field()
+    image_urls = scrapy.Field()
+    images = scrapy.Field()
