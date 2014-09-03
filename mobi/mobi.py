@@ -230,9 +230,10 @@ class Container(object):
 
 
 class MangaMobi(object):
-    def __init__(self, container, info):
+    def __init__(self, container, info, kindlegen=None):
         self.container = container
         self.info = info
+        self.kindlegen = kindlegen if kindlegen else KINDLEGEN
 
     def create(self):
         """Create the mobi file calling kindlegen."""
@@ -243,7 +244,7 @@ class MangaMobi(object):
         if not self.container.has_cover:
             cover = self.container.get_image_path(0)
             self.container.set_cover(cover, adjust=Container.RESIZE_CROP)
-        subprocess.call([KINDLEGEN, self.container.get_content_opf_path(),
+        subprocess.call([self.kindlegen, self.container.get_content_opf_path(),
                          '-o', 'tmp.mobi'])
 
         # Remove the SRCS section.
