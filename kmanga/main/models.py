@@ -2,7 +2,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
-from .manga import run_spider
+from scrapyctl.manga import run_spider
 
 
 @python_2_unicode_compatible
