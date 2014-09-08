@@ -78,7 +78,8 @@ class MangaSpider(scrapy.Spider):
         else:
             error_msg = True
 
-        if error_msg:
+        _help = 'h' in kwargs or 'help' in kwargs
+        if error_msg and _help:
             msg = ' '.join(('[-a genres=1 -a url=URL]',
                             '[-a catalog=1 -a url=URL]',
                             '[-a collection=1 -a manga=name -a url=URL]',
@@ -135,7 +136,7 @@ class MangaSpider(scrapy.Spider):
     def parse_catalog(self, response):
         raise NotImplementedError
 
-    def parse_collection(self, response):
+    def parse_collection(self, response, manga):
         raise NotImplementedError
 
     def parse_lasts(self, response, until):

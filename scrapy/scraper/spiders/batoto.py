@@ -55,12 +55,27 @@ class Batoto(MangaSpider):
         return 'http://bato.to/'
 
     def parse_genres(self, response):
+        """Generate the list of genres.
+
+        @url http://bato.to/search?advanced=1
+        @returns items 1 1
+        @returns request 0 0
+        @scrapes names
+        """
+
         xp = '//div[@class="genre_buttons"]/text()'
         genres = Genres()
         genres['names'] = response.xpath(xp).extract()
         return genres
 
     def parse_catalog(self, response):
+        """Generate the catalog (list of mangas) of the site.
+
+        @url http://bato.to/search_ajax?p=200
+        @returns items 0 0
+        @returns request 30 40
+        """
+
         xp = '//tr[not(@class) and not(@id)]'
         for item in response.xpath(xp):
             manga = Manga()
@@ -82,7 +97,7 @@ class Batoto(MangaSpider):
             # scrapy.Request(manga['url'][0], self._parse_catalog_item)
             url = manga['url'][0].split('_/')[-1]
             url = 'http://bato.to/comic/_/comics/%s' % url
-            request = scrapy.Request(url, self._parse_catalog_item)
+            request = scrapy.Request(url, self.parse_collection)
             request.meta['manga'] = manga
             yield request
 
@@ -94,8 +109,21 @@ class Batoto(MangaSpider):
             next_url = AJAX_SEARCH % next_page_number
             yield scrapy.Request(next_url, self.parse_catalog)
 
-    def _parse_catalog_item(self, response):
-        manga = response.meta['manga']
+    def parse_collection(self, response, manga=None):
+        """Generate the list of issues for a manga
+
+        @url http://bato.to/comic/_/comics/angel-densetsu-r460
+        @returns items 1 1
+        @returns request 0 0
+        @scrapes url name alt_name release author artist reading_direction
+        @scrapes status genres description issues
+        """
+
+        if 'manga' in response.meta:
+            manga = response.meta['manga']
+        else:
+            manga = Manga(url=response.url)
+
         # Name
         xp = '//h1[@class="ipsType_pagetitle"]/text()'
         manga['name'] = response.xpath(xp).extract()
@@ -119,8 +147,6 @@ class Batoto(MangaSpider):
         # Cover image
         xp = '//div[@class="ipsBox"]/div/div/img/@src'
         manga['image_urls'] = response.xpath(xp).extract()
-        # URL
-        manga['url'] = response.url
 
         # Parse the manga issues list
         manga['issues'] = []

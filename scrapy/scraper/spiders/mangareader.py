@@ -31,7 +31,7 @@ class MangaReader(MangaSpider):
     allowed_domains = ['mangareader.net']
 
     def get_genres_url(self):
-        return'http://www.mangareader.net/popular'
+        return 'http://www.mangareader.net/popular'
 
     get_catalog_url = get_genres_url
 
@@ -42,12 +42,27 @@ class MangaReader(MangaSpider):
         return 'http://www.mangareader.net/%s/%d' % (manga, int(issue))
 
     def parse_genres(self, response):
+        """Generate the list of genres.
+
+        @url http://www.mangareader.net/popular
+        @returns items 1 1
+        @returns request 0 0
+        @scrapes names
+        """
+
         xp = '//div[@class="listeyan"]/ul/li/a/text()'
         genres = Genres()
         genres['names'] = response.xpath(xp).extract()
         return genres
 
     def parse_catalog(self, response):
+        """Generate the catalog (list of mangas) of the site.
+
+        @url http://www.mangareader.net/popular/3660
+        @returns items 0 0
+        @returns request 30 40
+        """
+
         xp = '//div[@class="mangaresultitem"]'
         for item in response.xpath(xp):
             manga = Manga()
@@ -57,7 +72,7 @@ class MangaReader(MangaSpider):
             # URL
             xp = './/div[@class="manga_name"]//a/@href'
             manga['url'] = urljoin(response.url, item.xpath(xp).extract()[0])
-            request = scrapy.Request(manga['url'], self._parse_catalog_item)
+            request = scrapy.Request(manga['url'], self.parse_collection)
             request.meta['manga'] = manga
             yield request
 
@@ -68,8 +83,21 @@ class MangaReader(MangaSpider):
             next_url = urljoin(response.url, next_url[0])
             yield scrapy.Request(next_url, self.parse_catalog)
 
-    def _parse_catalog_item(self, response):
-        manga = response.meta['manga']
+    def parse_collection(self, response, manga=None):
+        """Generate the list of issues for a manga
+
+        @url http://www.mangareader.net/178/angel-densetsu.html
+        @returns items 1 1
+        @returns request 0 0
+        @scrapes url name alt_name release author artist reading_direction
+        @scrapes status genres description issues
+        """
+
+        if 'manga' in response.meta:
+            manga = response.meta['manga']
+        else:
+            manga = Manga(url=response.url)
+
         # Name
         xp = '//h2[@class="aname"]/text()'
         manga['name'] = response.xpath(xp).extract()
@@ -97,8 +125,6 @@ class MangaReader(MangaSpider):
         # Cover image
         xp = '//div[@id="mangaimg"]/img/@src'
         manga['image_urls'] = response.xpath(xp).extract()
-        # URL
-        manga['url'] = response.url
 
         # Parse the manga issues list
         manga['issues'] = []
