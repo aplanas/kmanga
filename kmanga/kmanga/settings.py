@@ -82,11 +82,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
 # Kmanga specific configuration
 
 INSTALLED_APPS += (
+    # External applications
     'django_rq',
-
+    # Project applications
     'accounts',
     'main',
     'scrapyctl',
@@ -117,3 +119,5 @@ RQ_QUEUES = {
         'DB': 0,
     }
 }
+
+SCRAPY_SETTINGS_MODULE = 'scraper.settings'
