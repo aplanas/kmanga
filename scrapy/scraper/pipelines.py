@@ -14,6 +14,7 @@ try:
 except:
     import pickle
 
+from scrapy import log
 from scrapy.mail import MailSender
 from scrapy.utils.decorator import inthread
 
@@ -25,6 +26,49 @@ from mobi import Container, MangaMobi
 # class ScraperPipeline(object):
 #     def process_item(self, item, spider):
 #         return item
+
+
+class Normalize(object):
+    def __init__(self):
+        self.clean_item = {
+            'Genres': self.clean_genres,
+            'Manga': self.clean_manga,
+            'Issue': self.clean_issue,
+            'IssuePage': self.clean_issuepage,
+        }
+
+    def process_item(self, item, spider):
+        cname = item.__class__.__name__
+        if cname in self.clean_item:
+            return self.clean_item[cname](item)
+        else:
+            log.msg('Normalize pipeline: item class not found %s' % cname,
+                    level=log.WARNING)
+        return item
+
+    def _clean_list(self, _list, exclude=None):
+        exclude = frozenset(exclude) if exclude else frozenset()
+        return [e.strip() for e in _list
+                if e.strip() and e.strip() not in exclude]
+
+    def clean_genres(self, item):
+        exclude = ('All', '[no chapters]',)
+        item['names'] = self._clean_list(item['names'], exclude=exclude)
+        return item
+
+    def clean_manga(self, item):
+        return item
+
+    def clean_issue(self, item):
+        return item
+
+    def clean_issuepage(self, item):
+        return item
+
+
+class UpdateDB(object):
+    def process_item(self, item, spider):
+        return item
 
 
 class MobiCache(collections.MutableMapping):

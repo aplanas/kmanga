@@ -18,6 +18,8 @@ NEWSPIDER_MODULE = 'scraper.spiders'
 
 ITEM_PIPELINES = {
     'scrapy.contrib.pipeline.images.ImagesPipeline': 1,
+    'scraper.pipelines.Normalize': 50,
+    'scraper.pipelines.UpdateDB': 100,
     'scraper.pipelines.MobiContainer': 500,
 }
 
