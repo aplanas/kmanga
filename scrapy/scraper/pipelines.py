@@ -28,45 +28,147 @@ from mobi import Container, MangaMobi
 #         return item
 
 
-class Normalize(object):
-    def __init__(self):
-        self.clean_item = {
-            'Genres': self.clean_genres,
-            'Manga': self.clean_manga,
-            'Issue': self.clean_issue,
-            'IssuePage': self.clean_issuepage,
-        }
+class CleanBasePipeline(object):
 
     def process_item(self, item, spider):
-        cname = item.__class__.__name__
-        if cname in self.clean_item:
-            return self.clean_item[cname](item)
+        # Deduce the name of the method that can take care of the
+        # item, two options: one generic and one specific for the
+        # spider.
+        item_name = item.__class__.__name__.lower()
+        spider_name = spider.name.lower()
+        item_method = 'clean_%s' % item_name
+        spider_method = 'clean_%s_%s' % (spider_name, item_name)
+
+        if hasattr(self, spider_method):
+            return getattr(self, spider_method)(item, spider)
+        elif hasattr(self, item_name):
+            return getattr(self, item_method)(item, spider)
         else:
-            log.msg('Normalize pipeline: item class not found %s' % cname,
+            log.msg('Normalize pipeline: method (%s, %s) not found,'
+                    'item not cleaned' % (item_method, spider_method),
                     level=log.WARNING)
         return item
 
-    def _clean_list(self, _list, exclude=None):
+    def _as_str(self, obj, separator=' '):
+        if isinstance(obj, list):
+            obj = separator.join(obj)
+        return obj
+
+    def _as_list(self, obj):
+        return obj if isinstance(obj, list) else [obj]
+
+    def _clean_field_str(self, field, optional=False):
+        value = self._as_str(field.strip())
+        if not value and not optional:
+            raise ValueError('field is not optional'
+                             " or can't be converted to a string (%s)" % value)
+        return value
+
+    def _clean_field_int(self, item, field_name, optional=False, default=0):
+        value = default
+        try:
+            value = int(float(self._as_str(item[field_name])))
+        except ValueError:
+            if not optional:
+                log.msg('Normalize pipeline: field %s is not optional'
+                        " or can't be converted to a integer (%s)" % (
+                            field_name, item[field_name]))
+        item[field_name] = value
+
+    def _clean_field_date(self, item, field_name, optional=False):
+        # TODO XXX - Convert typical date formats
+        value = item[field_name]
+        if not value and not optional:
+            log.msg('Normalize pipeline: field %s is not optional'
+                    " or can't be converted to a date (%s)" % (
+                        field_name, item[field_name]))
+
+    def _clean_field_list(self, item, field_name, optional=False,
+                          exclude=None):
         exclude = frozenset(exclude) if exclude else frozenset()
-        return [e.strip() for e in _list
-                if e.strip() and e.strip() not in exclude]
+        value = [e.strip() for e in self._as_list(item[field_name])]
+        value = [e for e in value if e and e not in exclude]
+        if not value and not optional:
+            log.msg('Normalize pipeline: field %s is not optional'
+                    " or can't be converted to a list (%s)" % (
+                        field_name, item[field_name]))
+        else:
+            item[field_name] = value
 
-    def clean_genres(self, item):
+    def _check_in_set(self, item, field_name, values, optional=False):
+        value = self._as_str(item[field_name]).upper()
+        if not value and not optional:
+            log.msg('Normalize pipeline: field %s is not optional'
+                    " or can't be converted to a string (%s)" % (
+                        field_name, item[field_name]))
+        elif value not in values:
+            log.msg('Normalize pipeline: is not a valid value (%s)' % (
+                field_name, item[field_name]))
+
+    def _clean(self, item, spider, cleaning_plan):
+        item_name = item.__class__.__name__.lower()
+        spider_name = spider.name.lower()
+
+        _item = item.copy()
+        for field_name, value in item.iteritems():
+            item_method = 'clean_field_%s_%s' % (item_name, field_name)
+            spider_method = 'clean_field_%s_%s_%s' % (spider_name, item_name,
+                                                      field_name)
+
+            if hasattr(self, spider_method):
+                _item[field_name] = getattr(self, spider_method)(value)
+            elif hasattr(self, item_method):
+                _item[field_name] = getattr(self, item_method)(value)
+            elif field_name in cleaning_plan:
+                _method = cleaning_plan[field_name]
+                if 
+                cleaning_plan[field_name]()
+        return _item
+
+
+class CleanPipeline(CleanBasePipeline):
+
+    # -- Genres
+    def clean_genres(self, item, spider):
         exclude = ('All', '[no chapters]',)
-        item['names'] = self._clean_list(item['names'], exclude=exclude)
+        cleaning_plan = {
+            'name': (self._clean_field_list, {exclude: exclude})
+        }
+        return self._clean(item, spider, cleaning_plan)
+
+    # -- Manga
+    def clean_manga(self, item, spider):
+        cleaning_plan = {
+            'name': self._clean_str,
+            'alt_name': self._clean_list,
+            'author': self._clean_str,
+            'artist': (self._clean_str, {'optional': True}),
+            'reading_direction': (self._validate_in_set,
+                                  {'values': ('LR', 'RL')}),
+            'status': (self._validate_in_set,
+                       {'values': ('ONGOING', 'COMPLETED')}),
+            'genres': self._clean_list,
+            'rank': self._clean_int,
+            'rank_order': (self._validate_in_set,
+                           {'values': ('ASC', 'DESC')}),
+            # 'description',
+            # 'image_urls',
+            # 'images',
+            # 'issues',
+            # 'url',
+        }
+        return self._clean(item, spider, cleaning_plan)
+
+    # -- Issue
+    def clean_issue(self, item, spider):
         return item
 
-    def clean_manga(self, item):
-        return item
-
-    def clean_issue(self, item):
-        return item
-
-    def clean_issuepage(self, item):
+    # -- IssuePage
+    def clean_issuepage(self, item, spider):
         return item
 
 
-class UpdateDB(object):
+class UpdateDBPipeline(object):
     def process_item(self, item, spider):
         return item
 
