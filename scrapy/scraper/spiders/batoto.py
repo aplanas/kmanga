@@ -91,6 +91,7 @@ class Batoto(MangaSpider):
             xp = './td[5]/text()'
             followers = int(item.xpath(xp).extract()[0])
             manga['rank'] = (rating + 0.1) * viewers * followers
+            manga['rank_order'] = 'DESC'
             # URL Hack to avoid a redirection. This is used because
             # the download_delay is also added to the redirector.  The
             # other solution is to assign to request this:
@@ -130,8 +131,6 @@ class Batoto(MangaSpider):
         # Alternate name
         xp = '//td[contains(text(),"%s")]/following-sibling::td/.//text()'
         manga['alt_name'] = response.xpath(xp % 'Alt Names:').extract()
-        # Year of release
-        manga['release'] = None
         # Author
         manga['author'] = response.xpath(xp % 'Author:').extract()
         # Artist

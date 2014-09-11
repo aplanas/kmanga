@@ -69,6 +69,7 @@ class MangaReader(MangaSpider):
             # Rank
             xp = './/div[@class="c1"]/text()'
             manga['rank'] = item.xpath(xp).re(r'(\d+).')
+            manga['rank_order'] = 'ASC'
             # URL
             xp = './/div[@class="manga_name"]//a/@href'
             manga['url'] = urljoin(response.url, item.xpath(xp).extract()[0])
@@ -104,8 +105,6 @@ class MangaReader(MangaSpider):
         # Alternate name
         xp = '//td[contains(text(),"%s")]/following-sibling::td/text()'
         manga['alt_name'] = response.xpath(xp % 'Alternate Name:').extract()
-        # Year of release
-        manga['release'] = response.xpath(xp % 'Year of Release:').extract()
         # Author
         manga['author'] = response.xpath(xp % 'Author:').extract()
         # Artist
