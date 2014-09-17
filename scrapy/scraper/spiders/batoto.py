@@ -156,7 +156,7 @@ class Batoto(MangaSpider):
             xp = './td[1]/a/text()'
             issue['name'] = line.xpath(xp).extract()
             # Number
-            issue['number'] = line.xpath(xp).re(r'Ch.(\d+)')
+            issue['number'] = line.xpath(xp).re(r'Ch.([.\d]+)')
             # language
             xp = './td[2]/div/@title'
             issue['language'] = line.xpath(xp).extract()
