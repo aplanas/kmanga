@@ -43,8 +43,8 @@ class MangaSpider(scrapy.Spider):
         #               `manga` is used to set the name of the manga.
         #               The spider can set the URL, but `url`
         #               parameter can be used.
-        # - lasts: (OPTIONAL) If the value is a date, the spider will
-        #          download a catalog update until this date.
+        # - latest: (OPTIONAL) If the value is a date, the spider
+        #           will download a catalog update until this date.
         # - manga: (OPTIONAL) Name of the manga pointed by `url`.
         # - issue: (OPTIONAL) Issue number of the manga pointed by `url`.
         # - url: (OPTIONAL) Initial URL for the spider.
@@ -61,12 +61,12 @@ class MangaSpider(scrapy.Spider):
             self.start_urls = [self.url] if _url else [self.get_catalog_url()]
         elif 'collection' in kwargs and 'manga' in kwargs:
             self.start_urls = [self.url] if _url \
-                else [self.get_collection_url()]
-        elif 'lasts' in kwargs:
-            day, month, year = [int(x) for x in self.lasts.split('-')]
+                else [self.get_collection_url(self.manga)]
+        elif 'latest' in kwargs:
+            day, month, year = [int(x) for x in self.latest.split('-')]
             self.until = date(year=year, month=month, day=day)
             self.start_urls = [self.url] if _url \
-                else [self.get_lasts_url(self.until)]
+                else [self.get_latest_url(self.until)]
         elif 'manga' in kwargs and 'issue' in kwargs:
             self.start_urls = [self.url] if _url \
                 else [self.get_manga_url(self.manga, self.issue)]
@@ -83,7 +83,7 @@ class MangaSpider(scrapy.Spider):
             msg = ' '.join(('[-a genres=1 -a url=URL]',
                             '[-a catalog=1 -a url=URL]',
                             '[-a collection=1 -a manga=name -a url=URL]',
-                            '[-a lasts=DD-MM-YYYY -a url=URL]',
+                            '[-a latest=DD-MM-YYYY -a url=URL]',
                             '[-a manga=name -a issue=number -a url=URL'
                             ' -a from=email -a to=email]'))
             print 'scrapy crawl %s SPIDER' % msg
@@ -109,8 +109,8 @@ class MangaSpider(scrapy.Spider):
         if all(hasattr(self, attr) for attr in ('collection', 'manga')):
             return self.parse_collection(response, self.manga)
 
-        if hasattr(self, 'lasts'):
-            return self.parse_lasts(response, self.since)
+        if hasattr(self, 'latest'):
+            return self.parse_latest(response, self.until)
 
         if all(hasattr(self, attr) for attr in ('manga', 'issue', 'url')):
             return self.parse_manga(response, self.manga, self.issue)
@@ -121,10 +121,10 @@ class MangaSpider(scrapy.Spider):
     def get_catalog_url(self):
         raise NotImplementedError
 
-    def get_collection_url(self):
+    def get_collection_url(self, manga):
         raise NotImplementedError
 
-    def get_lasts_url(self, until):
+    def get_latest_url(self, until):
         raise NotImplementedError
 
     def get_manga_url(self, manga, issue):
@@ -139,7 +139,7 @@ class MangaSpider(scrapy.Spider):
     def parse_collection(self, response, manga):
         raise NotImplementedError
 
-    def parse_lasts(self, response, until):
+    def parse_latest(self, response, until):
         raise NotImplementedError
 
     def parse_manga(self, response, manga, issue):
