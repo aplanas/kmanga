@@ -1,13 +1,13 @@
 Django==1.7
 Pillow==2.5.3
 Scrapy==0.24.4
-Twisted==14.0.0
+Twisted==14.0.2
 cffi==0.8.6
 characteristic==14.1.0
 cryptography==0.5.4
 cssselect==0.9.1
 django-rq==0.7.0
-lxml==3.3.6
+lxml==3.4.0
 pyOpenSSL==0.14
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
@@ -16,7 +16,7 @@ queuelib==1.2.2
 redis==2.10.3
 rq==0.4.6
 service-identity==14.0.0
-six==1.7.3
+six==1.8.0
 w3lib==1.10.0
 wsgiref==0.1.2
 zope.interface==4.1.1
