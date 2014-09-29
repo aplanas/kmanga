@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
-from urlparse import urljoin
-
 import scrapy
 
 from scraper.items import Genres, Manga, Issue, IssuePage
@@ -36,7 +34,10 @@ class SubManga(MangaSpider):
     def get_catalog_url(self):
         return 'http://submanga.com/series'
 
-    def get_lasts_url(self, sice):
+    def get_collection_url(self, manga):
+        return 'http://submanga.com/%s' % manga
+
+    def get_lastest_url(self, until):
         return 'http://submanga.com'
 
     def get_manga_url(self, manga, issue):
@@ -48,14 +49,11 @@ class SubManga(MangaSpider):
     def parse_catalog(self, response):
         pass
 
-    def _parse_catalog_item(self, response):
+    def parse_collection(self, response, manga):
         pass
 
-    def parse_lasts(self, since):
+    def parse_lastest(self, response, until):
         pass
 
-    def _parse_page(self, response):
-        pass
-
-    def parse_manga(self, response):
+    def parse_manga(self, response, manga, issue):
         pass

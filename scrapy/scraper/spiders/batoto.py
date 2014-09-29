@@ -17,10 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import date
 from urlparse import urljoin
 
 import scrapy
 
+from scraper.pipelines import convert_to_date
 from scraper.items import Genres, Manga, Issue, IssuePage
 
 from .mangaspider import MangaSpider
@@ -29,14 +31,19 @@ from .mangaspider import MangaSpider
 AJAX_SEARCH = 'http://bato.to/search_ajax?p=%d'
 
 
-def _v2i(viewers):
-    """Convert vievers to integer."""
-    if 'k' in viewers:
-        return int(1000 * float(viewers[:-1]))
-    elif 'm' in viewers:
-        return int(1000 * 1000 * float(viewers[:-1]))
-    else:
-        return int(viewers)
+def _int(a, default=0):
+    """Convert viewers or followers to integer."""
+    result = default
+    try:
+        if 'k' in a:
+            result = int(1000 * float(a[:-1]))
+        elif 'm' in a:
+            result = int(1000 * 1000 * float(a[:-1]))
+        else:
+            result = int(a)
+    except ValueError:
+        pass
+    return result
 
 
 class Batoto(MangaSpider):
@@ -51,7 +58,7 @@ class Batoto(MangaSpider):
     def get_catalog_url(self):
         return AJAX_SEARCH % 1
 
-    def get_lasts_url(self, sice):
+    def get_latest_url(self, until):
         return 'http://bato.to/'
 
     def parse_genres(self, response):
@@ -87,9 +94,9 @@ class Batoto(MangaSpider):
             xp = './td[3]/div/@title'
             rating = float(item.xpath(xp).re(r'([.\d]+)/5')[0])
             xp = './td[4]/text()'
-            viewers = _v2i(item.xpath(xp).extract()[0])
+            viewers = _int(item.xpath(xp).extract()[0])
             xp = './td[5]/text()'
-            followers = int(item.xpath(xp).extract()[0])
+            followers = _int(item.xpath(xp).extract()[0])
             manga['rank'] = (rating + 0.1) * viewers * followers
             manga['rank_order'] = 'DESC'
             # URL Hack to avoid a redirection. This is used because
@@ -116,7 +123,7 @@ class Batoto(MangaSpider):
         @url http://bato.to/comic/_/comics/angel-densetsu-r460
         @returns items 1 1
         @returns request 0 0
-        @scrapes url name alt_name release author artist reading_direction
+        @scrapes url name alt_name author artist reading_direction
         @scrapes status genres description issues
         """
 
@@ -149,15 +156,17 @@ class Batoto(MangaSpider):
 
         # Parse the manga issues list
         manga['issues'] = []
-        xp = '//tr[contains(@class,"chapter_row")]'
+        xp = '//tr[contains(@class,"chapter_row")' \
+             ' and not(contains(@class,"chapter_row_expand"))]'
         for line in response.xpath(xp):
             issue = Issue()
             # Name
             xp = './td[1]/a/text()'
             issue['name'] = line.xpath(xp).extract()
             # Number
-            issue['number'] = line.xpath(xp).re(r'Ch.([.\d]+)')
-            # language
+            issue['number'] = line.xpath(xp).re(
+                r'Ch.(?:Story )?([.\d]+)')
+            # Language
             xp = './td[2]/div/@title'
             issue['language'] = line.xpath(xp).extract()
             # Added
@@ -169,8 +178,72 @@ class Batoto(MangaSpider):
             manga['issues'].append(issue)
         yield manga
 
-    def parse_lasts(self, since):
-        pass
+    def parse_latest(self, response, until=None):
+        """Generate the list of new mangas until a date
+
+        @url http://bato.to
+        @returns items 1 20
+        @returns request 0 1
+        @scrapes url name issues
+        """
+
+        if not until:
+            if 'until' in response.meta:
+                until = response.meta['until']
+            else:
+                until = date.today()
+
+        xp = './/tr[contains(@class, "row")]'
+        last_row, manga = None, None
+        for update in response.xpath(xp):
+            row = update.xpath('@class').extract()[0].split()[0]
+            if row != last_row:
+                if manga:
+                    yield manga
+                manga = Manga(issues=[])
+                # Name
+                xp = './/a[3]/text()'
+                manga['name'] = update.xpath(xp).extract()
+                # URL
+                xp = './/a[3]/@href'
+                manga['url'] = update.xpath(xp).extract()
+            else:
+                issue = Issue()
+                # Name
+                xp = './/td/a[img/@style="vertical-align:middle;"]/text()'
+                issue['name'] = update.xpath(xp).extract()
+                # Number
+                issue['number'] = update.xpath(xp).re(
+                    r'Ch.(?:Story )?([.\d]+)')
+                # Language
+                xp = './/td/div/@title'
+                issue['language'] = update.xpath(xp).extract()
+                # Added
+                xp = './/td[last()]/text()'
+                issue['added'] = update.xpath(xp).extract()
+                # URL
+                xp = './/td/a[img/@style="vertical-align:middle;"]/@href'
+                issue['url'] = update.xpath(xp).extract()
+
+                # Check if is a new update
+                update_date = convert_to_date(issue['added'][0].strip())
+                if update_date < until:
+                    return
+
+                manga['issues'].append(issue)
+            last_row = row
+
+        # Return the last manga
+        if manga:
+            yield manga
+
+        # Next page
+        xp = '//a[@title="Older Releases"]/@href'
+        next_url = response.xpath(xp).extract()
+        if next_url:
+            next_url = urljoin(response.url, next_url[0])
+            meta = (('until', until),)
+            yield scrapy.Request(next_url, self.parse_latest, meta=meta)
 
     def parse_manga(self, response, manga, issue):
         xp = '//select[@id="page_select"]/option/@value'
@@ -191,6 +264,6 @@ class Batoto(MangaSpider):
             manga=manga,
             issue=issue,
             number=number,
-            image_urls=[urljoin(response.url, url[0])]
+            image_urls=[url[0]]
         )
         return issue_page

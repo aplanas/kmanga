@@ -79,7 +79,7 @@ class MangaSpider(scrapy.Spider):
             error_msg = True
 
         _help = 'h' in kwargs or 'help' in kwargs
-        if error_msg and _help:
+        if error_msg or _help:
             msg = ' '.join(('[-a genres=1 -a url=URL]',
                             '[-a catalog=1 -a url=URL]',
                             '[-a collection=1 -a manga=name -a url=URL]',
