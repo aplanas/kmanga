@@ -1,10 +1,10 @@
 Django==1.7
-Pillow==2.5.3
+Pillow==2.6.0
 Scrapy==0.24.4
 Twisted==14.0.2
 cffi==0.8.6
 characteristic==14.1.0
-cryptography==0.5.4
+cryptography==0.6
 cssselect==0.9.1
 django-rq==0.7.0
 lxml==3.4.0
@@ -25,5 +25,3 @@ zope.interface==4.1.1
 # django-braces==1.4.0
 # django-model-utils==2.2
 # logutils==0.3.3
-# South==1.0
-
