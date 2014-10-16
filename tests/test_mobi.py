@@ -37,8 +37,8 @@ class Info(object):
 class TestMangaMobi(unittest.TestCase):
 
     def setUp(self):
-        shutil.copytree('test/fixtures/container01', 'test/fixtures/dummy')
-        self.container = Container('test/fixtures/dummy')
+        shutil.copytree('tests/fixtures/container01', 'tests/fixtures/dummy')
+        self.container = Container('tests/fixtures/dummy')
         self.info = Info(title='title', language='en', publisher='publisher',
                          author='author')
         self.mangamobi = MangaMobi(self.container, self.info)
@@ -56,22 +56,22 @@ class TestMangaMobi(unittest.TestCase):
 
     def test_container_get_X_path(self):
         self.assertEqual(self.container.get_content_opf_path(),
-                         'test/fixtures/dummy/content.opf')
+                         'tests/fixtures/dummy/content.opf')
         self.assertEqual(self.container.get_page_path(1),
-                         'test/fixtures/dummy/html/page-001.html')
+                         'tests/fixtures/dummy/html/page-001.html')
         self.assertEqual(self.container.get_toc_ncx_path(),
-                         'test/fixtures/dummy/toc.ncx')
+                         'tests/fixtures/dummy/toc.ncx')
 
     def test_mangamobi_content_opf(self):
         self.mangamobi.content_opf(identifier='id')
-        with open('test/fixtures/dummy/content.opf') as f1:
-            with open('test/fixtures/dummy/content.opf.reference') as f2:
+        with open('tests/fixtures/dummy/content.opf') as f1:
+            with open('tests/fixtures/dummy/content.opf.reference') as f2:
                 self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
 
     def test_mangamobi_toc_ncx(self):
         self.mangamobi.toc_ncx()
-        with open('test/fixtures/dummy/toc.ncx') as f1:
-            with open('test/fixtures/dummy/toc.ncx.reference') as f2:
+        with open('tests/fixtures/dummy/toc.ncx') as f1:
+            with open('tests/fixtures/dummy/toc.ncx.reference') as f2:
                 self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
 
     def test_img_style(self):
@@ -93,7 +93,7 @@ class TestMangaMobi(unittest.TestCase):
                      'height-small.jpg', 'height-large.jpg',
                      'height-small-horizontal.jpg',
                      'height-large-horizontal.jpg'):
-            img_path = 'test/fixtures/images/%s' % name
+            img_path = 'tests/fixtures/images/%s' % name
             img = self.container.adjust_image(img_path, Container.RESIZE)
             self.assertTrue(img.size[0] <= WIDTH and img.size[1] <= HEIGHT)
             self.assertTrue(img.size[0] == WIDTH or img.size[1] == HEIGHT)
@@ -120,19 +120,19 @@ class TestMangaMobi(unittest.TestCase):
 class TestMobiCache(unittest.TestCase):
 
     def setUp(self):
-        self.cache = MobiCache('test/fixtures/cache/cache')
+        self.cache = MobiCache('tests/fixtures/cache/cache')
 
     def tearDown(self):
-        shutil.rmtree('test/fixtures/cache/cache')
+        shutil.rmtree('tests/fixtures/cache/cache')
 
     def test_cache(self):
         self.cache[('spider', 'mobi', '1')] = [
-            ('mobi1.mobi', 'test/fixtures/cache/mobi1.mobi')]
+            ('mobi1.mobi', 'tests/fixtures/cache/mobi1.mobi')]
         self.cache[('spider', 'mobi', '2')] = [
-            ('mobi2.1.mobi', 'test/fixtures/cache/mobi2.1.mobi'),
-            ('mobi2.2.mobi', 'test/fixtures/cache/mobi2.2.mobi')]
+            ('mobi2.1.mobi', 'tests/fixtures/cache/mobi2.1.mobi'),
+            ('mobi2.2.mobi', 'tests/fixtures/cache/mobi2.2.mobi')]
         self.cache[('spider', 'mobi', '3')] = [
-            ('mobi3.mobi', 'test/fixtures/cache/mobi3.mobi')]
+            ('mobi3.mobi', 'tests/fixtures/cache/mobi3.mobi')]
         self.assertTrue(len(self.cache) == 3)
         for key in self.cache:
             self.assertTrue(len(key) == 3)
