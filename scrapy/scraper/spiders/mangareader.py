@@ -141,9 +141,9 @@ class MangaReader(MangaSpider):
             # Number
             xp = './/a/text()'
             issue['number'] = line.xpath(xp).re(r'(\d+)$')
-            # Added
+            # Release
             xp = './td[2]/text()'
-            issue['added'] = line.xpath(xp).extract()
+            issue['release'] = line.xpath(xp).extract()
             # URL
             xp = './/a/@href'
             url = line.xpath(xp).extract()
@@ -195,8 +195,8 @@ class MangaReader(MangaSpider):
                 # Number
                 xp = 'text()'
                 issue['number'] = line.xpath(xp).re(r'(\d+)$')
-                # Added
-                issue['added'] = update_date
+                # Release
+                issue['release'] = update_date
                 # URL
                 xp = '@href'
                 url = line.xpath(xp).extract()

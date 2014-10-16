@@ -45,7 +45,7 @@ class Issue(scrapy.Item):
     name = scrapy.Field()
     number = scrapy.Field()
     language = scrapy.Field()
-    added = scrapy.Field()
+    release = scrapy.Field()
     url = scrapy.Field()
 
 

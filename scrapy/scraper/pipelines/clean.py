@@ -274,7 +274,7 @@ class CleanPipeline(CleanBasePipeline):
             'number': (self._clean_field_num, {'optional': True}),
             'language': (self._clean_field_set,
                          {'values': ('EN', 'ES')}),
-            # 'added'
+            # 'release'
             'url': self._clean_field_str,
         }
         return self.clean_item(item, spider, cleaning_plan)

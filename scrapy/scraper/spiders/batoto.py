@@ -169,9 +169,9 @@ class Batoto(MangaSpider):
             # Language
             xp = './td[2]/div/@title'
             issue['language'] = line.xpath(xp).extract()
-            # Added
+            # Release
             # xp =
-            # issue['added'] = line.xpath(xp).extract()
+            # issue['release'] = line.xpath(xp).extract()
             # URL
             xp = './td[1]/a/@href'
             issue['url'] = line.xpath(xp).extract()
@@ -218,15 +218,15 @@ class Batoto(MangaSpider):
                 # Language
                 xp = './/td/div/@title'
                 issue['language'] = update.xpath(xp).extract()
-                # Added
+                # Release
                 xp = './/td[last()]/text()'
-                issue['added'] = update.xpath(xp).extract()
+                issue['release'] = update.xpath(xp).extract()
                 # URL
                 xp = './/td/a[img/@style="vertical-align:middle;"]/@href'
                 issue['url'] = update.xpath(xp).extract()
 
                 # Check if is a new update
-                update_date = convert_to_date(issue['added'][0].strip())
+                update_date = convert_to_date(issue['release'][0].strip())
                 if update_date < until:
                     return
 
