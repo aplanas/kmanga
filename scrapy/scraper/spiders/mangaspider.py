@@ -101,18 +101,23 @@ class MangaSpider(scrapy.Spider):
 
     def parse(self, response):
         if hasattr(self, 'genres'):
+            self._operation = 'genres'
             return self.parse_genres(response)
 
         if hasattr(self, 'catalog'):
+            self._operation = 'catalog'
             return self.parse_catalog(response)
 
         if all(hasattr(self, attr) for attr in ('collection', 'manga')):
+            self._operation = 'collection'
             return self.parse_collection(response, self.manga)
 
         if hasattr(self, 'latest'):
+            self._operation = 'latest'
             return self.parse_latest(response, self.until)
 
         if all(hasattr(self, attr) for attr in ('manga', 'issue', 'url')):
+            self._operation = 'manga'
             return self.parse_manga(response, self.manga, self.issue)
 
     def get_genres_url(self):
