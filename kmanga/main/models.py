@@ -74,8 +74,8 @@ class Manga(models.Model):
     )
 
     name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=200)
-    release = models.DateField()
+    # slug = models.SlugField(max_length=200)
+    # release = models.DateField()
     author = models.CharField(max_length=200)
     artist = models.CharField(max_length=200)
     reading_direction = models.CharField(max_length=2,
@@ -85,7 +85,7 @@ class Manga(models.Model):
                               choices=STATUS,
                               default=ONGOING)
     genres = models.ManyToManyField(Genre)
-    rank = models.IntegerField()
+    rank = models.IntegerField(null=True, blank=True)
     description = models.TextField()
     cover = models.ImageField()
     url = models.URLField()
