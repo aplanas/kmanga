@@ -1,0 +1,44 @@
+[
+    {
+        "fields": {
+            "name": "Batoto",
+            "spider": "batoto",
+            "url": "http://bato.to/"
+        },
+        "model": "main.source",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "name": "MangaReader",
+            "spider": "mangareader",
+            "url": "http://mangareader.net/"
+        },
+        "model": "main.source",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "language": "EN",
+            "source": 1
+        },
+        "model": "main.sourcelanguage",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "language": "ES",
+            "source": 1
+        },
+        "model": "main.sourcelanguage",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "language": "EN",
+            "source": 2
+        },
+        "model": "main.sourcelanguage",
+        "pk": 3
+    }
+]
