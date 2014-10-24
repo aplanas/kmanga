@@ -18,6 +18,7 @@
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
 import os.path
+import urlparse
 
 from django.core.files import File
 from scrapy import log
@@ -30,6 +31,14 @@ django.setup()
 
 
 class UpdateDBPipeline(object):
+    def __init__(self, images_store, settings):
+        self.images_store = images_store
+        self.settings = settings
+
+    @classmethod
+    def from_settings(cls, settings):
+        return cls(settings['IMAGES_STORE'], settings)
+
     def process_item(self, item, spider):
         # _operation store where the item comes from.
         operation = spider._operation
@@ -41,8 +50,8 @@ class UpdateDBPipeline(object):
                     level=log.DEBUG)
         return item
 
-    def _update_relation(self, obj, field_obj, field_rel_obj, items, update,
-                         m2m=None):
+    def _update_relation(self, obj, field_obj, field_rel_obj, items,
+                         update, m2m=None):
         """Helper method to update list relation between two models.
 
            obj           -- row of the database (instance of a Model)
@@ -78,8 +87,9 @@ class UpdateDBPipeline(object):
         new_values = set_values_items - set_values_rel_obj
         for i in new_values:
             if not m2m:
-                new_obj = rel_obj.create()
+                new_obj = rel_obj.model()
                 update(new_obj, values_items[i])
+                rel_obj.add(new_obj)
                 new_obj.save()
             else:
                 rel_obj.add(values_m2m[i])
@@ -171,8 +181,10 @@ class UpdateDBPipeline(object):
         # cover
         manga.cover.delete()
         if item['images']:
-            name = os.path.basename(item['images'][0])
-            manga.cover.save(name, File(item['images'][0]))
+            path = urlparse.urlparse(item['image_urls'][0]).path
+            name = os.path.basename(path)
+            image_path = os.path.join(self.images_store, item['images'][0])
+            manga.cover.save(name, File(open(image_path, 'rb')))
 
         # issues
         self._update_relation(manga, 'issue_set', 'url', item['issues'],
@@ -192,4 +204,6 @@ class UpdateDBPipeline(object):
         """Helper update function."""
         obj.name = item['name']
         obj.number = item['number']
-        obj.url = item['number']
+        obj.language = item['language']
+        obj.release = item['release']
+        obj.url = item['url']
