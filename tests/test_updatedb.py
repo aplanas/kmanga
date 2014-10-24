@@ -44,7 +44,9 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.dr = DiscoverRunner()
         self.old_config = self.dr.setup_databases()
 
-        self.updatedb = UpdateDBPipeline()
+        self.updatedb = UpdateDBPipeline(
+            images_store='tests/fixtures/images',
+            settings=None)
         source = Source.objects.create(
             name='source',
             spider='spider',
@@ -114,8 +116,8 @@ class TestUpdateDBPipeline(unittest.TestCase):
             rank=1,
             rank_order='ASC',
             description='Description',
-            image_urls=['tests/fixtures/images/height-large-horizontal.jpg'],
-            images=['image1'],
+            image_urls=['http://manga1.org/images/height-large.jpg'],
+            images=['height-large.jpg'],
             issues=[
                 scraper.items.Issue(
                     name='issue1',
@@ -125,7 +127,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
                     url='http://manga1.org/issue1'),
                 scraper.items.Issue(
                     name='issue2',
-                    number=1,
+                    number=2,
                     language='EN',
                     release=datetime.date(year=2014, month=1, day=2),
                     url='http://manga1.org/issue2'),
@@ -135,12 +137,17 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.assertEqual(len(Manga.objects.all()), 1)
         m = Manga.objects.all()[0]
         self.assertEqual(m.name, 'Manga1')
-        self.assertEqual(m.alt_name_set.all(), set(('Manga1', 'MangaA')))
+        self.assertEqual({o.name for o in m.altname_set.all()},
+                         set(('Manga1', 'MangaA')))
         self.assertEqual(m.author, 'Author')
         self.assertEqual(m.artist, 'Artist')
         self.assertEqual(m.reading_direction, 'LR')
         self.assertEqual(m.status, 'ONGOING')
-        self.assertEqual(m.genres_set.all(), set(('g1', 'g2')))
-        self.assertEqual(m.rank, 1)
+        self.assertEqual({o.name for o in m.genres.all()},
+                         set(('g1', 'g2')))
+        self.assertEqual(m.rank, None)
         self.assertEqual(m.rank_order, 'ASC')
         self.assertEqual(m.description, 'Description')
+
+        # Remove the image
+        m.cover.delete()
