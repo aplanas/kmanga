@@ -251,7 +251,7 @@ class CleanPipeline(CleanBasePipeline):
             'status': (self._clean_field_set,
                        {'values': ('ONGOING', 'COMPLETED')}),
             'genres': (self._clean_field_list, {'optional': True}),
-            'rank': self._clean_field_int,
+            'rank': (self._clean_field_int, {'optional': True}),
             'rank_order': (self._clean_field_set,
                            {'values': ('ASC', 'DESC')}),
             'description': (self._clean_field_str,
