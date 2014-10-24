@@ -73,6 +73,13 @@ class Manga(models.Model):
         (COMPLETED, 'Completed'),
     )
 
+    ASC = 'ASC'
+    DESC = 'DESC'
+    RANK_ORDER = (
+        (ASC, 'Ascending'),
+        (DESC, 'Descending'),
+    )
+
     name = models.CharField(max_length=200)
     # slug = models.SlugField(max_length=200)
     # release = models.DateField()
@@ -86,6 +93,9 @@ class Manga(models.Model):
                               default=ONGOING)
     genres = models.ManyToManyField(Genre)
     rank = models.IntegerField(null=True, blank=True)
+    rank_order = models.CharField(max_length=4,
+                                  choices=RANK_ORDER,
+                                  default=ASC)
     description = models.TextField()
     cover = models.ImageField()
     url = models.URLField()
@@ -108,6 +118,8 @@ class AltName(models.Model):
 class Issue(models.Model):
     name = models.CharField(max_length=200)
     number = models.DecimalField(max_digits=5, decimal_places=1)
+    language = models.CharField(max_length=2,
+                                choices=SourceLanguage.LANGUAGE_CHOICES)
     release = models.DateField()
     url = models.URLField()
     manga = models.ForeignKey(Manga)
