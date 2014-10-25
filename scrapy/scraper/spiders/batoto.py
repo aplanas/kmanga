@@ -182,7 +182,7 @@ class Batoto(MangaSpider):
         """Generate the list of new mangas until a date
 
         @url http://bato.to
-        @returns items 1 20
+        @returns items 1 100
         @returns request 0 1
         @scrapes url name issues
         """
