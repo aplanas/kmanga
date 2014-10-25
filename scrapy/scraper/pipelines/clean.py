@@ -34,7 +34,11 @@ def convert_to_date(str_):
     elif str_.endswith('now'):
         return date.today()
     elif str_.endswith(('minutes ago', 'minute ago')):
-        minutes = int(re.search(r'(\d+) minutes? ago', str_).group(1))
+        minutes = 1
+        try:
+            minutes = int(re.search(r'(\d+) minutes? ago', str_).group(1))
+        except AttributeError:
+            pass
         return date.today() - timedelta(minutes=minutes)
     elif str_.endswith(('hours ago', 'hour ago')):
         hours = 1
