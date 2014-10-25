@@ -149,5 +149,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.assertEqual(m.rank_order, 'ASC')
         self.assertEqual(m.description, 'Description')
 
+        self.assertEqual(len(m.issue_set.all()), 2)
+
         # Remove the image
         m.cover.delete()
