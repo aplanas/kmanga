@@ -1,6 +1,7 @@
 [
     {
         "fields": {
+            "last_modified": "2014-10-25T17:36:24.994Z",
             "name": "Batoto",
             "spider": "batoto",
             "url": "http://bato.to/"
@@ -10,6 +11,7 @@
     },
     {
         "fields": {
+            "last_modified": "2014-10-25T17:36:58.965Z",
             "name": "MangaReader",
             "spider": "mangareader",
             "url": "http://mangareader.net/"
@@ -20,6 +22,7 @@
     {
         "fields": {
             "language": "EN",
+            "last_modified": "2014-10-25T17:36:24.996Z",
             "source": 1
         },
         "model": "main.sourcelanguage",
@@ -28,6 +31,7 @@
     {
         "fields": {
             "language": "ES",
+            "last_modified": "2014-10-25T17:36:24.996Z",
             "source": 1
         },
         "model": "main.sourcelanguage",
@@ -36,6 +40,7 @@
     {
         "fields": {
             "language": "EN",
+            "last_modified": "2014-10-25T17:36:58.967Z",
             "source": 2
         },
         "model": "main.sourcelanguage",

@@ -10,6 +10,7 @@ class Source(models.Model):
     name = models.CharField(max_length=200)
     spider = models.CharField(max_length=80)
     url = models.URLField()
+    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.url)
@@ -34,6 +35,7 @@ class SourceLanguage(models.Model):
 
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES)
     source = models.ForeignKey(Source)
+    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
         return self.language
@@ -42,6 +44,7 @@ class SourceLanguage(models.Model):
 @python_2_unicode_compatible
 class ConsolidateGenre(models.Model):
     name = models.CharField(max_length=200)
+    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -52,6 +55,7 @@ class Genre(models.Model):
     name = models.CharField(max_length=200)
     source = models.ForeignKey(Source)
     # consolidategenre = models.ForeignKey(ConsolidateGenre)
+    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -100,6 +104,7 @@ class Manga(models.Model):
     cover = models.ImageField()
     url = models.URLField()
     source = models.ForeignKey(Source)
+    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -109,6 +114,7 @@ class Manga(models.Model):
 class AltName(models.Model):
     name = models.CharField(max_length=200)
     manga = models.ForeignKey(Manga)
+    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -123,6 +129,7 @@ class Issue(models.Model):
     release = models.DateField()
     url = models.URLField()
     manga = models.ForeignKey(Manga)
+    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
         return '%s %s: %s' % (self.manga.name, self.number, self.name)
@@ -135,6 +142,7 @@ class History(models.Model):
     to_issue = models.IntegerField()
     to_email = models.EmailField()
     send_date = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
         return '%s [%03d-%03d]' % (self.name, self.from_issue, self.to_issue)
@@ -161,6 +169,7 @@ class HistoryLine(models.Model):
     status = models.CharField(max_length=2, choices=STATUS_CHOICES,
                               default=PENDING)
     updated = models.DateTimeField(auto_now=True)
+    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
         return '%s [%s]' % (self.status, self.updated)
