@@ -144,28 +144,37 @@ class UpdateDBPipeline(object):
         # manga item from a catalog update can have more information
         # that the one created from a collection update.  For now only
         # 'rank' is include in the catalog and not in the collection.
-        # spider_name = spider.name.lower()
-        # source = Source.objects.get(spider=spider_name)
+        spider_name = spider.name.lower()
+        source = Source.objects.get(spider=spider_name)
 
-        # manga, _ = Manga.objects.get_or_create(url=item['url'],
-        #                                        source=source)
-        # self.update_collention(item, spider, manga=manga)
+        try:
+            manga = Manga.objects.get(url=item['url'], source=source)
+        except Manga.DoesNotExist:
+            manga = Manga(url=item['url'], source=source)
+
+        manga.rank = item['rank']
+        manga.rank_order = item['rank_order']
         # XXX TODO -- We need to delete old collections
+        self.update_collention(item, spider, manga=manga)
 
     def update_collection(self, item, spider, manga=None):
         """Update a collection of issues (a manga)."""
         if not manga:
             spider_name = spider.name.lower()
             source = Source.objects.get(spider=spider_name)
-            manga, _ = Manga.objects.get_or_create(
-                url=item['url'],
-                source=source)
+            try:
+                manga = Manga.objects.get(url=item['url'], source=source)
+            except Manga.DoesNotExist:
+                manga = Manga(url=item['url'], source=source)
 
-        ignore_fields = ('rank',)
+        ignore_fields = ('rank', 'rank_order')
         exceptions = ('alt_name', 'genres', 'image_urls', 'images', 'issues')
         for key, value in item.items():
             if key not in exceptions and key not in ignore_fields:
                 setattr(manga, key, value)
+
+        # Save the object to have a PK (creation of relations)
+        manga.save()
 
         # alt_name
         alt_names = [{'name': i} for i in item['alt_name']]
