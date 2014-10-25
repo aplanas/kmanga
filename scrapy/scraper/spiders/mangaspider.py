@@ -76,7 +76,10 @@ class MangaSpider(scrapy.Spider):
             except:
                 error_msg = True
         else:
-            error_msg = True
+            # To allow the check of the spider using scrapy, we need
+            # to commend this line.
+            # error_msg = True
+            error_msg = False
 
         _help = 'h' in kwargs or 'help' in kwargs
         if error_msg or _help:
