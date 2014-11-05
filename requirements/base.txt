@@ -3,7 +3,7 @@ Pillow==2.6.1
 Scrapy==0.24.4
 Twisted==14.0.2
 cffi==0.8.6
-characteristic==14.1.0
+characteristic==14.2.0
 cryptography==0.6.1
 cssselect==0.9.1
 django-rq==0.7.0
