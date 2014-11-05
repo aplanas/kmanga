@@ -117,7 +117,11 @@ class TestUpdateDBPipeline(unittest.TestCase):
             rank_order='ASC',
             description='Description',
             image_urls=['http://manga1.org/images/height-large.jpg'],
-            images=['height-large.jpg'],
+            images=[{
+                'url': 'http://manga1.org/images/height-large.jpg',
+                'path': 'height-large.jpg',
+                'checksum': None
+            }],
             issues=[
                 scraper.items.Issue(
                     name='issue1',
@@ -137,12 +141,14 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.assertEqual(len(Manga.objects.all()), 1)
         m = Manga.objects.all()[0]
         self.assertEqual(m.name, 'Manga1')
+        self.assertEqual(len(m.altname_set.all()), 2)
         self.assertEqual({o.name for o in m.altname_set.all()},
                          set(('Manga1', 'MangaA')))
         self.assertEqual(m.author, 'Author')
         self.assertEqual(m.artist, 'Artist')
         self.assertEqual(m.reading_direction, 'LR')
         self.assertEqual(m.status, 'ONGOING')
+        self.assertEqual(len(m.genres.all()), 2)
         self.assertEqual({o.name for o in m.genres.all()},
                          set(('g1', 'g2')))
         self.assertEqual(m.rank, None)
@@ -150,6 +156,157 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.assertEqual(m.description, 'Description')
 
         self.assertEqual(len(m.issue_set.all()), 2)
+
+        i = m.issue_set.get(name='issue1')
+        self.assertEqual(i.name, 'issue1')
+        self.assertEqual(i.number, 1)
+        self.assertEqual(i.language, 'EN')
+        self.assertEqual(i.release, datetime.date(year=2014, month=1, day=1))
+        self.assertEqual(i.url, 'http://manga1.org/issue1')
+
+        i = m.issue_set.get(name='issue2')
+        self.assertEqual(i.name, 'issue2')
+        self.assertEqual(i.number, 2)
+        self.assertEqual(i.language, 'EN')
+        self.assertEqual(i.release, datetime.date(year=2014, month=1, day=2))
+        self.assertEqual(i.url, 'http://manga1.org/issue2')
+
+        # Remove the image
+        m.cover.delete()
+
+    def test_update2_collection(self):
+        names = ['g1', 'g2', 'g3']
+        genres = scraper.items.Genres(
+            names=names
+        )
+        self.updatedb.update_genres(genres, self.spider)
+
+        manga = scraper.items.Manga(
+            name='Manga1',
+            alt_name=['Manga1', 'MangaA'],
+            author='Author',
+            artist='Artist',
+            reading_direction='LR',
+            status='ONGOING',
+            genres=['g1', 'g2'],
+            rank=1,
+            rank_order='ASC',
+            description='Description',
+            image_urls=['http://manga1.org/images/height-large.jpg'],
+            images=[{
+                'url': 'http://manga1.org/images/height-large.jpg',
+                'path': 'height-large.jpg',
+                'checksum': None
+            }],
+            issues=[
+                scraper.items.Issue(
+                    name='issue1',
+                    number=1,
+                    language='EN',
+                    release=datetime.date(year=2014, month=1, day=1),
+                    url='http://manga1.org/issue1'),
+                scraper.items.Issue(
+                    name='issue2',
+                    number=2,
+                    language='EN',
+                    release=datetime.date(year=2014, month=1, day=2),
+                    url='http://manga1.org/issue2'),
+            ],
+            url='http://manga1.org')
+        self.updatedb.update_collection(manga, self.spider)
+
+        # Add a new alt_name
+        manga['alt_name'].append('MangaB')
+        self.updatedb.update_collection(manga, self.spider)
+        m = Manga.objects.all()[0]
+        self.assertEqual(len(m.altname_set.all()), 3)
+        self.assertEqual({o.name for o in m.altname_set.all()},
+                         set(('Manga1', 'MangaA', 'MangaB')))
+
+        # Remove an alt_name
+        del manga['alt_name'][0]
+        self.updatedb.update_collection(manga, self.spider)
+        m = Manga.objects.all()[0]
+        self.assertEqual(len(m.altname_set.all()), 2)
+        self.assertEqual({o.name for o in m.altname_set.all()},
+                         set(('MangaA', 'MangaB')))
+
+        # Change author
+        manga['author'] = 'Another Author'
+        self.updatedb.update_collection(manga, self.spider)
+
+        # Change status
+        manga['status'] = 'COMPLETED'
+        self.updatedb.update_collection(manga, self.spider)
+
+        # Add a new genre
+        manga['genres'].append('g3')
+        self.updatedb.update_collection(manga, self.spider)
+        m = Manga.objects.all()[0]
+        self.assertEqual(len(m.genres.all()), 3)
+        self.assertEqual({o.name for o in m.genres.all()},
+                         set(('g1', 'g2', 'g3')))
+
+        # Remove a genre
+        del manga['genres'][1]
+        self.updatedb.update_collection(manga, self.spider)
+        m = Manga.objects.all()[0]
+        self.assertEqual(len(m.genres.all()), 2)
+        self.assertEqual({o.name for o in m.genres.all()},
+                         set(('g1', 'g3')))
+
+        # Add a new issue
+        manga['issues'].append(
+            scraper.items.Issue(
+                name='issue3',
+                number=3,
+                language='EN',
+                release=datetime.date(year=2014, month=1, day=3),
+                url='http://manga1.org/issue3')
+        )
+        self.updatedb.update_collection(manga, self.spider)
+        m = Manga.objects.all()[0]
+        self.assertEqual(len(m.issue_set.all()), 3)
+
+        # Remove an issue
+        del manga['issues'][0]
+        self.updatedb.update_collection(manga, self.spider)
+        m = Manga.objects.all()[0]
+        self.assertEqual(len(m.issue_set.all()), 2)
+
+        # Check the final result
+        self.assertEqual(len(Manga.objects.all()), 1)
+        m = Manga.objects.all()[0]
+        self.assertEqual(m.name, 'Manga1')
+        self.assertEqual(len(m.altname_set.all()), 2)
+        self.assertEqual({o.name for o in m.altname_set.all()},
+                         set(('MangaA', 'MangaB')))
+        self.assertEqual(m.author, 'Another Author')
+        self.assertEqual(m.artist, 'Artist')
+        self.assertEqual(m.reading_direction, 'LR')
+        self.assertEqual(m.status, 'COMPLETED')
+        self.assertEqual(len(m.genres.all()), 2)
+        self.assertEqual({o.name for o in m.genres.all()},
+                         set(('g1', 'g3')))
+        self.assertEqual(m.rank, None)
+        self.assertEqual(m.rank_order, 'ASC')
+        self.assertEqual(m.description, 'Description')
+
+        self.assertEqual(len(m.issue_set.all()), 2)
+
+        i = m.issue_set.get(name='issue2')
+        self.assertEqual(i.name, 'issue2')
+        self.assertEqual(i.number, 2)
+        self.assertEqual(i.language, 'EN')
+        self.assertEqual(i.release, datetime.date(year=2014, month=1, day=2))
+        self.assertEqual(i.url, 'http://manga1.org/issue2')
+
+        i = m.issue_set.get(name='issue3')
+        self.assertEqual(i.name, 'issue3')
+        self.assertEqual(i.number, 3)
+        self.assertEqual(i.language, 'EN')
+        self.assertEqual(i.release, datetime.date(year=2014, month=1, day=3))
+        self.assertEqual(i.url, 'http://manga1.org/issue3')
 
         # Remove the image
         m.cover.delete()

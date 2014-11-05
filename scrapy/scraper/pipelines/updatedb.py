@@ -21,6 +21,7 @@ import os.path
 import urlparse
 
 from django.core.files import File
+from django.db import transaction
 from scrapy import log
 
 from main.models import Source, Manga
@@ -62,7 +63,7 @@ class UpdateDBPipeline(object):
                             key in the other side.
            items         -- list of items with new values.
            update        -- callback to update a new object from an
-                            item.
+                            item. If return True, was changed.
            m2m           -- list of valid objects for m2m relations.
 
         """
@@ -90,16 +91,17 @@ class UpdateDBPipeline(object):
                 new_obj = rel_obj.model()
                 update(new_obj, values_items[i])
                 rel_obj.add(new_obj)
-                new_obj.save()
             else:
                 rel_obj.add(values_m2m[i])
 
         # Updated values
+        # XXX TODO - update m2m relation
         update_values = set_values_items & set_values_rel_obj
         for i in update_values:
             if not m2m:
-                update(values_rel_obj[i], values_items[i])
-                values_rel_obj[i].save()
+                updated = update(values_rel_obj[i], values_items[i])
+                if updated:
+                    values_rel_obj[i].save()
 
         # Outdated values
         del_values = set_values_rel_obj - set_values_items
@@ -114,6 +116,15 @@ class UpdateDBPipeline(object):
 
         return (new_values, update_values, del_values)
 
+    def _sic(self, obj, item, field):
+        """SetIfChange utility method."""
+        updated = False
+        if getattr(obj, field) != item[field]:
+            setattr(obj, field, item[field])
+            updated = True
+        return updated
+
+    @transaction.atomic
     def update_genres(self, item, spider):
         """Update the list of genres."""
         spider_name = spider.name.lower()
@@ -137,6 +148,7 @@ class UpdateDBPipeline(object):
             log.msg('Removed outdated genre in %s: %s' % (spider_name, i),
                     level=log.DEBUG)
 
+    @transaction.atomic
     def update_catalog(self, item, spider):
         """Update the catalog (list of mangas and issues)."""
 
@@ -144,6 +156,13 @@ class UpdateDBPipeline(object):
         # manga item from a catalog update can have more information
         # that the one created from a collection update.  For now only
         # 'rank' is include in the catalog and not in the collection.
+
+        # The removal (delete) of collection are done outside.  Here
+        # we only receive one item at a time, so we can't see the
+        # items that are not anymore in the database.  The field
+        # last_modified can be used here (only for collection, that is
+        # always updated)
+
         spider_name = spider.name.lower()
         source = Source.objects.get(spider=spider_name)
 
@@ -154,9 +173,9 @@ class UpdateDBPipeline(object):
 
         manga.rank = item['rank']
         manga.rank_order = item['rank_order']
-        # XXX TODO -- We need to delete old collections
         self.update_collention(item, spider, manga=manga)
 
+    @transaction.atomic
     def update_collection(self, item, spider, manga=None):
         """Update a collection of issues (a manga)."""
         if not manga:
@@ -192,27 +211,35 @@ class UpdateDBPipeline(object):
         if item['images']:
             path = urlparse.urlparse(item['image_urls'][0]).path
             name = os.path.basename(path)
-            image_path = os.path.join(self.images_store, item['images'][0])
+            image_path = os.path.join(self.images_store,
+                                      item['images'][0]['path'])
             manga.cover.save(name, File(open(image_path, 'rb')))
 
         # issues
         self._update_relation(manga, 'issue_set', 'url', item['issues'],
                               self._update_issue)
 
+    @transaction.atomic
     def update_latest(self, item, spider):
+        """Update the latest issues in a collection."""
         pass
 
+    @transaction.atomic
     def update_manga(self, item, spider):
         pass
 
     def _update_name(self, obj, item):
         """Helper update function."""
-        obj.name = item['name']
+        changed = [self._sic(obj, item, field) for field in ('name',)]
+        return any(changed)
 
     def _update_issue(self, obj, item):
         """Helper update function."""
-        obj.name = item['name']
-        obj.number = item['number']
-        obj.language = item['language']
-        obj.release = item['release']
-        obj.url = item['url']
+        changed = [self._sic(obj, item, field) for field in (
+            'name',
+            'number',
+            'language',
+            'release',
+            'url'
+        )]
+        return any(changed)
