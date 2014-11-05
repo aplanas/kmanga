@@ -61,10 +61,10 @@ def convert_to_date(str_):
         except AttributeError:
             pass
         return date.today() - timedelta(weeks=weeks)
+    elif re.match(r'\d{2} \w+ \d{4} - \d{2}:\d{2} \w{2}', str_):
+        return datetime.strptime(str_, '%d %B %Y - %I:%M %p').date()
     elif re.match(r'\d{2} \w{3} \d{4}', str_):
         return datetime.strptime(str_, '%d %b %Y').date()
-    elif re.match(r'\d{2} \w+ \d{4} - \d{2}:\d{2} \w{2}', str_):
-        return date.strptime(str_, '%d %B %Y - %I:%M %p').date()
     else:
         raise ValueError('Format not recognized')
 
@@ -180,11 +180,16 @@ class CleanBasePipeline(object):
             raise ValueError('field is not a valid value')
         return value
 
-    # def _clean_field_date(self, field, optional=False):
-    #     # TODO XXX - Convert typical date formats
-    #     if not field and not optional:
-    #         raise ValueError('field is not optional'
-    #                          " or can't be converted to a date")
+    def _clean_field_date(self, field, optional=False):
+        """Transform the field into a date."""
+        if isinstance(field, date):
+            return field
+        value = self._as_str(field)
+        value = convert_to_date(value)
+        if not field and not optional:
+            raise ValueError('field is not optional'
+                             " or can't be converted to a date")
+        return value
 
     def clean_item(self, item, spider, cleaning_plan):
         """Clean all the fields in a item.
@@ -278,7 +283,7 @@ class CleanPipeline(CleanBasePipeline):
             'number': (self._clean_field_num, {'optional': True}),
             'language': (self._clean_field_set,
                          {'values': ('EN', 'ES')}),
-            # 'release'
+            'release': self._clean_field_date,
             'url': self._clean_field_str,
         }
         return self.clean_item(item, spider, cleaning_plan)
