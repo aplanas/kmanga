@@ -4,6 +4,7 @@ from optparse import make_option
 import os
 
 from django.conf import settings
+from django.db import connection
 from django.core.management.base import BaseCommand, CommandError
 
 from scrapy import log, signals
@@ -44,20 +45,26 @@ class Command(BaseCommand):
             help='List available spiders.'),
         make_option(
             '--update', action='store', dest='update', default=None,
-            help='Update an element (<genres|catalog|collection>).'),
+            help='Update an element (<genres|catalog|collection|latest>).'),
+        make_option(
+            '--send', action='store', dest='send', default=None,
+            help='Send issues to the user (list of ints).'),
         make_option(
             '--manga', action='store', dest='manga', default=None,
-            help='Name of the manga to .'),
+            help='Name of the manga.'),
         make_option(
             '--url', action='store', dest='url', default=None,
             help='Set the start url for the operation,'
             ' can be a list separated with comma.'),
         make_option(
-            '--loglevel', action='store', dest='loglevel', default=None,
+            '--to', action='store', dest='to', default=None,
+            help='Email address to send the issue.'),
+        make_option(
+            '--loglevel', action='store', dest='loglevel', default='INFO',
             help='Log level for scrapy.'),
         )
     help = 'Launch scrapy spiders from command line.'
-    args = '[<spider_name>] OPTIONS'
+    args = '[<spider_name>]'
 
     def _create_crawler(self):
         if 'SCRAPY_SETTINGS_MODULE' not in os.environ:
@@ -86,7 +93,8 @@ class Command(BaseCommand):
             for name in all_spiders:
                 self.stdout.write(' * %s' % name)
         elif options['update']:
-            if options['update'] not in ('genres', 'catalog', 'collection'):
+            _options = ('genres', 'catalog', 'collection', 'latest')
+            if options['update'] not in _options:
                 raise CommandError('Not valid value for update')
 
             reactor_control = ReactorControl()
@@ -97,11 +105,19 @@ class Command(BaseCommand):
                                         signal=signals.spider_closed)
                 kwargs = {
                     options['update']: True,
+                    'manga': options['manga'],
                 }
+                if options['url']:
+                    kwargs['url'] = options['url']
                 spider = crawler.spiders.create(name, **kwargs)
                 reactor_control.add_crawler()
                 crawler.crawl(spider)
                 crawler.start()
 
-            log.start()
+            log.start(loglevel=options['loglevel'])
             reactor.run()
+
+            # Print the SQL statistics in DEBUG mode
+            queries = ['[%s]: %s' % (q['time'], q['sql'])
+                       for q in connection.queries]
+            log.msg('\n'.join(queries), level=log.DEBUG)
