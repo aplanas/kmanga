@@ -70,7 +70,7 @@ class Batoto(MangaSpider):
         @scrapes names
         """
 
-        xp = '//div[@class="genre_buttons"]/text()'
+        xp = '//div[@class="genre_buttons"]//text()'
         genres = Genres()
         genres['names'] = response.xpath(xp).extract()
         return genres
@@ -170,8 +170,8 @@ class Batoto(MangaSpider):
             xp = './td[2]/div/@title'
             issue['language'] = line.xpath(xp).extract()
             # Release
-            # xp =
-            # issue['release'] = line.xpath(xp).extract()
+            xp = './td[5]/text()'
+            issue['release'] = line.xpath(xp).extract()
             # URL
             xp = './td[1]/a/@href'
             issue['url'] = line.xpath(xp).extract()
