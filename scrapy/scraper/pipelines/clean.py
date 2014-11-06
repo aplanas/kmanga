@@ -25,7 +25,7 @@ from scrapy.exceptions import DropItem
 from scrapy.utils.markup import remove_tags, replace_entities
 
 
-def convert_to_date(str_):
+def convert_to_date(str_, dmy=False):
     """Parse humanized dates."""
     if str_ == 'Today':
         return date.today()
@@ -65,6 +65,11 @@ def convert_to_date(str_):
         return datetime.strptime(str_, '%d %B %Y - %I:%M %p').date()
     elif re.match(r'\d{2} \w{3} \d{4}', str_):
         return datetime.strptime(str_, '%d %b %Y').date()
+    elif re.match(r'\d{2}/\d{2}/\d{4}', str_):
+        if dmy:
+            return datetime.strptime(str_, '%d/%m/%Y').date()
+        else:
+            return datetime.strptime(str_, '%m/%d/%Y').date()
     else:
         raise ValueError('Format not recognized')
 
