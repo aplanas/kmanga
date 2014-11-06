@@ -173,14 +173,14 @@ class UpdateDBPipeline(object):
 
         manga.rank = item['rank']
         manga.rank_order = item['rank_order']
-        self.update_collention(item, spider, manga=manga)
+        self.update_collection(item, spider, manga=manga)
 
     @transaction.atomic
     def update_collection(self, item, spider, manga=None):
         """Update a collection of issues (a manga)."""
+        spider_name = spider.name.lower()
+        source = Source.objects.get(spider=spider_name)
         if not manga:
-            spider_name = spider.name.lower()
-            source = Source.objects.get(spider=spider_name)
             try:
                 manga = Manga.objects.get(url=item['url'], source=source)
             except Manga.DoesNotExist:
