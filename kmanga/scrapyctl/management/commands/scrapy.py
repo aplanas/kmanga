@@ -7,19 +7,13 @@ from django.conf import settings
 from django.db import connection
 from django.core.management.base import BaseCommand, CommandError
 
+import utils
 from main.models import Source
 from scrapy import log, signals
 from scrapy.crawler import Crawler
 from scrapy.utils.project import get_project_settings
 
 from twisted.internet import reactor
-
-
-# XXX TODO -- The command line needs to be valid for these operations:
-#  - [X] List available spiders
-#  - [X] Search manga names and information
-#  - [X] Update genres, catalog or collection
-#  - [] Send one manga or a list of mangas to an email
 
 
 # Part of this code is based on:
@@ -85,8 +79,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Get the list of spiders names that we are going to work with
-        _crawler = self._create_crawler()
-        all_spiders = self.spider_list(_crawler)
+        all_spiders = utils.spider_list()
         spiders = args if args else all_spiders
         for name in spiders:
             if name not in all_spiders:
@@ -139,3 +132,5 @@ class Command(BaseCommand):
                     for issue in manga.issue_set.order_by('number'):
                         print '  %s' % issue
                     print
+        elif options['send']:
+            pass
