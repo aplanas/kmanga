@@ -24,7 +24,7 @@ from django.core.files import File
 from django.db import transaction
 from scrapy import log
 
-from main.models import Source, Manga
+from main.models import Source, Manga, Issue
 
 # https://docs.djangoproject.com/en/dev/releases/1.7/#standalone-scripts
 import django
@@ -222,7 +222,19 @@ class UpdateDBPipeline(object):
     @transaction.atomic
     def update_latest(self, item, spider):
         """Update the latest issues in a collection."""
-        pass
+        spider_name = spider.name.lower()
+        source = Source.objects.get(spider=spider_name)
+        try:
+            manga = Manga.objects.get(url=item['url'], source=source)
+        except Manga.DoesNotExist:
+            # The manga is not a current one.  We simply ignore it
+            # because will be created in the next full sync.
+            return
+
+        for item_issue in item['issues']:
+            issue = Issue()
+            self._update_issue(issue, item_issue)
+            manga.issue_set.add(issue)
 
     @transaction.atomic
     def update_manga(self, item, spider):
