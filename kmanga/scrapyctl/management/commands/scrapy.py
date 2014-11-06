@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import connection
 from django.core.management.base import BaseCommand, CommandError
 
+from main.models import Source
 from scrapy import log, signals
 from scrapy.crawler import Crawler
 from scrapy.utils.project import get_project_settings
@@ -16,7 +17,7 @@ from twisted.internet import reactor
 
 # XXX TODO -- The command line needs to be valid for these operations:
 #  - [X] List available spiders
-#  - [] Search manga names and information
+#  - [X] Search manga names and information
 #  - [X] Update genres, catalog or collection
 #  - [] Send one manga or a list of mangas to an email
 
@@ -47,8 +48,11 @@ class Command(BaseCommand):
             '--update', action='store', dest='update', default=None,
             help='Update an element (<genres|catalog|collection|latest>).'),
         make_option(
+            '--search', action='store', dest='search', default=None,
+            help='Search locally mangas.'),
+        make_option(
             '--send', action='store', dest='send', default=None,
-            help='Send issues to the user (list of ints).'),
+            help='Send issues to the user (list of numbers).'),
         make_option(
             '--manga', action='store', dest='manga', default=None,
             help='Name of the manga.'),
@@ -121,3 +125,17 @@ class Command(BaseCommand):
             queries = ['[%s]: %s' % (q['time'], q['sql'])
                        for q in connection.queries]
             log.msg('\n'.join(queries), level=log.DEBUG)
+
+        elif options['search']:
+            for name in spiders:
+                header = 'Results from %s:' % name
+                print header
+                print '=' * len(header)
+                print
+                source = Source.objects.get(spider=name)
+                q = options['search']
+                for manga in source.manga_set.filter(name__icontains=q):
+                    print '- %s' % manga
+                    for issue in manga.issue_set.order_by('number'):
+                        print '  %s' % issue
+                    print
