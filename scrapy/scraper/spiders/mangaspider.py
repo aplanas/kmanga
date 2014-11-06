@@ -54,12 +54,14 @@ class MangaSpider(scrapy.Spider):
 
         error_msg = False
 
-        _url = 'url' in kwargs
+        _manga = 'manga' in kwargs and kwargs['manga']
+        _issue = 'issue' in kwargs and kwargs['issue']
+        _url = 'url' in kwargs and kwargs['url']
         if 'genres' in kwargs:
             self.start_urls = [self.url] if _url else [self.get_genres_url()]
         elif 'catalog' in kwargs:
             self.start_urls = [self.url] if _url else [self.get_catalog_url()]
-        elif 'collection' in kwargs and 'manga' in kwargs:
+        elif 'collection' in kwargs and _manga:
             self.start_urls = [self.url] if _url \
                 else [self.get_collection_url(self.manga)]
         elif 'latest' in kwargs:
@@ -67,7 +69,7 @@ class MangaSpider(scrapy.Spider):
             self.until = date(year=year, month=month, day=day)
             self.start_urls = [self.url] if _url \
                 else [self.get_latest_url(self.until)]
-        elif 'manga' in kwargs and 'issue' in kwargs:
+        elif _manga and _issue:
             self.start_urls = [self.url] if _url \
                 else [self.get_manga_url(self.manga, self.issue)]
             self.from_email = kwargs.get('from', None)
