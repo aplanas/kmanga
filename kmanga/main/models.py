@@ -132,7 +132,7 @@ class Issue(models.Model):
     last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
-        return '%s %s: %s' % (self.manga.name, self.number, self.name)
+        return self.name
 
 
 @python_2_unicode_compatible
