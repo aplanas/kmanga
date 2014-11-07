@@ -114,7 +114,7 @@ class MobiContainer(object):
                    settings)
 
     def process_item(self, item, spider):
-        if hasattr(spider, 'manga') and hasattr(spider, 'issue'):
+        if spider._operation == 'manga':
             key = (spider.name, spider.manga, spider.issue)
             if key not in self.items:
                 self.items[key] = []
@@ -122,7 +122,7 @@ class MobiContainer(object):
         return item
 
     def close_spider(self, spider):
-        if hasattr(spider, 'manga') and hasattr(spider, 'issue'):
+        if spider._operation == 'manga':
             return self.create_mobi()
 
     def _create_mobi(self, name, number, images):
@@ -178,6 +178,7 @@ class MobiContainer(object):
                     container.clean()
 
             # for mobi_name, mobi_file in cache[key]:
+            #     print 'SEEEEEEEEEEEEEEEEEEEEEEEEND', mobi_name, mobi_file, self.settings['MAIL_TO']
             #     mail = MailSender.from_settings(self.settings)
             #     deferred = mail.send(
             #         to=[self.settings['MAIL_TO']],
