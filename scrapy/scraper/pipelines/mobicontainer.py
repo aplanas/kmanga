@@ -29,6 +29,8 @@ except:
 from scrapy.mail import MailSender
 from scrapy.utils.decorator import inthread
 
+from main.models import Issue
+
 from mobi import Container, MangaMobi
 
 
@@ -43,16 +45,18 @@ class MobiCache(collections.MutableMapping):
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
-    def __index_file(self, key):
-        spider, name, issue = key
-        name = '%s_%s_%03d' % (spider, name, int(issue))
+    def __file(self, key):
+        spider, name, issue, url = key
+        name = '%s_%s_%03d_%s' % (spider, name, int(issue), url)
         name = hashlib.md5(name).hexdigest()
+        return name
+
+    def __index_file(self, key):
+        name = self.__file(key)
         return os.path.join(self.index, name)
 
     def __data_file(self, key):
-        spider, name, issue = key
-        name = '%s_%s_%03d' % (spider, name, int(issue))
-        name = hashlib.md5(name).hexdigest()
+        name = self.__file(key)
         return os.path.join(self.data, name)
 
     def __getitem__(self, key):
@@ -115,7 +119,7 @@ class MobiContainer(object):
 
     def process_item(self, item, spider):
         if spider._operation == 'manga':
-            key = (spider.name, spider.manga, spider.issue)
+            key = (spider.name, spider.manga, spider.issue, spider.url)
             if key not in self.items:
                 self.items[key] = []
             self.items[key].append(item)
@@ -159,7 +163,7 @@ class MobiContainer(object):
             mobi = MangaMobi(container, info, kindlegen=self.kindlegen)
             mobi_name, mobi_file = mobi.create()
             values_and_containers.append(((mobi_name, mobi_file), container))
-            # Containers are cleaned by the caller.
+            # Containers are cleaned by the caller (create_mobi)
             # container.clean()
         return values_and_containers
 
@@ -168,7 +172,11 @@ class MobiContainer(object):
         cache = MobiCache(self.mobi_store)
 
         for key, value in self.items.items():
-            spider, name, number = key
+            spider, name, number, url = key
+
+            issue = Issue.objects.get(url=url)
+            import sys
+            print >>sys.stderr, 'ISSUE URL', issue
 
             if key not in cache:
                 # The containers need to be cleaned here.
