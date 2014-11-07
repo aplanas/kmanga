@@ -26,7 +26,7 @@ try:
 except:
     import pickle
 
-# from scrapy.mail import MailSender
+from scrapy.mail import MailSender
 from scrapy.utils.decorator import inthread
 
 from mobi import Container, MangaMobi
@@ -177,22 +177,21 @@ class MobiContainer(object):
                 for _, container in values_and_containers:
                     container.clean()
 
-            # for mobi_name, mobi_file in cache[key]:
-            #     print 'SEEEEEEEEEEEEEEEEEEEEEEEEND', mobi_name, mobi_file, self.settings['MAIL_TO']
-            #     mail = MailSender.from_settings(self.settings)
-            #     deferred = mail.send(
-            #         to=[self.settings['MAIL_TO']],
-            #         subject='Your kmanga.net request',
-            #         body='',
-            #         attachs=((mobi_name, 'application/x-mobipocket-ebook',
-            #                   open(mobi_file, 'rb')),))
-            #     cb_data = [self.settings['MAIL_FROM'],
-            #                self.settings['MAIL_TO'],
-            #                name, number]
-            #     deferred.addCallbacks(self.mail_ok, self.mail_err,
-            #                           callbackArgs=cb_data,
-            #                           errbackArgs=cb_data)
-            #     # XXX TODO - Send email when errors
+            for mobi_name, mobi_file in cache[key]:
+                mail = MailSender.from_settings(self.settings)
+                deferred = mail.send(
+                    to=[self.settings['MAIL_TO']],
+                    subject='Your kmanga.net request',
+                    body='',
+                    attachs=((mobi_name, 'application/x-mobipocket-ebook',
+                              open(mobi_file, 'rb')),))
+                cb_data = [self.settings['MAIL_FROM'],
+                           self.settings['MAIL_TO'],
+                           name, number]
+                deferred.addCallbacks(self.mail_ok, self.mail_err,
+                                      callbackArgs=cb_data,
+                                      errbackArgs=cb_data)
+                # XXX TODO - Send email when errors
 
     def mail_ok(self, result, from_mail, to_mail, manga_name, manga_issue):
         # hl = HistoryLine.objects.filter(
