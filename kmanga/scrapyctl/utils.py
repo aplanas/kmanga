@@ -1,15 +1,10 @@
-from __future__ import absolute_import
-
 import os
 
 from django.conf import settings
-from django.db import connection
 
-from main.models import Source
 from scrapy import log, signals
 from scrapy.crawler import Crawler
 from scrapy.utils.project import get_project_settings
-
 from twisted.internet import reactor
 
 
@@ -47,7 +42,7 @@ def spider_list():
     return [n for n in crawler.spiders.list() if n != 'mangaspider']
 
 
-def _updatedb(spiders, command, manga=None, issue=None, loglevel='INFO'):
+def _update(spiders, command, manga=None, issue=None, url=None, loglevel='INFO'):
     """Launch the scraper to update the database."""
     reactor_control = ReactorControl()
 
@@ -58,6 +53,7 @@ def _updatedb(spiders, command, manga=None, issue=None, loglevel='INFO'):
         kwargs = {
             command: True,
             'manga': manga,
+            'issue': issue,
             'url': url,
         }
         spider = crawler.spiders.create(name, **kwargs)
@@ -69,75 +65,47 @@ def _updatedb(spiders, command, manga=None, issue=None, loglevel='INFO'):
     reactor.run()
 
 
-def updatedb_genres(spiders, loglevel='INFO'):
+def update_genres(spiders, loglevel='INFO'):
     """Launch the scraper to update the genres."""
-    _updatedb(spider, 'genres', loglevel=loglevel)
+    _update(spiders, 'genres', loglevel=loglevel)
 
 
-def updatedb_catalog(spiders, loglevel='INFO'):
-    """Launch the scraper to update the genres."""
-    _updatedb(spider, 'genres', loglevel=loglevel)
+def update_catalog(spiders, loglevel='INFO'):
+    """Launch the scraper to update the full catalog of a site."""
+    _update(spiders, 'catalog', loglevel=loglevel)
 
 
-def updatedb_collection(spiders, manga, url, loglevel='INFO'):
+def update_collection(spiders, manga, url, loglevel='INFO'):
     """Launch the scraper to update list of issues for one manga."""
-    _updatedb(spider, 'collection', manga=manga, url=url,
-              loglevel=loglevel)
+    _update(spiders, 'collection', manga=manga, url=url,
+            loglevel=loglevel)
 
 
-def updatedb_latest(spiders, loglevel='INFO'):
+def update_latest(spiders, loglevel='INFO'):
     """Launch the scraper to update the latest issues."""
-    _updatedb(spider, command='latest', loglevel=loglevel)
+    _update(spiders, command='latest', loglevel=loglevel)
 
 
-#             # Print the SQL statistics in DEBUG mode
-#             queries = ['[%s]: %s' % (q['time'], q['sql'])
-#                        for q in connection.queries]
-#             log.msg('\n'.join(queries), level=log.DEBUG)
+def send(spider, manga, issues, urls, from_email, to_email, loglevel='INFO'):
+    """Send a list of issues to an user."""
+    reactor_control = ReactorControl()
 
-#         elif options['search']:
-#             for name in spiders:
-#                 header = 'Results from %s:' % name
-#                 print header
-#                 print '=' * len(header)
-#                 print
-#                 source = Source.objects.get(spider=name)
-#                 q = options['search']
-#                 for manga in source.manga_set.filter(name__icontains=q):
-#                     print '- %s' % manga
-#                     for issue in manga.issue_set.order_by('number'):
-#                         print '  %s' % issue
-#                     print
-#         elif options['send']:
-#             pass
+    name = spider
+    for issue, url in zip(issues, urls):
+        crawler = _create_crawler()
+        crawler.signals.connect(reactor_control.remove_crawler,
+                                signal=signals.spider_closed)
+        kwargs = {
+            'manga': manga,
+            'issue': issue,
+            'url': url,
+            'from': from_email,
+            'to': to_email,
+        }
+        spider = crawler.spiders.create(name, **kwargs)
+        reactor_control.add_crawler()
+        crawler.crawl(spider)
+        crawler.start()
 
-
-
-
-# from scrapy import log, signals
-# from scrapy.crawler import Crawler
-# from scrapy.utils.project import get_project_settings
-
-# from twisted.internet import reactor
-
-# from scraper.spiders.mangareader import MangaReader
-
-
-def run_spider(spider, manga, issue, to_mail):
-    pass
-    # kwargs = {
-    #     'manga': manga,
-    #     'issue': issue,
-    #     'from': None,
-    #     'to': to_mail,
-    # }
-
-    # spider = MangaReader(**kwargs)
-    # settings = get_project_settings()
-    # crawler = Crawler(settings)
-    # crawler.signals.connect(reactor.stop, signal=signals.spider_closed)
-    # crawler.configure()
-    # crawler.crawl(spider)
-    # crawler.start()
-    # log.start()
-    # reactor.run()
+    log.start(loglevel=loglevel)
+    reactor.run()

@@ -1,36 +1,16 @@
 from __future__ import absolute_import
 
 from optparse import make_option
-import os
 
 from django.conf import settings
-from django.db import connection
+from django.core.exceptions import MultipleObjectsReturned 
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
+from django.db import connection
 
-import utils
 from main.models import Source
-from scrapy import log, signals
-from scrapy.crawler import Crawler
-from scrapy.utils.project import get_project_settings
-
-from twisted.internet import reactor
-
-
-# Part of this code is based on:
-# http://stackoverflow.com/questions/22825492/how-to-stop-the-reactor-after-the-run-of-multiple-spiders-in-the-same-process-on
-
-class ReactorControl:
-
-    def __init__(self):
-        self.crawlers_running = 0
-
-    def add_crawler(self):
-        self.crawlers_running += 1
-
-    def remove_crawler(self):
-        self.crawlers_running -= 1
-        if not self.crawlers_running:
-            reactor.stop()
+from scrapy import log
+import scrapyctl.utils
 
 
 class Command(BaseCommand):
@@ -55,6 +35,12 @@ class Command(BaseCommand):
             help='Set the start url for the operation,'
             ' can be a list separated with comma.'),
         make_option(
+            '--lang', action='store', dest='lang', default=None,
+            help='Language of the manga (<EN|ES>).'),
+        make_option(
+            '--from', action='store', dest='from', default=None,
+            help='Email address from where to send the issue.'),
+        make_option(
             '--to', action='store', dest='to', default=None,
             help='Email address to send the issue.'),
         make_option(
@@ -64,73 +50,127 @@ class Command(BaseCommand):
     help = 'Launch scrapy spiders from command line.'
     args = '[<spider_name>]'
 
-    def _create_crawler(self):
-        if 'SCRAPY_SETTINGS_MODULE' not in os.environ:
-            _s = settings.SCRAPY_SETTINGS_MODULE
-            os.environ['SCRAPY_SETTINGS_MODULE'] = _s
+    def _get_manga(self, spider, manga):
+        """Get a manga based on the name."""
+        source = Source.objects.get(spider=spider)
+        mangas = source.manga_set.filter(name__icontains=manga)
 
-        crawler = Crawler(get_project_settings())
-        crawler.configure()
-        return crawler
-
-    def spider_list(self, crawler):
-        """Return the list of current spiders."""
-        return [n for n in crawler.spiders.list() if n != 'mangaspider']
+        manga = None
+        if len(mangas) > 1:
+            self.stdout.write('Error. Found multiple mangas:')
+            for manga in mangas:
+                self.stdout.write('- %s' % manga)
+            self.stdout.write('Please, choose one and try again')
+        if len(mangas) == 1:
+            manga = mangas[0]
+        return manga
 
     def handle(self, *args, **options):
         # Get the list of spiders names that we are going to work with
-        all_spiders = utils.spider_list()
+        all_spiders = scrapyctl.utils.spider_list()
         spiders = args if args else all_spiders
         for name in spiders:
             if name not in all_spiders:
                 raise CommandError('Spider %s not found.' % name)
 
         if options['list']:
-            self.stdout.write('List of current spiders:')
+            header = 'List of current spiders:'
+            self.stdout.write(header)
+            self.stdout.write('=' * len(header))
+            self.stdout.write('')
             for name in all_spiders:
-                self.stdout.write(' * %s' % name)
+                self.stdout.write('- %s' % name)
         elif options['update']:
-            _options = ('genres', 'catalog', 'collection', 'latest')
-            if options['update'] not in _options:
+            command = options['update']
+            if command == 'genres':
+                scrapyctl.utils.update_genres(spiders, options['loglevel'])
+            elif command == 'catalog':
+                scrapyctl.utils.update_catalog(spiders, options['loglevel'])
+            elif command == 'collection':
+                if len(spiders) > 1:
+                    raise CommandError('Please, specify a single source')
+
+                if not options['manga']:
+                    raise CommandError("Parameter 'manga' is not optional")
+                manga = self._get_manga(spiders[0], options['manga'])
+                if not manga and not options['url']:
+                    raise CommandError(
+                        "'manga' not found, please, provide 'url'")
+                manga_name = manga.name if manga else options['manga']
+
+                url = manga.url if manga else options['url']
+                scrapyctl.utils.update_collection(spiders, manga_name, url,
+                                                  options['loglevel'])
+            elif command == 'latest':
+                scrapyctl.utils.update_latest(spiders, options['loglevel'])
+            else:
                 raise CommandError('Not valid value for update')
 
-            reactor_control = ReactorControl()
-
-            for name in spiders:
-                crawler = self._create_crawler()
-                crawler.signals.connect(reactor_control.remove_crawler,
-                                        signal=signals.spider_closed)
-                kwargs = {
-                    options['update']: True,
-                    'manga': options['manga'],
-                }
-                if options['url']:
-                    kwargs['url'] = options['url']
-                spider = crawler.spiders.create(name, **kwargs)
-                reactor_control.add_crawler()
-                crawler.crawl(spider)
-                crawler.start()
-
-            log.start(loglevel=options['loglevel'])
-            reactor.run()
-
             # Print the SQL statistics in DEBUG mode
-            queries = ['[%s]: %s' % (q['time'], q['sql'])
-                       for q in connection.queries]
-            log.msg('\n'.join(queries), level=log.DEBUG)
-
+            if options['loglevel'] == 'DEBUG':
+                queries = ['[%s]: %s' % (q['time'], q['sql'])
+                           for q in connection.queries]
+                log.msg('\n'.join(queries), level=log.DEBUG)
         elif options['search']:
             for name in spiders:
                 header = 'Results from %s:' % name
-                print header
-                print '=' * len(header)
-                print
+                self.stdout.write(header)
+                self.stdout.write('=' * len(header))
+                self.stdout.write('')
                 source = Source.objects.get(spider=name)
                 q = options['search']
                 for manga in source.manga_set.filter(name__icontains=q):
-                    print '- %s' % manga
+                    self.stdout.write('- %s' % manga)
                     for issue in manga.issue_set.order_by('number'):
-                        print '  %s' % issue
-                    print
+                        self.stdout.write('  %s' % issue)
+                    self.stdout.write('')
         elif options['send']:
-            pass
+            if len(spiders) > 1:
+                raise CommandError('Please, specify a single source')
+            spider = spiders[0]
+            source = Source.objects.get(spider=spider)
+
+            if not options['manga']:
+                raise CommandError("Parameter 'manga' is not optional")
+            manga = self._get_manga(spiders[0], options['manga'])
+            if not manga:
+                raise CommandError('Manga %s not found in %s' % (
+                    options['manga'], spider))
+
+            lang = options['lang'].upper() if options['lang'] else None
+            source_langs = [str(l) for l in source.sourcelanguage_set.all()]
+            if lang not in source_langs:
+                if len(source_langs) == 1 and not lang:
+                    lang = source_langs[0]
+                elif lang:
+                    raise CommandError('Language %s not in %s' % (lang, spider))
+                else:
+                    raise CommandError(
+                        'Please, set a valid language from %s' % source_langs)
+
+            issues = []
+            for issue in options['send'].split(','):
+                if '-' in issue:
+                    a, b = issue.split('-')
+                    issues.extend(range(int(a), int(b)+1))
+                else:
+                    issues.append(int(issue))
+
+            urls = []
+            for number in issues:
+                try:
+                    issue = manga.issue_set.get(number=number, language=lang)
+                    urls.append(issue.url)
+                except ObjectDoesNotExist:
+                    raise CommandError('Issue %s not in %s' % (number, manga))
+                except MultipleObjectsReturned:
+                    raise CommandError('Multiple issues %s in %s' % (number, manga))
+
+            _from = options['from'] if options['from'] else settings.KMANGA_EMAIL
+
+            if not options['to']:
+                raise CommandError("Parameter 'to' is not optional")
+            to = options['to']
+
+            scrapyctl.utils.send(spider, manga.name, issues, urls, _from, to,
+                                 options['loglevel'])
