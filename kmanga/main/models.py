@@ -2,7 +2,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
-from scrapyctl.manga import run_spider
+from scrapyctl.utils import send
 
 
 @python_2_unicode_compatible
@@ -175,5 +175,5 @@ class HistoryLine(models.Model):
         return '%s [%s]' % (self.status, self.updated)
 
     def send_mobi(self):
-        run_spider('mangareader', self.history.name, self.issue,
-                   self.history.to_email)
+        pass
+        # send(...)
