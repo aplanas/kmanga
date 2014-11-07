@@ -100,9 +100,9 @@ class MangaSpider(scrapy.Spider):
         # pipelines can read the parameters too.
         super(MangaSpider, self).set_crawler(crawler)
         if hasattr(self, 'from_email'):
-            self.settings.overrides['MAIL_FROM'] = self.from_email
+            self.settings.set('MAIL_FROM', self.from_email)
         if hasattr(self, 'to_email'):
-            self.settings.overrides['MAIL_TO'] = self.to_email
+            self.settings.set('MAIL_TO', self.to_email)
 
     def parse(self, response):
         if hasattr(self, 'genres'):
