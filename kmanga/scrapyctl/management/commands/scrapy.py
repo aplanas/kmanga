@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from optparse import make_option
 
 from django.conf import settings
-from django.core.exceptions import MultipleObjectsReturned 
+from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
@@ -122,7 +122,8 @@ class Command(BaseCommand):
                 for manga in source.manga_set.filter(name__icontains=q):
                     self.stdout.write('- %s' % manga)
                     for issue in manga.issue_set.order_by('number'):
-                        self.stdout.write('  %s' % issue)
+                        self.stdout.write(u'  %s [%s]' % (issue.name,
+                                                          issue.language))
                     self.stdout.write('')
         elif options['send']:
             if len(spiders) > 1:
@@ -143,7 +144,8 @@ class Command(BaseCommand):
                 if len(source_langs) == 1 and not lang:
                     lang = source_langs[0]
                 elif lang:
-                    raise CommandError('Language %s not in %s' % (lang, spider))
+                    raise CommandError('Language %s not in %s' % (lang,
+                                                                  spider))
                 else:
                     raise CommandError(
                         'Please, set a valid language from %s' % source_langs)
@@ -164,9 +166,11 @@ class Command(BaseCommand):
                 except ObjectDoesNotExist:
                     raise CommandError('Issue %s not in %s' % (number, manga))
                 except MultipleObjectsReturned:
-                    raise CommandError('Multiple issues %s in %s' % (number, manga))
+                    raise CommandError('Multiple issues %s in %s' % (number,
+                                                                     manga))
 
-            _from = options['from'] if options['from'] else settings.KMANGA_EMAIL
+            _from = options['from'] if options['from'] \
+                    else settings.KMANGA_EMAIL
 
             if not options['to']:
                 raise CommandError("Parameter 'to' is not optional")

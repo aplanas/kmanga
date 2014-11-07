@@ -42,7 +42,8 @@ def spider_list():
     return [n for n in crawler.spiders.list() if n != 'mangaspider']
 
 
-def _update(spiders, command, manga=None, issue=None, url=None, loglevel='INFO'):
+def _update(spiders, command, manga=None, issue=None, url=None,
+            loglevel='INFO'):
     """Launch the scraper to update the database."""
     reactor_control = ReactorControl()
 
