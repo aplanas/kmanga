@@ -29,7 +29,7 @@ KINDLEGEN = os.path.join(_dirname, '..', '..', 'bin', 'kindlegen')
 IMAGES_STORE = os.path.join(_dirname, '..', 'img_store')
 MOBI_STORE = os.path.join(_dirname, '..', 'mobi_store')
 
-VOLUME_MAX_SIZE = 15 * 1024**2
+VOLUME_MAX_SIZE = 12 * 1024**2
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'scraper (+http://www.yourdomain.com)'
