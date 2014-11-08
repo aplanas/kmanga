@@ -287,8 +287,7 @@ class MangaMobi(object):
             ('generator', GENERATOR),
             # XXX WARNING - Maybe I can fix to 'portrait'
             ('orientation-lock', 'none'),
-            # XXX TODO - Detect the read direction
-            ('primary-writing-mode', 'horizontal-rl'),
+            ('primary-writing-mode', self.info.reading_direction),
             ('region-mag', 'false'),
             # XXX TODO - Detect the original resolution
             ('original-resolution', '%dx%d' % (WIDTH, HEIGHT)),

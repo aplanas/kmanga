@@ -129,7 +129,7 @@ class MobiContainer(object):
         if spider._operation == 'manga':
             return self.create_mobi()
 
-    def _create_mobi(self, name, number, images):
+    def _create_mobi(self, name, number, images, issue):
         """Create the MOBI file and return a generator."""
         dir_name = '%s_%03d' % (name, int(number))
         container = Container(os.path.join(self.mobi_store, dir_name))
@@ -145,20 +145,26 @@ class MobiContainer(object):
         else:
             containers = [container]
 
-        # XXX TODO - Recover the info from the database
+        # Basic container to store issue information
         class Info(object):
-            pass
+            def __init__(self, issue, multi_vol=False, vol=None):
+                if multi_vol:
+                    self.title = '%s %03d V%02d' % (issue.manga.name,
+                                                    issue.number, vol)
+                else:
+                    self.title = '%s %03d' % (issue.manga.name,
+                                              issue.number)
+                # self.title = issue.name
+                self.language = issue.language.lower()
+                self.author = issue.manga.author
+                self.publisher = issue.manga.source.name
+                reading_direction = issue.manga.reading_direction.lower()
+                self.reading_direction = 'horizontal-%s' % reading_direction
 
         values_and_containers = []
         for volume, container in enumerate(containers):
-            info = Info()
-            if len(containers) > 1:
-                info.title = '%s %03d V%02d' % (name, int(number), volume+1)
-            else:
-                info.title = '%s %03d' % (name, int(number))
-            info.language = 'en'
-            info.author = 'author'
-            info.publisher = 'publisher'
+            multi_vol, vol = len(containers) > 1, volume + 1
+            info = Info(issue, multi_vol, vol)
 
             mobi = MangaMobi(container, info, kindlegen=self.kindlegen)
             mobi_name, mobi_file = mobi.create()
@@ -175,12 +181,11 @@ class MobiContainer(object):
             spider, name, number, url = key
 
             issue = Issue.objects.get(url=url)
-            import sys
-            print >>sys.stderr, 'ISSUE URL', issue
 
             if key not in cache:
                 # The containers need to be cleaned here.
-                values_and_containers = self._create_mobi(name, number, value)
+                values_and_containers = self._create_mobi(name, number,
+                                                          value, issue)
                 cache[key] = [v[0] for v in values_and_containers]
                 for _, container in values_and_containers:
                     container.clean()
