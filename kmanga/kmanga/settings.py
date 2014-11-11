@@ -83,7 +83,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-# Kmanga specific configuration
+# KManga specific configuration
 
 INSTALLED_APPS += (
     # External applications
@@ -123,3 +123,9 @@ RQ_QUEUES = {
 SCRAPY_SETTINGS_MODULE = 'scraper.settings'
 
 KMANGA_EMAIL = 'kindle@kmanga.net'
+
+# Import local settings
+try:
+    from settings_local import *
+except ImportError:
+    pass
