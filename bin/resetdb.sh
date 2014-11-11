@@ -2,7 +2,7 @@
 
 # Load the configuration file if exist
 if [ -f "etc/config.sh" ]; then
-    . ./config.sh
+    . etc/config.sh
 fi
 
 if [ -z "$PYTHON" ]; then
