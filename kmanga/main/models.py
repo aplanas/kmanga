@@ -63,6 +63,10 @@ class Genre(models.Model):
         return self.name
 
 
+def _cover_path(instance, filename):
+    return os.path.join(instance.source.spider, filename)
+
+
 @python_2_unicode_compatible
 class Manga(models.Model):
     LEFT_TO_RIGHT = 'LR'
@@ -85,9 +89,6 @@ class Manga(models.Model):
         (ASC, 'Ascending'),
         (DESC, 'Descending'),
     )
-
-    def _cover_path(self, filename):
-        return os.path.join(self.source.spider, filename)
 
     name = models.CharField(max_length=200)
     # slug = models.SlugField(max_length=200)
