@@ -1,3 +1,5 @@
+import os.path
+
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
@@ -84,6 +86,9 @@ class Manga(models.Model):
         (DESC, 'Descending'),
     )
 
+    def _cover_path(self, filename):
+        return os.path.join(self.source.spider, filename)
+
     name = models.CharField(max_length=200)
     # slug = models.SlugField(max_length=200)
     # release = models.DateField()
@@ -101,7 +106,7 @@ class Manga(models.Model):
                                   choices=RANK_ORDER,
                                   default=ASC)
     description = models.TextField()
-    cover = models.ImageField()
+    cover = models.ImageField(upload_to=_cover_path)
     url = models.URLField()
     source = models.ForeignKey(Source)
     last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
