@@ -148,7 +148,7 @@ class UpdateDBPipeline(object):
             log.msg('Removed outdated genre in %s: %s' % (spider_name, i),
                     level=log.DEBUG)
 
-    @transaction.atomic
+    # @transaction.atomic
     def update_catalog(self, item, spider):
         """Update the catalog (list of mangas and issues)."""
 
