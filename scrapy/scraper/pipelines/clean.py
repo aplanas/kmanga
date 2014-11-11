@@ -312,6 +312,10 @@ class CleanPipeline(CleanBasePipeline):
         }
         return self._clean_field_set(field, status.values(), translator=status)
 
+    def clean_field_batoto_manga_genres(self, field):
+        exclude = ('[no chapters]',)
+        return self._clean_field_list(field, optional=True, exclude=exclude)
+
     def clean_field_batoto_issue_language(self, field):
         lang = {
             'English': 'EN',
