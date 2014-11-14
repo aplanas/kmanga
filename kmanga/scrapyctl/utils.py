@@ -43,7 +43,7 @@ def spider_list():
 
 
 def _update(spiders, command, manga=None, issue=None, url=None,
-            loglevel='INFO'):
+            loglevel='INFO', dry_run=False):
     """Launch the scraper to update the database."""
     reactor_control = ReactorControl()
 
@@ -57,6 +57,8 @@ def _update(spiders, command, manga=None, issue=None, url=None,
             'issue': issue,
             'url': url,
         }
+        if dry_run:
+            kwargs['dry-run'] = dry_run
         spider = crawler.spiders.create(name, **kwargs)
         reactor_control.add_crawler()
         crawler.crawl(spider)
@@ -66,28 +68,29 @@ def _update(spiders, command, manga=None, issue=None, url=None,
     reactor.run()
 
 
-def update_genres(spiders, loglevel='INFO'):
+def update_genres(spiders, loglevel='INFO', dry_run=False):
     """Launch the scraper to update the genres."""
-    _update(spiders, 'genres', loglevel=loglevel)
+    _update(spiders, 'genres', loglevel=loglevel, dry_run=dry_run)
 
 
-def update_catalog(spiders, loglevel='INFO'):
+def update_catalog(spiders, loglevel='INFO', dry_run=False):
     """Launch the scraper to update the full catalog of a site."""
-    _update(spiders, 'catalog', loglevel=loglevel)
+    _update(spiders, 'catalog', loglevel=loglevel, dry_run=dry_run)
 
 
-def update_collection(spiders, manga, url, loglevel='INFO'):
+def update_collection(spiders, manga, url, loglevel='INFO', dry_run=False):
     """Launch the scraper to update list of issues for one manga."""
     _update(spiders, 'collection', manga=manga, url=url,
-            loglevel=loglevel)
+            loglevel=loglevel, dry_run=dry_run)
 
 
-def update_latest(spiders, loglevel='INFO'):
+def update_latest(spiders, loglevel='INFO', dry_run=False):
     """Launch the scraper to update the latest issues."""
-    _update(spiders, command='latest', loglevel=loglevel)
+    _update(spiders, command='latest', loglevel=loglevel, dry_run=dry_run)
 
 
-def send(spider, manga, issues, urls, from_email, to_email, loglevel='INFO'):
+def send(spider, manga, issues, urls, from_email, to_email, loglevel='INFO',
+         dry_run=False):
     """Send a list of issues to an user."""
     reactor_control = ReactorControl()
 
@@ -103,6 +106,8 @@ def send(spider, manga, issues, urls, from_email, to_email, loglevel='INFO'):
             'from': from_email,
             'to': to_email,
         }
+        if dry_run:
+            kwargs['dry-run'] = dry_run
         spider = crawler.spiders.create(name, **kwargs)
         reactor_control.add_crawler()
         crawler.crawl(spider)

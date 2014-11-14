@@ -46,6 +46,9 @@ class Command(BaseCommand):
         make_option(
             '--loglevel', action='store', dest='loglevel', default='INFO',
             help='Log level for scrapy.'),
+        make_option(
+            '--dry-run', action='store_true', dest='dry-run', default=False,
+            help='Bypass all the pipelines.'),
         )
     help = 'Launch scrapy spiders from command line.'
     args = '[<spider_name>]'
@@ -83,9 +86,11 @@ class Command(BaseCommand):
         elif options['update']:
             command = options['update']
             if command == 'genres':
-                scrapyctl.utils.update_genres(spiders, options['loglevel'])
+                scrapyctl.utils.update_genres(spiders, options['loglevel'],
+                                              options['dry-run'])
             elif command == 'catalog':
-                scrapyctl.utils.update_catalog(spiders, options['loglevel'])
+                scrapyctl.utils.update_catalog(spiders, options['loglevel'],
+                                               options['dry-run'])
             elif command == 'collection':
                 if len(spiders) > 1:
                     raise CommandError('Please, specify a single source')
@@ -100,9 +105,11 @@ class Command(BaseCommand):
 
                 url = manga.url if manga else options['url']
                 scrapyctl.utils.update_collection(spiders, manga_name, url,
-                                                  options['loglevel'])
+                                                  options['loglevel'],
+                                                  options['dry-run'])
             elif command == 'latest':
-                scrapyctl.utils.update_latest(spiders, options['loglevel'])
+                scrapyctl.utils.update_latest(spiders, options['loglevel'],
+                                              options['dry-run'])
             else:
                 raise CommandError('Not valid value for update')
 
