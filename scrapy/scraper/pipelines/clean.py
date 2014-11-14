@@ -86,6 +86,10 @@ class CleanBasePipeline(object):
 
         """
 
+        # Bypass the pipeline if called with dry-run parameter.
+        if hasattr(spider, 'dry-run'):
+            return item
+
         # Deduce the name of the method that can take care of the
         # item, two options: one generic and one specific for the
         # spider.

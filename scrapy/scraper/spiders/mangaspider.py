@@ -30,26 +30,40 @@ class MangaSpider(scrapy.Spider):
         #
         # Parameters for MangaSpider childrens:
         #
-        # - genres: (OPTIONAL) If True, indicate that the spider needs
-        #           to download the catalog of genres.  The spider
-        #           knows where is this URL, but the `url` parameter
-        #           can be used.
-        # - catalog: (OPTIONAL) If True, indicate that the spider
-        #            needs to download the catalog of mangas.  The
-        #            spider also knows where is this URL, but the
-        #            `url` parameter can be used.
+        # - genres:     (OPTIONAL) If True, indicate that the spider
+        #               needs to download the catalog of genres.  The
+        #               spider knows where is this URL, but the `url`
+        #               parameter can be used.
+        #
+        # - catalog:    (OPTIONAL) If True, indicate that the spider
+        #               needs to download the catalog of mangas.  The
+        #               spider also knows where is this URL, but the
+        #               `url` parameter can be used.
+        #
         # - collection: (OPTIONAL) If True, the spider will download
         #               the list of issues for one manga. Parameter
         #               `manga` is used to set the name of the manga.
         #               The spider can set the URL, but `url`
         #               parameter can be used.
-        # - latest: (OPTIONAL) If the value is a date, the spider
-        #           will download a catalog update until this date.
-        # - manga: (OPTIONAL) Name of the manga pointed by `url`.
-        # - issue: (OPTIONAL) Issue number of the manga pointed by `url`.
-        # - url: (OPTIONAL) Initial URL for the spider.
-        # - from: (OPTIONAL) Email address set in the FROM field.
-        # - to: (OPTIONAL) Email address set in the TO field.
+        #
+        # - latest:     (OPTIONAL) If the value is a date, the spider
+        #               will download a catalog update until this
+        #               date.
+        #
+        # - manga:      (OPTIONAL) Name of the manga pointed by `url`.
+        #
+        # - issue:      (OPTIONAL) Issue number of the manga pointed
+        #               by `url`.
+        #
+        # - url:        (OPTIONAL) Initial URL for the spider.
+        #
+        # - from:       (OPTIONAL) Email address set in the FROM
+        #               field.
+        #
+        # - to:         (OPTIONAL) Email address set in the TO field.
+        #
+        # - dry-run:    (OPTIONAL) If True, the pipelines will ignore
+        #               the items that comes from this spider.
         #
 
         error_msg = False
@@ -90,7 +104,8 @@ class MangaSpider(scrapy.Spider):
                             '[-a collection=1 -a manga=name -a url=URL]',
                             '[-a latest=DD-MM-YYYY -a url=URL]',
                             '[-a manga=name -a issue=number -a url=URL'
-                            ' -a from=email -a to=email]'))
+                            ' -a from=email -a to=email]',
+                            '[-a dry-run=1]'))
             print 'scrapy crawl %s SPIDER' % msg
             exit(1)
 

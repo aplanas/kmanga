@@ -118,6 +118,10 @@ class MobiContainer(object):
                    settings)
 
     def process_item(self, item, spider):
+        # Bypass the pipeline if called with dry-run parameter.
+        if hasattr(spider, 'dry-run'):
+            return item
+
         if spider._operation == 'manga':
             key = (spider.name, spider.manga, spider.issue, spider.url)
             if key not in self.items:

@@ -41,6 +41,10 @@ class UpdateDBPipeline(object):
         return cls(settings['IMAGES_STORE'], settings)
 
     def process_item(self, item, spider):
+        # Bypass the pipeline if called with dry-run parameter.
+        if hasattr(spider, 'dry-run'):
+            return item
+
         # _operation store where the item comes from.
         operation = spider._operation
         update_method = 'update_%s' % operation
