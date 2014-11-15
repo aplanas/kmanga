@@ -154,8 +154,7 @@ class Command(BaseCommand):
 
             if not options['manga']:
                 raise CommandError("Parameter 'manga' is not optional")
-            manga = self._get_manga(spiders[0], manga=options['manga'],
-                                    lang=options['lang'])
+            manga = self._get_manga(spiders[0], manga=options['manga'])
             if not manga:
                 raise CommandError('Manga %s not found in %s' % (
                     options['manga'], spider))
@@ -191,8 +190,7 @@ class Command(BaseCommand):
                     raise CommandError('Multiple issues %s in %s' % (number,
                                                                      manga))
 
-            _from = options['from'] if options['from'] \
-                    else settings.KMANGA_EMAIL
+            _from = options['from'] if options['from'] else settings.KMANGA_EMAIL
 
             if not options['to']:
                 raise CommandError("Parameter 'to' is not optional")
