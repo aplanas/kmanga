@@ -137,9 +137,14 @@ class Command(BaseCommand):
                 q = options['search']
                 for manga in source.manga_set.filter(name__icontains=q):
                     self.stdout.write('- %s' % manga)
-                    for issue in manga.issue_set.order_by('number'):
-                        self.stdout.write(u'  %s [%s]' % (issue.name,
-                                                          issue.language))
+                    issues = manga.issue_set
+                    if options['lang']:
+                        lang = options['lang'].upper()
+                        issues = issues.filter(language=lang)
+                    for issue in issues.order_by('number'):
+                        self.stdout.write(u'  [%s] [%s] %s\n    %s' % (
+                            issue.language, issue.number,
+                            issue.name, issue.url))
                     self.stdout.write('')
         elif options['send']:
             if len(spiders) > 1:
@@ -149,7 +154,8 @@ class Command(BaseCommand):
 
             if not options['manga']:
                 raise CommandError("Parameter 'manga' is not optional")
-            manga = self._get_manga(spiders[0], options['manga'])
+            manga = self._get_manga(spiders[0], manga=options['manga'],
+                                    lang=options['lang'])
             if not manga:
                 raise CommandError('Manga %s not found in %s' % (
                     options['manga'], spider))
