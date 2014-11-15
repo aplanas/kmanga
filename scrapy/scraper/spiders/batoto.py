@@ -105,6 +105,8 @@ class Batoto(MangaSpider):
             # scrapy.Request(manga['url'][0], self._parse_catalog_item)
             url = manga['url'][0].split('_/')[-1]
             url = 'http://bato.to/comic/_/comics/%s' % url
+            # Also use this URL in the Item to avoid duplicates.
+            manga['url'] = url
             request = scrapy.Request(url, self.parse_collection)
             request.meta['manga'] = manga
             yield request
