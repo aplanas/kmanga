@@ -1,7 +1,7 @@
 [
     {
         "fields": {
-            "last_modified": "2014-10-25T17:36:24.994Z",
+            "last_modified": "2014-10-25T00:00:00.000Z",
             "name": "Batoto",
             "spider": "batoto",
             "url": "http://bato.to/"
@@ -11,7 +11,7 @@
     },
     {
         "fields": {
-            "last_modified": "2014-10-25T17:36:58.965Z",
+            "last_modified": "2014-10-25T00:00:00.000Z",
             "name": "MangaReader",
             "spider": "mangareader",
             "url": "http://mangareader.net/"
@@ -21,8 +21,18 @@
     },
     {
         "fields": {
+            "last_modified": "2014-10-25T00:00:00.000Z",
+            "name": "Submanga",
+            "spider": "submanga",
+            "url": "http://submanga.com/"
+        },
+        "model": "main.source",
+        "pk": 3
+    },
+    {
+        "fields": {
             "language": "EN",
-            "last_modified": "2014-10-25T17:36:24.996Z",
+            "last_modified": "2014-10-25T00:00:00.000Z",
             "source": 1
         },
         "model": "main.sourcelanguage",
@@ -31,7 +41,7 @@
     {
         "fields": {
             "language": "ES",
-            "last_modified": "2014-10-25T17:36:24.996Z",
+            "last_modified": "2014-10-25T00:00:00.000Z",
             "source": 1
         },
         "model": "main.sourcelanguage",
@@ -40,10 +50,19 @@
     {
         "fields": {
             "language": "EN",
-            "last_modified": "2014-10-25T17:36:58.967Z",
+            "last_modified": "2014-10-25T00:00:00.000Z",
             "source": 2
         },
         "model": "main.sourcelanguage",
         "pk": 3
+    },
+    {
+        "fields": {
+            "language": "ES",
+            "last_modified": "2014-10-25T00:00:00.000Z",
+            "source": 3
+        },
+        "model": "main.sourcelanguage",
+        "pk": 4
     }
 ]
