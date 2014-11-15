@@ -69,7 +69,7 @@ class MangaSpider(scrapy.Spider):
         error_msg = False
 
         _manga = 'manga' in kwargs and kwargs['manga']
-        _issue = 'issue' in kwargs and kwargs['issue']
+        _issue = 'issue' in kwargs and (kwargs['issue'] is not None)
         _url = 'url' in kwargs and kwargs['url']
         if 'genres' in kwargs:
             self.start_urls = [self.url] if _url else [self.get_genres_url()]

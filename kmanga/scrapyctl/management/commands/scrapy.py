@@ -177,7 +177,7 @@ class Command(BaseCommand):
                     a, b = issue.split('-')
                     issues.extend(range(int(a), int(b)+1))
                 else:
-                    issues.append(int(issue))
+                    issues.append(float(issue))
 
             urls = []
             for number in issues:
