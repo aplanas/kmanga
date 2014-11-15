@@ -53,10 +53,15 @@ class Command(BaseCommand):
     help = 'Launch scrapy spiders from command line.'
     args = '[<spider_name>]'
 
-    def _get_manga(self, spider, manga):
+    def _get_manga(self, spider, manga=None, url=None):
         """Get a manga based on the name."""
         source = Source.objects.get(spider=spider)
-        mangas = source.manga_set.filter(name__icontains=manga)
+        kwargs = {}
+        if manga:
+            kwargs['name__icontains'] = manga
+        if url:
+            kwargs['url'] = url
+        mangas = source.manga_set.filter(**kwargs)
 
         manga = None
         if len(mangas) > 1:
@@ -95,15 +100,19 @@ class Command(BaseCommand):
                 if len(spiders) > 1:
                     raise CommandError('Please, specify a single source')
 
-                if not options['manga']:
-                    raise CommandError("Parameter 'manga' is not optional")
-                manga = self._get_manga(spiders[0], options['manga'])
+                if not options['manga'] and not options['url']:
+                    raise CommandError("Provide parameters 'manga' or 'url'")
+
+                manga = self._get_manga(spiders[0], manga=options['manga'],
+                                        url=options['url'])
                 if not manga and not options['url']:
                     raise CommandError(
                         "'manga' not found, please, provide 'url'")
-                manga_name = manga.name if manga else options['manga']
 
+                manga_name = manga.name if manga else options['manga']
+                manga_name = manga_name if manga_name else '<NoName>'
                 url = manga.url if manga else options['url']
+
                 scrapyctl.utils.update_collection(spiders, manga_name, url,
                                                   options['loglevel'],
                                                   options['dry-run'])
