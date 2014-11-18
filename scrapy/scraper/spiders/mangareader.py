@@ -75,8 +75,9 @@ class MangaReader(MangaSpider):
             # URL
             xp = './/div[@class="manga_name"]//a/@href'
             manga['url'] = urljoin(response.url, item.xpath(xp).extract()[0])
-            request = scrapy.Request(manga['url'], self.parse_collection)
-            request.meta['manga'] = manga
+            meta = {'manga': manga}
+            request = scrapy.Request(manga['url'], self.parse_collection,
+                                     meta=meta)
             yield request
 
         # Next page
@@ -209,15 +210,17 @@ class MangaReader(MangaSpider):
         next_url = response.xpath(xp).extract()
         if next_url:
             next_url = urljoin(response.url, next_url[0])
-            meta = (('until', until),)
+            meta = {'until': until}
             yield scrapy.Request(next_url, self.parse_latest, meta=meta)
 
     def parse_manga(self, response, manga, issue):
         xp = '//select[@id="pageMenu"]/option/@value'
         for number, url in enumerate(response.xpath(xp).extract()):
-            meta = (('manga', manga),
-                    ('issue', issue),
-                    ('number', number + 1),)
+            meta = {
+                'manga': manga,
+                'issue': issue,
+                'number': number + 1,
+            }
             yield scrapy.Request(urljoin(response.url, url),
                                  self._parse_page, meta=meta)
 
