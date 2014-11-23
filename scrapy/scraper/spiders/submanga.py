@@ -152,15 +152,15 @@ class SubManga(MangaSpider):
         for line in response.xpath(xp):
             issue = Issue(language='ES')
             # Name
-            xp = './/a/text()'
+            xp = 'a[1]/text()'
             name_1 = line.xpath(xp).extract()
-            xp = './/a/strong/text()'
+            xp = 'a/strong/text()'
             name_2 = line.xpath(xp).extract()
             issue['name'] = name_1 + name_2
             # Number
             issue['number'] = name_2
             # URL
-            xp = './/a/@href'
+            xp = 'a[1]/@href'
             issue['url'] = line.xpath(xp).extract()
             manga['issues'].append(issue)
 
@@ -185,7 +185,7 @@ class SubManga(MangaSpider):
                     'issues': issues,
                 })) for i in manga['issues']
         ]
-        return requests[-5:]
+        return requests
 
     def _on_error_issue_date(self, err, meta):
         """Called when a 404 happends in a issue."""
@@ -244,11 +244,11 @@ class SubManga(MangaSpider):
         else:
             signal = {'continue': True}
 
-        xp = '//table[contains(@class, "caps")]/tr/td'
+        xp = '//table[contains(@class, "caps")]/tr/td[@class="s"]'
         for line in response.xpath(xp):
             manga = Manga()
             # Name
-            xp = 'a/text()'
+            xp = 'a[1]/text()'
             manga['name'] = line.xpath(xp).extract()
             # URL
             xp = 'a/@href'
@@ -262,7 +262,7 @@ class SubManga(MangaSpider):
             issue = Issue(language='ES')
             manga['issues'] = [issue]
             # Name
-            xp = 'a/text()'
+            xp = 'a[1]/text()'
             name_1 = line.xpath(xp).extract()
             xp = 'a/strong/text()'
             name_2 = line.xpath(xp).extract()
