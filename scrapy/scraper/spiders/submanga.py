@@ -103,7 +103,7 @@ class SubManga(MangaSpider):
         xp = '//div[@class="b468"]/h1/a/text()'
         manga['name'] = response.xpath(xp).extract()
         # Alternate name
-        manga['alt_name'] = None   # manga['name']
+        manga['alt_name'] = []   # manga['name']
         # Author
         xp = '//div[@class="b250 bmr0"]/p[5]/a/text()'
         manga['author'] = response.xpath(xp).extract()
@@ -217,6 +217,11 @@ class SubManga(MangaSpider):
         # Release
         xp = '//div[@class="b468"]/p[2]/text()'
         issue['release'] = response.xpath(xp).re(r'\d{2}/\d{2}/\d{4}')
+
+        # In Submanga a 404 page returns a 200.  If we do not have
+        # release date we can assume that is a 404 and drop the issue.
+        if not issue['release']:
+            manga['issues'].remove(issue)
 
         # In the issues list is empty, this is the last issue, so we
         # can return the manga item.

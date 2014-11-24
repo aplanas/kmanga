@@ -189,15 +189,17 @@ class CleanBasePipeline(object):
             raise ValueError('field is not a valid value')
         return value
 
-    def _clean_field_date(self, field, optional=False):
+    def _clean_field_date(self, field, dmy=False, optional=False):
         """Transform the field into a date."""
         if isinstance(field, date):
             return field
         value = self._as_str(field)
-        value = convert_to_date(value)
-        if not field and not optional:
-            raise ValueError('field is not optional'
-                             " or can't be converted to a date")
+        try:
+            value = convert_to_date(value, dmy=dmy)
+        except ValueError:
+            if not optional:
+                raise ValueError('field is not optional'
+                                 " or can't be converted to a date")
         return value
 
     def clean_item(self, item, spider, cleaning_plan):
@@ -327,3 +329,11 @@ class CleanPipeline(CleanBasePipeline):
         }
         return self._clean_field_set(field, lang.values(), translator=lang,
                                      optional=True)
+
+    # -- Submanga fields
+    def clean_field_submanga_manga_genres(self, field):
+        values = [genre.title() for genre in field]
+        return self._clean_field_list(values, optional=True)
+
+    def clean_field_submanga_issue_release(self, field):
+        return self._clean_field_date(field, dmy=True)
