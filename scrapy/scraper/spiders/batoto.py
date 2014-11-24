@@ -50,8 +50,6 @@ class Batoto(MangaSpider):
     name = 'batoto'
     allowed_domains = ['bato.to']
 
-    # download_delay = 1
-
     def get_genres_url(self):
         return 'http://bato.to/search?advanced=1'
 
