@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from datetime import date
 from optparse import make_option
 
 from django.conf import settings
@@ -37,6 +38,9 @@ class Command(BaseCommand):
         make_option(
             '--lang', action='store', dest='lang', default=None,
             help='Language of the manga (<EN|ES>).'),
+        make_option(
+            '--until', action='store', dest='until', default=date.today(),
+            help='Until parameter to latest update (DD-MM-YYYY).'),
         make_option(
             '--from', action='store', dest='from', default=None,
             help='Email address from where to send the issue.'),
@@ -117,7 +121,12 @@ class Command(BaseCommand):
                                                   options['loglevel'],
                                                   options['dry-run'])
             elif command == 'latest':
-                scrapyctl.utils.update_latest(spiders, options['loglevel'],
+                until = options['until']
+                if isinstance(until, basestring):
+                    day, month, year = [int(x) for x in until.split('-')]
+                    until = date(year=year, month=month, day=day)
+                scrapyctl.utils.update_latest(spiders, until,
+                                              options['loglevel'],
                                               options['dry-run'])
             else:
                 raise CommandError('Not valid value for update')

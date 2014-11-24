@@ -84,9 +84,26 @@ def update_collection(spiders, manga, url, loglevel='INFO', dry_run=False):
             loglevel=loglevel, dry_run=dry_run)
 
 
-def update_latest(spiders, loglevel='INFO', dry_run=False):
+def update_latest(spiders, until, loglevel='INFO', dry_run=False):
     """Launch the scraper to update the latest issues."""
-    _update(spiders, command='latest', loglevel=loglevel, dry_run=dry_run)
+    reactor_control = ReactorControl()
+
+    for name in spiders:
+        crawler = _create_crawler()
+        crawler.signals.connect(reactor_control.remove_crawler,
+                                signal=signals.spider_closed)
+        kwargs = {
+            'latest': until.strftime('%d-%m-%Y'),
+        }
+        if dry_run:
+            kwargs['dry-run'] = dry_run
+        spider = crawler.spiders.create(name, **kwargs)
+        reactor_control.add_crawler()
+        crawler.crawl(spider)
+        crawler.start()
+
+    log.start(loglevel=loglevel)
+    reactor.run()
 
 
 def send(spider, manga, issues, urls, from_email, to_email, loglevel='INFO',
