@@ -41,7 +41,7 @@ class SubManga(MangaSpider):
     def get_collection_url(self, manga):
         return 'http://submanga.com/%s' % manga
 
-    def get_lastest_url(self, until):
+    def get_latest_url(self, until):
         return 'http://submanga.com'
 
     def get_manga_url(self, manga, issue):
@@ -229,7 +229,7 @@ class SubManga(MangaSpider):
         if not issues:
             return manga
 
-    def parse_lastest(self, response, until=None):
+    def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
         @url http://submanga.com
