@@ -7,7 +7,7 @@ characteristic==14.2.0
 cryptography==0.6.1
 cssselect==0.9.1
 django-rq==0.7.0
-lxml==3.4.0
+lxml==3.4.1
 pyOpenSSL==0.14
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
