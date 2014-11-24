@@ -301,7 +301,7 @@ class SubManga(MangaSpider):
     def _parse_latest(self, response):
         until = response.meta['until']
         signal = response.meta['signal']
-        manga = response.meta['signal']
+        manga = response.meta['manga']
 
         # There is only a single issue
         issue = manga['issues'][0]
@@ -309,7 +309,7 @@ class SubManga(MangaSpider):
         # Release
         xp = '//div[@class="b468"]/p[2]/text()'
         update_date = response.xpath(xp).re(r'\d{2}/\d{2}/\d{4}')
-        update_date = convert_to_date(update_date)
+        update_date = convert_to_date(update_date[0], dmy=True)
         issue['release'] = update_date
 
         if update_date < until:
