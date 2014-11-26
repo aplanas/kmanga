@@ -151,9 +151,10 @@ class Command(BaseCommand):
                         lang = options['lang'].upper()
                         issues = issues.filter(language=lang)
                     for issue in issues.order_by('number'):
-                        self.stdout.write(u'  [%s] [%s] %s\n    %s' % (
-                            issue.language, issue.number,
-                            issue.name, issue.url))
+                        self.stdout.write(u' [%s] [%s] [%s] %s' %
+                                          (issue.language,
+                                           issue.number, issue.release,
+                                           issue.name))
                     self.stdout.write('')
         elif options['send']:
             if len(spiders) > 1:
