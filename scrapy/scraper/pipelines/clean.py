@@ -154,11 +154,23 @@ class CleanBasePipeline(object):
         return value
 
     def _clean_field_list(self, field, cleaner=None, cleaner_params=None,
-                          optional=False, exclude=None):
+                          optional=False, exclude=None, drop=False):
         """Generic clean method for list field."""
         if cleaner:
             cleaner_params = cleaner_params if cleaner_params else ()
-            value = [cleaner(e, *cleaner_params) for e in self._as_list(field)]
+            value = []
+            for e in self._as_list(field):
+                try:
+                    c = cleaner(e, *cleaner_params)
+                except DropItem:
+                    # If the exception created by the cleaner function
+                    # is DropItem and we are allowed to drop items, we
+                    # drop it, else we re-raise the exception droping
+                    # the full item container.
+                    if not drop:
+                        raise
+                else:
+                    value.append(c)
         else:
             value = [e.strip() for e in self._as_list(field)]
         if exclude:
@@ -282,6 +294,7 @@ class CleanPipeline(CleanBasePipeline):
                        {
                            'cleaner': self.clean_issue,
                            'cleaner_params': (spider,),
+                           'drop': True,
                        }),
             'url': self._clean_field_str,
         }
@@ -327,8 +340,7 @@ class CleanPipeline(CleanBasePipeline):
             'English': 'EN',
             'Spanish': 'ES',
         }
-        return self._clean_field_set(field, lang.values(), translator=lang,
-                                     optional=True)
+        return self._clean_field_set(field, lang.values(), translator=lang)
 
     # -- Submanga fields
     def clean_field_submanga_manga_genres(self, field):
