@@ -62,8 +62,8 @@ class SRCSStripper(object):
         # We are going to make the SRCS record lengths all be 0.
         # Offsets up to and including the first SRCS record must not
         # be changed.
-        # XXX TODO -- We are including the first SRCS record but do
-        # not exists anymore after the patch.
+        # We are including the first SRCS record but do not exists
+        # anymore after the patch.
         new_data = data[:RECORD_INFO_LIST+(srcs_index+1)*8]
 
         # For every additional record in SRCS records set start to

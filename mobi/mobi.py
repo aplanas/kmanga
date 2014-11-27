@@ -124,7 +124,7 @@ class Container(object):
 
     def get_cover_path(self, relative=False):
         """Get the path of the cover image."""
-        # XXX TODO -- The cover image can be of a different type
+        # XXX TODO - The cover image can be of a different type
         image_path = 'cover.jpg'
         if not relative:
             image_path = os.path.join(self.path, image_path)
