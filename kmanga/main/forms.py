@@ -1,9 +1,9 @@
-from django.forms import ModelForm
+from django import forms
 
-from models import History
+from main.models import History
 
 
-class HistoryForm(ModelForm):
+class HistoryForm(forms.ModelForm):
 
     class Meta:
         model = History

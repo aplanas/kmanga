@@ -20,11 +20,11 @@ urlpatterns = [
         name='password_reset_confirm'),
     url(r'^reset/done/$', 'django.contrib.auth.views.password_reset_complete', name='password_reset_complete'),
 
-    url(r'^user_creation/$', UserCreationView.as_view(), name='user_creation'),
-    url(r'^user_creation/done/$', UserCreationDoneView.as_view(), name='user_creation_done'),
-    # url(r'^creation/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-    #     'accounts.views.creation', name='creation'),
-    # url(r'^creation/done/$', 'django.contrib.auth.views.creation_done', name='creation_done'),
+    url(r'^register/$', RegisterUserView.as_view(), name='register_user'),
+    url(r'^register/done/$', UserCreationDoneView.as_view(), name='register_user_done'),
+    # url(r'^confim/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+    #     'accounts.views.confirm', name='confirm'),
+    # url(r'^confirm/done/$', 'django.contrib.auth.views.confirm_done', name='confirm_done'),
 ]
 
 urlpatterns = patterns('', *urlpatterns)
