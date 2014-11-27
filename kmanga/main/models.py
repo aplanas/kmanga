@@ -1,5 +1,6 @@
 import os.path
 
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
@@ -143,22 +144,6 @@ class Issue(models.Model):
 
 @python_2_unicode_compatible
 class History(models.Model):
-    name = models.CharField(max_length=200)
-    from_issue = models.IntegerField()
-    to_issue = models.IntegerField()
-    to_email = models.EmailField()
-    send_date = models.DateTimeField(auto_now_add=True)
-    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
-
-    def __str__(self):
-        return '%s [%03d-%03d]' % (self.name, self.from_issue, self.to_issue)
-
-    def get_absolute_url(self):
-        return reverse('history-detail', kwargs={'pk': self.pk})
-
-
-@python_2_unicode_compatible
-class HistoryLine(models.Model):
     PENDING = 'PE'
     PROCESSING = 'PR'
     SEND = 'SE'
@@ -170,15 +155,19 @@ class HistoryLine(models.Model):
         (FAIL, 'Fail'),
     )
 
-    history = models.ForeignKey(History)
-    issue = models.IntegerField()
+    issue = models.ForeignKey(Issue)
+    user = models.ForeignKey(User)
+    to_email = models.EmailField()
     status = models.CharField(max_length=2, choices=STATUS_CHOICES,
                               default=PENDING)
-    updated = models.DateTimeField(auto_now=True)
+    send_date = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
-        return '%s [%s]' % (self.status, self.updated)
+        return '%s - %s' % (self.issue, self.status)
+
+    def get_absolute_url(self):
+        return reverse('history-detail', kwargs={'pk': self.pk})
 
     def send_mobi(self):
         pass
