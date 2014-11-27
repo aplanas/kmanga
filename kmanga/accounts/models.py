@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
-class Profile(models.Model):
+class UserProfile(models.Model):
     FREE = 'F'
     PAY = 'P'
     MODE_CHOICES = (
