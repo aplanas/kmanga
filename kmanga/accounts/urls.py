@@ -5,8 +5,8 @@
 
 from django.conf.urls import patterns, url
 
-from .views import (UserCreationView,
-                    UserCreationDoneView,)
+from .views import (UserCreateView,
+                    UserCreateDoneView,)
 
 urlpatterns = [
     url(r'^login/$', 'django.contrib.auth.views.login', name='login'),
@@ -20,8 +20,8 @@ urlpatterns = [
         name='password_reset_confirm'),
     url(r'^reset/done/$', 'django.contrib.auth.views.password_reset_complete', name='password_reset_complete'),
 
-    url(r'^register/$', RegisterUserView.as_view(), name='register_user'),
-    url(r'^register/done/$', UserCreationDoneView.as_view(), name='register_user_done'),
+    url(r'^register/$', UserCreateView.as_view(), name='register_user'),
+    url(r'^register/done/$', UserCreateDoneView.as_view(), name='register_user_done'),
     # url(r'^confim/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
     #     'accounts.views.confirm', name='confirm'),
     # url(r'^confirm/done/$', 'django.contrib.auth.views.confirm_done', name='confirm_done'),
