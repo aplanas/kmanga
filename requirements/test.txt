@@ -2,3 +2,4 @@
 -r base.txt
 
 coverage==3.7.1
+selenium==2.44.0
