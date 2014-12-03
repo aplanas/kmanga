@@ -27,7 +27,7 @@ class Command(BaseCommand):
             help='Search locally mangas.'),
         make_option(
             '--send', action='store', dest='send', default=None,
-            help='Send issues to the user (list of numbers).'),
+            help='Send issues to the user (list of numbers, or all).'),
         make_option(
             '--manga', action='store', dest='manga', default=None,
             help='Name of the manga.'),
@@ -181,24 +181,32 @@ class Command(BaseCommand):
                     raise CommandError(
                         'Please, set a valid language from %s' % source_langs)
 
-            issues = []
-            for issue in options['send'].split(','):
-                if '-' in issue:
-                    a, b = issue.split('-')
-                    issues.extend(range(int(a), int(b)+1))
-                else:
-                    issues.append(float(issue))
-
+            # urls = options['url'].split(',') if options['url'] else []
             urls = []
-            for number in issues:
-                try:
-                    issue = manga.issue_set.get(number=number, language=lang)
+            issues = []
+            if options['send'] == 'all':
+                for issue in manga.issue_set.all():
                     urls.append(issue.url)
-                except ObjectDoesNotExist:
-                    raise CommandError('Issue %s not in %s' % (number, manga))
-                except MultipleObjectsReturned:
-                    raise CommandError('Multiple issues %s in %s' % (number,
-                                                                     manga))
+                    issues.append(issue.number)
+            else:
+                for issue in options['send'].split(','):
+                    if '-' in issue:
+                        a, b = issue.split('-')
+                        issues.extend(range(int(a), int(b)+1))
+                    else:
+                        issues.append(float(issue))
+
+                for number in issues:
+                    try:
+                        issue = manga.issue_set.get(number=number,
+                                                    language=lang)
+                        urls.append(issue.url)
+                    except ObjectDoesNotExist:
+                        raise CommandError('Issue %s not in %s' % (number,
+                                                                   manga))
+                    except MultipleObjectsReturned:
+                        raise CommandError('Multiple issues %s in %s' % (
+                            number, manga))
 
             _from = options['from'] if options['from'] else settings.KMANGA_EMAIL
 
