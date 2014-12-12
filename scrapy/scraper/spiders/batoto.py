@@ -143,7 +143,7 @@ class Batoto(MangaSpider):
         # Artist
         manga['artist'] = response.xpath(xp % 'Artist:').extract()
         # Reading direction
-        manga['reading_direction'] = 'LR'
+        manga['reading_direction'] = 'RL'
         # Status
         manga['status'] = response.xpath(xp % 'Status:').extract()
         # Genres
