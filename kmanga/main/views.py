@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
 # from django.shortcuts import render
 from django.views.generic import ListView, DetailView
@@ -9,15 +10,22 @@ from main.forms import HistoryForm
 from main.models import History
 
 
-class HistoryListView(ListView):
+class LoginRequiredMixin(object):
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(LoginRequiredMixin, cls).as_view(**initkwargs)
+        return login_required(view)
+
+
+class HistoryListView(LoginRequiredMixin, ListView):
     model = History
 
 
-class HistoryDetailView(DetailView):
+class HistoryDetailView(LoginRequiredMixin, DetailView):
     model = History
 
 
-class HistoryCreateView(CreateView):
+class HistoryCreateView(LoginRequiredMixin, CreateView):
     model = History
     form_class = HistoryForm
 
@@ -29,10 +37,10 @@ class HistoryCreateView(CreateView):
         return result
 
 
-class HistoryUpdateView(UpdateView):
+class HistoryUpdateView(LoginRequiredMixin, UpdateView):
     model = History
 
 
-class HistoryDeleteView(DeleteView):
+class HistoryDeleteView(LoginRequiredMixin, DeleteView):
     model = History
     success_url = reverse_lazy('history-list')
