@@ -1,25 +1,25 @@
-Django==1.7.1
-Pillow==2.6.1
-Scrapy==0.24.4
-Twisted==14.0.2
 cffi==0.8.6
-characteristic==14.2.0
-cryptography==0.6.1
+characteristic==14.3.0
+cryptography==0.7.1
 cssselect==0.9.1
+Django==1.7.1
 django-rq==0.7.0
+enum34==1.0.4
 lxml==3.4.1
-pyOpenSSL==0.14
+Pillow==2.6.1
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
 pycparser==2.10
+pyOpenSSL==0.14
 queuelib==1.2.2
 redis==2.10.3
 rq==0.4.6
+Scrapy==0.24.4
 service-identity==14.0.0
 six==1.8.0
+Twisted==14.0.2
 w3lib==1.10.0
-wsgiref==0.1.2
-zope.interface==4.1.1
+zope.interface==4.1.2
 
 # bpython==0.13.1
 # django-braces==1.4.0
