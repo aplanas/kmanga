@@ -33,6 +33,10 @@ from main.models import Issue
 
 from mobi import Container, MangaMobi
 
+# https://docs.djangoproject.com/en/dev/releases/1.7/#standalone-scripts
+import django
+django.setup()
+
 
 class MobiCache(collections.MutableMapping):
     def __init__(self, mobi_store):
@@ -130,8 +134,12 @@ class MobiContainer(object):
         return item
 
     def close_spider(self, spider):
-        if spider._operation == 'manga':
-            return self.create_mobi()
+        # If there is a 503 error, the parse() method of mangaspider
+        # is never called and the attribute is not set.  This can be
+        # used as an indication of error in the download.
+        if hasattr(spider, '_operation'):
+            if spider._operation == 'manga':
+                return self.create_mobi()
 
     def _create_mobi(self, name, number, images, issue):
         """Create the MOBI file and return a generator."""
