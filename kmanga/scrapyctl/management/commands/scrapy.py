@@ -185,7 +185,8 @@ class Command(BaseCommand):
             urls = []
             issues = []
             if options['send'] == 'all':
-                for issue in manga.issue_set.filter(language=lang):
+                _issues = manga.issue_set.filter(language=lang).order_by('number')
+                for issue in _issues:
                     urls.append(issue.url)
                     issues.append(issue.number)
             else:
