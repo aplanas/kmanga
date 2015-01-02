@@ -185,8 +185,8 @@ class Command(BaseCommand):
             urls = []
             issues = []
             if options['send'] == 'all':
-                _issues = manga.issue_set.filter(language=lang).order_by('number')
-                for issue in _issues:
+                _issues = manga.issue_set.filter(language=lang)
+                for issue in _issues.order_by('number'):
                     urls.append(issue.url)
                     issues.append(issue.number)
             else:
@@ -209,7 +209,8 @@ class Command(BaseCommand):
                         raise CommandError('Multiple issues %s in %s' % (
                             number, manga))
 
-            _from = options['from'] if options['from'] else settings.KMANGA_EMAIL
+            _from = options['from']
+            _from = _from if _from else settings.KMANGA_EMAIL
 
             if not options['to']:
                 raise CommandError("Parameter 'to' is not optional")

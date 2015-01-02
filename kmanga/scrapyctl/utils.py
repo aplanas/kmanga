@@ -24,10 +24,11 @@ class ReactorControl(object):
             reactor.stop()
 
 
-# ReactorFeedControl reuse the same reactor, feedind a new job every
-# time a job is done
+# ReactorFeedControl reuse the same reactor, starting a new crawler
+# every time a old crawler finnishes
 
 MAX_CRAWLERS = 5
+
 
 class ReactorFeedControl(object):
     def __init__(self, crawlers, max_crawlers=MAX_CRAWLERS):
