@@ -11,8 +11,7 @@ from twisted.internet import reactor
 # Part of this code is based on:
 # http://stackoverflow.com/questions/22825492/how-to-stop-the-reactor-after-the-run-of-multiple-spiders-in-the-same-process-on
 
-class ReactorControl:
-
+class ReactorControl(object):
     def __init__(self):
         self.crawlers_running = 0
 
@@ -21,6 +20,37 @@ class ReactorControl:
 
     def remove_crawler(self):
         self.crawlers_running -= 1
+        if not self.crawlers_running:
+            reactor.stop()
+
+
+# ReactorFeedControl reuse the same reactor, feedind a new job every
+# time a job is done
+
+MAX_CRAWLERS = 5
+
+class ReactorFeedControl(object):
+    def __init__(self, crawlers, max_crawlers=MAX_CRAWLERS):
+        self.crawlers = crawlers
+        self.max_crawlers = max_crawlers
+        self.crawlers_running = 0
+
+    def run(self):
+        while self.crawlers_running <= self.max_crawlers:
+            self.add_crawler()
+        reactor.run()
+
+    def add_crawler(self):
+        if self.crawlers:
+            crawler = self.crawlers.pop(0)
+            crawler.signals.connect(self.remove_crawler,
+                                    signal=signals.spider_closed)
+            self.crawlers_running += 1
+            crawler.start()
+
+    def remove_crawler(self):
+        self.crawlers_running -= 1
+        self.add_crawler()
         if not self.crawlers_running:
             reactor.stop()
 
@@ -109,13 +139,11 @@ def update_latest(spiders, until, loglevel='INFO', dry_run=False):
 def send(spider, manga, issues, urls, from_email, to_email, loglevel='INFO',
          dry_run=False):
     """Send a list of issues to an user."""
-    reactor_control = ReactorControl()
-
     name = spider
+
+    crawlers = []
     for issue, url in zip(issues, urls):
         crawler = _create_crawler()
-        crawler.signals.connect(reactor_control.remove_crawler,
-                                signal=signals.spider_closed)
         kwargs = {
             'manga': manga,
             'issue': issue,
@@ -126,9 +154,9 @@ def send(spider, manga, issues, urls, from_email, to_email, loglevel='INFO',
         if dry_run:
             kwargs['dry-run'] = dry_run
         spider = crawler.spiders.create(name, **kwargs)
-        reactor_control.add_crawler()
         crawler.crawl(spider)
-        crawler.start()
+        crawlers.append(crawler)
 
+    reactor_control = ReactorFeedControl(crawlers)
     log.start(loglevel=loglevel)
-    reactor.run()
+    reactor_control.run()
