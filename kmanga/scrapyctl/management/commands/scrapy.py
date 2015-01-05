@@ -4,8 +4,6 @@ from datetime import date
 from optparse import make_option
 
 from django.conf import settings
-from django.core.exceptions import MultipleObjectsReturned
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 
@@ -17,16 +15,19 @@ import scrapyctl.utils
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
-            '--list', action='store_true', dest='list', default=False,
+            '-l', '--list', action='store_true', dest='list', default=False,
             help='List available spiders.'),
         make_option(
-            '--update', action='store', dest='update', default=None,
+            '-u', '--update', action='store', dest='update', default=None,
             help='Update an element (<genres|catalog|collection|latest>).'),
         make_option(
-            '--search', action='store', dest='search', default=None,
+            '-s', '--search', action='store', dest='search', default=None,
             help='Search locally mangas.'),
         make_option(
-            '--send', action='store', dest='send', default=None,
+            '--details', action='store_true', dest='details', default=False,
+            help='Add more details in the list of mangas.'),
+        make_option(
+            '-e', '--send', action='store', dest='send', default=None,
             help='Send issues to the user (list of numbers, or all).'),
         make_option(
             '--manga', action='store', dest='manga', default=None,
@@ -151,10 +152,18 @@ class Command(BaseCommand):
                         lang = options['lang'].upper()
                         issues = issues.filter(language=lang)
                     for issue in issues.order_by('number'):
-                        self.stdout.write(u' [%s] [%s] [%s] %s' %
-                                          (issue.language,
-                                           issue.number, issue.release,
-                                           issue.name))
+                        if options['details']:
+                            self.stdout.write(u' [%s] [%s] [%s] [%s] %s' %
+                                              (issue.language,
+                                               issue.number,
+                                               issue.release,
+                                               issue.url,
+                                               issue.name))
+                        else:
+                            self.stdout.write(u' [%s] [%s] %s' %
+                                              (issue.language,
+                                               issue.number,
+                                               issue.name))
                     self.stdout.write('')
         elif options['send']:
             if len(spiders) > 1:
