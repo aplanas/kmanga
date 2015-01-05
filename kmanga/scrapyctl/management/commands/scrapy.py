@@ -34,8 +34,7 @@ class Command(BaseCommand):
             help='Name of the manga.'),
         make_option(
             '--url', action='store', dest='url', default=None,
-            help='Set the start url for the operation,'
-            ' can be a list separated with comma.'),
+            help='Set the start url for the operation.'),
         make_option(
             '--lang', action='store', dest='lang', default=None,
             help='Language of the manga (<EN|ES>).'),
@@ -194,6 +193,10 @@ class Command(BaseCommand):
             issues = []
             if options['send'] == 'all':
                 _issues = manga.issue_set.filter(language=lang)
+                # If a URL is set, send only this single manga
+                if options['url']:
+                    _issues = _issues.filter(url=options['url'])
+
                 for issue in _issues.order_by('number'):
                     urls.append(issue.url)
                     issues.append(issue.number)
