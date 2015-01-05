@@ -181,7 +181,6 @@ class Command(BaseCommand):
                     raise CommandError(
                         'Please, set a valid language from %s' % source_langs)
 
-            # urls = options['url'].split(',') if options['url'] else []
             urls = []
             issues = []
             if options['send'] == 'all':
@@ -190,24 +189,29 @@ class Command(BaseCommand):
                     urls.append(issue.url)
                     issues.append(issue.number)
             else:
+                _issues = []
                 for issue in options['send'].split(','):
                     if '-' in issue:
                         a, b = issue.split('-')
-                        issues.extend(range(int(a), int(b)+1))
+                        _issues.extend(range(int(a), int(b)+1))
                     else:
-                        issues.append(float(issue))
+                        _issues.append(float(issue))
 
-                for number in issues:
-                    try:
-                        issue = manga.issue_set.get(number=number,
-                                                    language=lang)
-                        urls.append(issue.url)
-                    except ObjectDoesNotExist:
+                for number in _issues:
+                    issue = manga.issue_set.filter(number=number,
+                                                   language=lang)
+                    issue_count = issue.count()
+                    if issue_count:
+                        if issue_count > 1:
+                            msg = 'Multiple issues %s in %s. Adding all matches.'
+                            print msg % (number, manga)
+
+                        for i in issue:
+                            issues.append(i.number)
+                            urls.append(i.url)
+                    else:
                         raise CommandError('Issue %s not in %s' % (number,
                                                                    manga))
-                    except MultipleObjectsReturned:
-                        raise CommandError('Multiple issues %s in %s' % (
-                            number, manga))
 
             _from = options['from']
             _from = _from if _from else settings.KMANGA_EMAIL
