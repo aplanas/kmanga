@@ -23,27 +23,13 @@ from urlparse import urljoin
 import scrapy
 
 from scraper.pipelines import convert_to_date
+from scraper.pipelines import convert_to_number
 from scraper.items import Genres, Manga, Issue, IssuePage
 
 from .mangaspider import MangaSpider
 
 
 AJAX_SEARCH = 'http://bato.to/search_ajax?p=%d'
-
-
-def _int(a, default=0):
-    """Convert viewers or followers to integer."""
-    result = default
-    try:
-        if 'k' in a:
-            result = int(1000 * float(a[:-1]))
-        elif 'm' in a:
-            result = int(1000 * 1000 * float(a[:-1]))
-        else:
-            result = int(a)
-    except ValueError:
-        pass
-    return result
 
 
 class Batoto(MangaSpider):
@@ -92,9 +78,9 @@ class Batoto(MangaSpider):
             xp = './td[3]/div/@title'
             rating = float(item.xpath(xp).re(r'([.\d]+)/5')[0])
             xp = './td[4]/text()'
-            viewers = _int(item.xpath(xp).extract()[0])
+            viewers = convert_to_number(item.xpath(xp).extract()[0])
             xp = './td[5]/text()'
-            followers = _int(item.xpath(xp).extract()[0])
+            followers = convert_to_number(item.xpath(xp).extract()[0])
             manga['rank'] = (rating + 0.1) * viewers * followers
             manga['rank_order'] = 'DESC'
             # URL Hack to avoid a redirection. This is used because

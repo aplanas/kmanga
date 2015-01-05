@@ -74,6 +74,22 @@ def convert_to_date(str_, dmy=False):
         raise ValueError('Format not recognized')
 
 
+def convert_to_number(str_, as_int=False, default=0):
+    """Parse issues / viewers numbers."""
+    result = default
+    if str_.endswith('k'):
+        result = 1000 * float(str_[:-1])
+    elif str_.endswith('m'):
+        result = 1000 * 1000 * float(str_[:-1])
+    else:
+        result = float(str_)
+
+    if as_int:
+        result = int(result)
+
+    return result
+
+
 class CleanBasePipeline(object):
 
     def process_item(self, item, spider):
@@ -135,18 +151,20 @@ class CleanBasePipeline(object):
         """Generic clean method for integer field."""
         value = default
         try:
-            value = int(float(self._as_str(field, separator='')))
+            value = convert_to_number(self._as_str(field, separator=''),
+                                      as_int=True, default=default)
         except ValueError:
             if not optional:
                 raise ValueError('field is not optional'
                                  " or can't be converted to an integer")
         return value
 
-    def _clean_field_num(self, field, optional=False, default=0):
-        """Generic clean method for numeric field."""
+    def _clean_field_float(self, field, optional=False, default=0):
+        """Generic clean method for float field."""
         value = default
         try:
-            value = float(self._as_str(field))
+            value = convert_to_number(self._as_str(field, separator=''),
+                                      default=default)
         except ValueError:
             if not optional:
                 raise ValueError('field is not optional'
@@ -304,7 +322,7 @@ class CleanPipeline(CleanBasePipeline):
     def clean_issue(self, item, spider):
         cleaning_plan = {
             'name': self._clean_field_str,
-            'number': (self._clean_field_num, {'optional': True}),
+            'number': (self._clean_field_float, {'optional': True}),
             'language': (self._clean_field_set,
                          {'values': ('EN', 'ES')}),
             'release': self._clean_field_date,
