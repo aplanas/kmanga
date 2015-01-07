@@ -103,19 +103,23 @@ class SubManga(MangaSpider):
         xp = '//div[@class="b468"]/h1/a/text()'
         manga['name'] = response.xpath(xp).extract()
         # Alternate name
-        manga['alt_name'] = []   # manga['name']
+        manga['alt_name'] = []  # manga['name']
         # Author
-        xp = '//div[@class="b250 bmr0"]/p[5]/a/text()'
+        xp = '//div[@class="b250 bmr0"]/' \
+             'p[contains(., "Creado por")]/a/text()'
         manga['author'] = response.xpath(xp).extract()
         # Artist
-        xp = '//div[@class="b250 bmr0"]/p[6]/a/text()'
+        xp = '//div[@class="b250 bmr0"]/' \
+             'p[contains(., "Publicado en la revista")]/a/text()'
         manga['artist'] = response.xpath(xp).extract()
         # Reading direction
         manga['reading_direction'] = 'RL'
         # Status
         manga['status'] = 'ONGOING'
         # Genres
-        xp = '//div[@class="b250 bmr0"]/p[4]/a/text()'
+        xp = '//div[@class="b250 bmr0"]/' \
+             'p[contains(., "Creado por")]/' \
+             'preceding-sibling::p/a/text()'
         manga['genres'] = response.xpath(xp).extract()
         # Description
         xp = '//div[@class="b250 bmr0"]/p[3]/text()'
