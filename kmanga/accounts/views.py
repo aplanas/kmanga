@@ -1,16 +1,18 @@
-from django.contrib.auth.forms import UserForm
 from django.contrib.auth.models import User
 # from django.contrib.auth.tokens import default_token_generator
 from django.core.urlresolvers import reverse_lazy
 # from django.shortcuts import render
-from django.views.generic import (TemplateView,
-                                  CreateView,)
+from django.views.generic import (CreateView,
+                                  TemplateView,)
 # from django.views.decorators.csrf import csrf_protect
+
+from .forms import UserCreateForm
+from .models import UserProfile
 
 
 class UserCreateView(CreateView):
     model = User
-    form_class = UserForm
+    form_class = UserCreateForm
     template_name = 'registration/user_create_form.html'
     success_url = reverse_lazy('user_creation_done')
 
@@ -36,3 +38,7 @@ class UserCreateView(CreateView):
 
 class UserCreateDoneView(TemplateView):
     template_name = 'registration/user_creation_done.html'
+
+
+class UserProfileView(TemplateView):
+    template_name = 'registration/user_profile.html'
