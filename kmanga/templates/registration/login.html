@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block page_title%}History{% endblock page_title %}
+{% block page_title%}Login{% endblock page_title %}
 {% block content %}
 
 {% if form.errors %}
@@ -9,7 +9,7 @@
 
 <form method="post" action="{% url 'django.contrib.auth.views.login' %}">{% csrf_token %}
   {{ form.as_p }}
-  <input type="hidden" name="next" value="{{next}}" />
+  <input type="hidden" name="next" value="{{ next }}" />
   <button type="submit" class="btn btn-lg btn-default">Login</button>
 </form>
 {% endblock %}
