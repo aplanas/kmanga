@@ -99,6 +99,12 @@ class SubManga(MangaSpider):
         else:
             manga = Manga(url=response.url)
 
+        # Submanga returns a 404 page as a normal page (200)
+        xp = '//title/text()'
+        title = response.xpath(xp).extract()
+        if title[0] == u'404 \u2014 submanga.com':
+            return
+
         # Name
         xp = '//div[@class="b468"]/h1/a/text()'
         manga['name'] = response.xpath(xp).extract()
