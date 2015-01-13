@@ -2,7 +2,7 @@ cffi==0.8.6
 characteristic==14.3.0
 cryptography==0.7.1
 cssselect==0.9.1
-Django==1.7.2
+Django==1.7.3
 django-rq==0.7.0
 enum34==1.0.4
 lxml==3.4.1
@@ -18,7 +18,7 @@ Scrapy==0.24.4
 service-identity==14.0.0
 six==1.9.0
 Twisted==14.0.2
-w3lib==1.10.0
+w3lib==1.11.0
 zope.interface==4.1.2
 
 # bpython==0.13.1
