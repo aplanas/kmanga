@@ -1,7 +1,12 @@
 from django.contrib import admin
 
-from main.models import Source, SourceLanguage, ConsolidateGenre, Genre
-from main.models import Manga, Issue
+from .models import Source
+from .models import SourceLanguage
+# from .models import ConsolidateGenre
+from .models import Genre
+from .models import Manga
+from .models import Issue
+
 
 class SourceLanguageInline(admin.StackedInline):
     model = SourceLanguage
@@ -17,6 +22,7 @@ class SourceAdmin(admin.ModelAdmin):
 
 admin.site.register(Source, SourceAdmin)
 # admin.site.register(ConsolidateGenre)
+
 
 class IssueAdmin(admin.StackedInline):
     model = Issue
