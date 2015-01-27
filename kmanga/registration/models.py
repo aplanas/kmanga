@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 
 
@@ -24,7 +24,8 @@ class UserProfile(models.Model):
         (RUSSIAN, 'Russian'),
     )
 
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL)
     mode = models.CharField(max_length=1, choices=MODE_CHOICES,
                             default=FREE)
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES)
+    email_kindle = models.EmailField()

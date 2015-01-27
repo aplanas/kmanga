@@ -89,8 +89,8 @@ INSTALLED_APPS += (
     # External applications
     'django_rq',
     # Project applications
-    'accounts',
     'main',
+    'registration',
     'scrapyctl',
 )
 

@@ -11,7 +11,7 @@ urlpatterns = patterns('',
 
     url(r'^$', RedirectView.as_view(url=reverse_lazy('history-list')), name='home'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^accounts/', include('accounts.urls')),
+    url(r'^accounts/', include('registration.urls')),
 
     url(r'^django-rq/', include('django_rq.urls')),
     url(r'^kmanga/', include('main.urls')),

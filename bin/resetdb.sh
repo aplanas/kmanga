@@ -11,7 +11,7 @@ fi
 
 rm kmanga/db.sqlite3
 rm kmanga/main/migrations/000*
-rm kmanga/accounts/migrations/000*
+rm kmanga/registration/migrations/000*
 $PYTHON kmanga/manage.py makemigrations
 $PYTHON kmanga/manage.py migrate
 $PYTHON kmanga/manage.py createsuperuser --username aplanas --email aplanas@gmail.com
