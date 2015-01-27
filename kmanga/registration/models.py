@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
 
 
+@python_2_unicode_compatible
 class UserProfile(models.Model):
     FREE = 'F'
     PAY = 'P'
@@ -29,3 +31,6 @@ class UserProfile(models.Model):
                             default=FREE)
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES)
     email_kindle = models.EmailField()
+
+    def __str__(self):
+        return self.user.username
