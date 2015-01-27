@@ -5,9 +5,9 @@
 
 from django.conf.urls import patterns, url
 
-from .views import (UserCreateView,
-                    UserCreateDoneView,
-                    UserProfileView,)
+# from .views import UserCreateView
+# from .views import UserCreateDoneView
+from .views import UserProfileView
 
 urlpatterns = [
     url(r'^login/$', 'django.contrib.auth.views.login', name='login'),
