@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
-from scrapyctl.utils import send
+# from scrapyctl.utils import send
 
 
 @python_2_unicode_compatible
