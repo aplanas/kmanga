@@ -14,11 +14,10 @@
     <meta content="horizontal-rl" name="primary-writing-mode"/>
     <meta content="false" name="region-mag"/>
     <meta content="800x1280" name="original-resolution"/>
-    <meta content="cover-image" name="cover"/>
   </metadata>
   <manifest>
     <item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>
-    <item href="cover.jpg" id="cover-image" media-type="image/jpeg"/>
+    <item href="cover.jpg" id="cimage" media-type="image/jpeg" properties="cover-image"/>
     <item href="html/page-000.html" id="page-000" media-type="application/xhtml+xml"/>
     <item href="html/page-001.html" id="page-001" media-type="application/xhtml+xml"/>
     <item href="html/page-002.html" id="page-002" media-type="application/xhtml+xml"/>

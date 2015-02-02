@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
-import itertools
 import os
 import shutil
 import subprocess
@@ -291,7 +290,6 @@ class MangaMobi(object):
             ('region-mag', 'false'),
             # XXX TODO - Detect the original resolution
             ('original-resolution', '%dx%d' % (WIDTH, HEIGHT)),
-            ('cover', 'cover-image'),
         )
         for name, content in metas:
             ET.SubElement(metadata, 'meta', {
@@ -300,15 +298,24 @@ class MangaMobi(object):
             })
 
         manifest = ET.SubElement(package, 'manifest')
-        items = (
-            ('toc.ncx', 'ncx', 'application/x-dtbncx+xml'),
-            ('cover.jpg', 'cover-image', 'image/jpeg'),
-        )
+        # Add the TOC item
+        ET.SubElement(manifest, 'item', {
+            'id': 'ncx',
+            'href': 'toc.ncx',
+            'media-type': 'application/x-dtbncx+xml',
+        })
+        # Add the cover image item
+        ET.SubElement(manifest, 'item', {
+            'id': 'cimage',
+            'href': 'cover.jpg',
+            'media-type': 'image/jpeg',
+            'properties': 'cover-image',
+        })
+
         pages = [(self.container.get_page_path(n, relative=True),
                   'page-%03d' % n, 'application/xhtml+xml')
                  for n in range(self.container.npages())]
-
-        for href, id_, media_type in itertools.chain(items, pages):
+        for href, id_, media_type in pages:
             ET.SubElement(manifest, 'item', {
                 'id': id_,
                 'href': href,
@@ -409,5 +416,6 @@ class MangaMobi(object):
         tree = ET.ElementTree(ncx)
         with open(self.container.get_toc_ncx_path(), 'w') as f:
             print >>f, '<?xml version="1.0" encoding="UTF-8"?>'
-            print >>f, '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">'
+            print >>f, '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" ' \
+                       '"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">'
             tree.write(f, encoding='utf-8', xml_declaration=False)

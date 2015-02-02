@@ -40,7 +40,7 @@ class TestMangaMobi(unittest.TestCase):
         shutil.copytree('tests/fixtures/container01', 'tests/fixtures/dummy')
         self.container = Container('tests/fixtures/dummy')
         self.info = Info(title='title', language='en', publisher='publisher',
-                         author='author')
+                         author='author', reading_direction='horizontal-rl')
         self.mangamobi = MangaMobi(self.container, self.info)
 
     def tearDown(self):
@@ -126,20 +126,20 @@ class TestMobiCache(unittest.TestCase):
         shutil.rmtree('tests/fixtures/cache/cache')
 
     def test_cache(self):
-        self.cache[('spider', 'mobi', '1')] = [
+        self.cache[('spider', 'mobi', '1', 'url')] = [
             ('mobi1.mobi', 'tests/fixtures/cache/mobi1.mobi')]
-        self.cache[('spider', 'mobi', '2')] = [
+        self.cache[('spider', 'mobi', '2', 'url')] = [
             ('mobi2.1.mobi', 'tests/fixtures/cache/mobi2.1.mobi'),
             ('mobi2.2.mobi', 'tests/fixtures/cache/mobi2.2.mobi')]
-        self.cache[('spider', 'mobi', '3')] = [
+        self.cache[('spider', 'mobi', '3', 'url')] = [
             ('mobi3.mobi', 'tests/fixtures/cache/mobi3.mobi')]
         self.assertTrue(len(self.cache) == 3)
         for key in self.cache:
-            self.assertTrue(len(key) == 3)
-        del self.cache[('spider', 'mobi', '1')]
+            self.assertTrue(len(key) == 4)
+        del self.cache[('spider', 'mobi', '1', 'url')]
         self.assertTrue(len(self.cache) == 2)
-        self.assertTrue(('spider', 'mobi', '1') not in self.cache)
-        self.assertTrue(('spider', 'mobi', '2') in self.cache)
+        self.assertTrue(('spider', 'mobi', '1', 'url') not in self.cache)
+        self.assertTrue(('spider', 'mobi', '2', 'url') in self.cache)
 
 
 if __name__ == '__main__':
