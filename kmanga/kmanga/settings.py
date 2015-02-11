@@ -90,16 +90,9 @@ INSTALLED_APPS += (
     'django_rq',
     # Project applications
     'main',
-    # 'registration',
+    'registration',
     'scrapyctl',
 )
-
-# Put `registration` on top of the list, so the template overriding
-# takes precedece.
-
-INSTALLED_APPS = (
-    'registration',
-) + INSTALLED_APPS
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
