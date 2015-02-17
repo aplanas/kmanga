@@ -4,9 +4,10 @@ from django.core.urlresolvers import reverse_lazy
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-import django_rq
+# import django_rq
 
 from .models import History
+from .models import Manga
 
 
 class LoginRequiredMixin(object):
@@ -43,3 +44,8 @@ class HistoryUpdateView(LoginRequiredMixin, UpdateView):
 class HistoryDeleteView(LoginRequiredMixin, DeleteView):
     model = History
     success_url = reverse_lazy('history-list')
+
+
+class LatestUpdates(ListView):
+    """Show latest updates mangas (mangas with new issues)."""
+    model = Manga

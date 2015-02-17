@@ -68,6 +68,13 @@ def _cover_path(instance, filename):
     return os.path.join(instance.source.spider, filename)
 
 
+class MangaQuerySet(models.QuerySet):
+    def latests(self):
+        return self.annotate(
+            models.Max('issue__last_modified')
+        ).order_by('-issue__last_modified__max')[:5]
+
+
 @python_2_unicode_compatible
 class Manga(models.Model):
     LEFT_TO_RIGHT = 'LR'
@@ -112,6 +119,8 @@ class Manga(models.Model):
     url = models.URLField()
     source = models.ForeignKey(Source)
     last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
+
+    objects = MangaQuerySet.as_manager()
 
     def __str__(self):
         return self.name
