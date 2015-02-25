@@ -64,15 +64,15 @@ class Genre(models.Model):
         return self.name
 
 
-def _cover_path(instance, filename):
-    return os.path.join(instance.source.spider, filename)
-
-
 class MangaQuerySet(models.QuerySet):
     def latests(self):
         return self.annotate(
             models.Max('issue__last_modified')
         ).order_by('-issue__last_modified__max')[:5]
+
+
+def _cover_path(instance, filename):
+    return os.path.join(instance.source.spider, filename)
 
 
 @python_2_unicode_compatible
