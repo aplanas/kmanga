@@ -1,5 +1,4 @@
 from django.conf.urls import patterns, url
-from django.contrib.auth.decorators import login_required
 
 from main.views import (HistoryListView,
                         HistoryDetailView,
@@ -9,16 +8,14 @@ from main.views import (HistoryListView,
 
 
 urlpatterns = [
-    url(r'^history/$', login_required(HistoryListView.as_view()),
-        name='history-list'),
-    url(r'^history/add/$', login_required(HistoryCreateView.as_view()),
-        name='history-create'),
-    url(r'^history/(?P<pk>\d+)/$', login_required(HistoryUpdateView.as_view()),
+    url(r'^history/$', HistoryListView.as_view(), name='history-list'),
+    url(r'^history/(?P<pk>\d+)$', HistoryDetailView.as_view(),
+        name='history-read'),
+    url(r'^history/new/$', HistoryCreateView.as_view(), name='history-create'),
+    url(r'^history/edit/(?P<pk>\d+)$', HistoryUpdateView.as_view(),
         name='history-update'),
-    url(r'^history/(?P<pk>\d+)/view$', login_required(HistoryDetailView.as_view()),
-        name='history-detail'),
-    url(r'^history/(?P<pk>\d+)/delete/$',
-        login_required(HistoryDeleteView.as_view()), name='history-delete'),
+    url(r'^history/delete/(?P<pk>\d+)$', HistoryDeleteView.as_view(),
+        name='history-delete'),
     ]
 
 urlpatterns = patterns('', *urlpatterns)
