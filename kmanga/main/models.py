@@ -1,6 +1,6 @@
 import os.path
 
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
@@ -152,6 +152,17 @@ class Issue(models.Model):
 
 
 @python_2_unicode_compatible
+class Subscription(models.Model):
+    manga = models.ForeignKey(Manga)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    issues_per_day = models.IntegerField(default=2)
+    disabled = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '%s (%d per day)' % (self.manga, self.issues_per_day)
+
+
+@python_2_unicode_compatible
 class History(models.Model):
     PENDING = 'PE'
     PROCESSING = 'PR'
@@ -165,8 +176,7 @@ class History(models.Model):
     )
 
     issue = models.ForeignKey(Issue)
-    user = models.ForeignKey(User)
-    to_email = models.EmailField()
+    subscription = models.ForeignKey(Subscription)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES,
                               default=PENDING)
     send_date = models.DateTimeField(auto_now_add=True)
@@ -177,7 +187,3 @@ class History(models.Model):
 
     def get_absolute_url(self):
         return reverse('history-detail', kwargs={'pk': self.pk})
-
-    def send_mobi(self):
-        pass
-        # send(...)
