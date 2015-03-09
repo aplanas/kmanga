@@ -7,7 +7,9 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 # import django_rq
 
 from .models import History
+from .models import Issue
 from .models import Manga
+from .models import Subscription
 
 
 class LoginRequiredMixin(object):
@@ -15,6 +17,69 @@ class LoginRequiredMixin(object):
     def as_view(cls, **initkwargs):
         view = super(LoginRequiredMixin, cls).as_view(**initkwargs)
         return login_required(view)
+
+
+class MangaListView(LoginRequiredMixin, ListView):
+    model = Manga
+
+
+class MangaDetailView(LoginRequiredMixin, DetailView):
+    model = Manga
+
+
+class MangaCreateView(LoginRequiredMixin, CreateView):
+    model = Manga
+
+
+class MangaUpdateView(LoginRequiredMixin, UpdateView):
+    model = Manga
+
+
+class MangaDeleteView(LoginRequiredMixin, DeleteView):
+    model = Manga
+    success_url = reverse_lazy('manga-list')
+
+
+class IssueListView(LoginRequiredMixin, ListView):
+    model = Issue
+
+
+class IssueDetailView(LoginRequiredMixin, DetailView):
+    model = Issue
+
+
+class IssueCreateView(LoginRequiredMixin, CreateView):
+    model = Issue
+
+
+class IssueUpdateView(LoginRequiredMixin, UpdateView):
+    model = Issue
+
+
+class IssueDeleteView(LoginRequiredMixin, DeleteView):
+    model = Issue
+    success_url = reverse_lazy('issue-list')
+
+
+class SubscriptionListView(LoginRequiredMixin, ListView):
+    model = Subscription
+
+
+class SubscriptionDetailView(LoginRequiredMixin, DetailView):
+    model = Subscription
+
+
+class SubscriptionCreateView(LoginRequiredMixin, CreateView):
+    model = Subscription
+
+
+class SubscriptionUpdateView(LoginRequiredMixin, UpdateView):
+    model = Subscription
+
+
+class SubscriptionDeleteView(LoginRequiredMixin, DeleteView):
+    model = Subscription
+    success_url = reverse_lazy('subscription-list')
 
 
 class HistoryListView(LoginRequiredMixin, ListView):
