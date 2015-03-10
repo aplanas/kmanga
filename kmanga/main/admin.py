@@ -6,6 +6,8 @@ from .models import SourceLanguage
 from .models import Genre
 from .models import Manga
 from .models import Issue
+from .models import Subscription
+from .models import History
 
 
 class SourceLanguageInline(admin.StackedInline):
@@ -33,3 +35,17 @@ class MangaAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Manga, MangaAdmin)
+
+
+class SubscriptionAdmin(admin.ModelAdmin):
+    model = Subscription
+
+
+admin.site.register(Subscription, SubscriptionAdmin)
+
+
+class HistoryAdmin(admin.ModelAdmin):
+    model = History
+
+
+admin.site.register(History, HistoryAdmin)

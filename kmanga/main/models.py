@@ -68,7 +68,7 @@ class MangaQuerySet(models.QuerySet):
     def latests(self):
         return self.annotate(
             models.Max('issue__last_modified')
-        ).order_by('-issue__last_modified__max')[:5]
+        ).order_by('-issue__last_modified__max')
 
 
 def _cover_path(instance, filename):
@@ -151,12 +151,24 @@ class Issue(models.Model):
         return self.name
 
 
+class SubscriptionQuerySet(models.QuerySet):
+    def latests(self, user):
+        return self.filter(user=user).annotate(
+            models.Max('history__send_date')
+        ).order_by('-history__send_date__max')
+
+
 @python_2_unicode_compatible
 class Subscription(models.Model):
     manga = models.ForeignKey(Manga)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     issues_per_day = models.IntegerField(default=2)
-    disabled = models.BooleanField(default=False)
+    paused = models.BooleanField(default=False)
+
+    objects = SubscriptionQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ('manga', 'user')
 
     def __str__(self):
         return '%s (%d per day)' % (self.manga, self.issues_per_day)
@@ -183,7 +195,7 @@ class History(models.Model):
     last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __str__(self):
-        return '%s - %s' % (self.issue, self.status)
+        return '%s (%s)' % (self.issue, self.get_status_display())
 
     def get_absolute_url(self):
         return reverse('history-detail', kwargs={'pk': self.pk})

@@ -9,7 +9,8 @@ urlpatterns = patterns('',
     # url(r'^$', 'kmanga.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
-    url(r'^$', RedirectView.as_view(url=reverse_lazy('history-list')), name='home'),
+    url(r'^$', RedirectView.as_view(url=reverse_lazy('subscription-list')),
+        name='home'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^accounts/', include('registration.urls')),
 
