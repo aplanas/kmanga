@@ -64,6 +64,9 @@ class IssueDeleteView(LoginRequiredMixin, DeleteView):
 class SubscriptionListView(LoginRequiredMixin, ListView):
     model = Subscription
 
+    def get_queryset(self):
+        return Subscription.objects.latests(self.request.user)
+
 
 class SubscriptionDetailView(LoginRequiredMixin, DetailView):
     model = Subscription
