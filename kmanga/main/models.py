@@ -175,23 +175,38 @@ class Subscription(models.Model):
 
 
 class HistoryQuerySet(models.QuerySet):
-    def peding(self, user):
-        return self.filter(user=user).annotate(
-            models.Max('history__send_date')
-        ).order_by('-history__send_date__max')
+    def latests(self, status=None):
+        latests = self
+        if status:
+            latests = latests.filter(status=status)
+        return latests.annotate(
+            models.Max('send_date')
+        ).order_by('-send_date__max')
+
+    def pending(self):
+        self.latests(status=History.PENDING)
+
+    def processing(self):
+        self.latests(status=History.PROCESSING)
+
+    def sent(self):
+        self.latests(status=History.SENT)
+
+    def failed(self):
+        self.latests(status=History.FAILED)
 
 
 @python_2_unicode_compatible
 class History(models.Model):
     PENDING = 'PE'
     PROCESSING = 'PR'
-    SEND = 'SE'
-    FAIL = 'FA'
+    SENT = 'SE'
+    FAILED = 'FA'
     STATUS_CHOICES = (
         (PENDING, 'Pending'),
         (PROCESSING, 'Processing'),
-        (SEND, 'Send'),
-        (FAIL, 'Fail'),
+        (SENT, 'Sent'),
+        (FAILED, 'Failed'),
     )
 
     issue = models.ForeignKey(Issue)
