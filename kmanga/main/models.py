@@ -174,6 +174,13 @@ class Subscription(models.Model):
         return '%s (%d per day)' % (self.manga, self.issues_per_day)
 
 
+class HistoryQuerySet(models.QuerySet):
+    def peding(self, user):
+        return self.filter(user=user).annotate(
+            models.Max('history__send_date')
+        ).order_by('-history__send_date__max')
+
+
 @python_2_unicode_compatible
 class History(models.Model):
     PENDING = 'PE'
@@ -193,6 +200,8 @@ class History(models.Model):
                               default=PENDING)
     send_date = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
+
+    objects = HistoryQuerySet.as_manager()
 
     def __str__(self):
         return '%s (%s)' % (self.issue, self.get_status_display())
