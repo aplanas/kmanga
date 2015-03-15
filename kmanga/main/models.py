@@ -123,6 +123,14 @@ class Manga(models.Model):
     def __str__(self):
         return self.name
 
+    def subscribe(self, user, issues_per_day=2, paused=False):
+        """Subscribe an User to the current Manga."""
+        return Subscription.objects.create(
+            manga=self,
+            user=user,
+            issues_per_day=issues_per_day,
+            paused=paused)
+
 
 @python_2_unicode_compatible
 class AltName(models.Model):
@@ -182,16 +190,16 @@ class HistoryQuerySet(models.QuerySet):
         ).order_by('-send_date__max')
 
     def pending(self):
-        self.latests(status=History.PENDING)
+        return self.latests(status=History.PENDING)
 
     def processing(self):
-        self.latests(status=History.PROCESSING)
+        return self.latests(status=History.PROCESSING)
 
     def sent(self):
-        self.latests(status=History.SENT)
+        return self.latests(status=History.SENT)
 
     def failed(self):
-        self.latests(status=History.FAILED)
+        return self.latests(status=History.FAILED)
 
 
 @python_2_unicode_compatible
