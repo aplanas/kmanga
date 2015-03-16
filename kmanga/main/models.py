@@ -158,8 +158,8 @@ class Issue(models.Model):
 
 
 class SubscriptionQuerySet(models.QuerySet):
-    def latests(self, user):
-        return self.filter(user=user).annotate(
+    def latests(self):
+        return self.annotate(
             models.Max('history__send_date')
         ).order_by('-history__send_date__max')
 
