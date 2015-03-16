@@ -1,8 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
 # from django.shortcuts import render
-from django.views.generic import ListView, DetailView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic import DetailView
+from django.views.generic import ListView
+from django.views.generic.edit import CreateView
+from django.views.generic.edit import DeleteView
+from django.views.generic.edit import UpdateView
+from django.views.generic.list import MultipleObjectMixin
 
 # import django_rq
 
@@ -19,8 +23,24 @@ class LoginRequiredMixin(object):
         return login_required(view)
 
 
-class MangaListView(LoginRequiredMixin, ListView):
+class MangaListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
     model = Manga
+    paginate_by = 10
+
+    def get_context_data(self, **kwargs):
+        """Extend the context data with the search query value."""
+        context = super(MangaListView, self).get_context_data(**kwargs)
+        q = self.request.GET.get('q', None)
+        if q:
+            context['q'] = q
+        return context
+
+    def get_queryset(self):
+        q = self.request.GET.get('q', None)
+        mangas = Manga.objects.latests()
+        if q:
+            mangas = mangas.filter(name__icontains=q)
+        return mangas
 
 
 class MangaDetailView(LoginRequiredMixin, DetailView):
