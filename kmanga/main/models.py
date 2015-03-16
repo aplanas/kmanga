@@ -229,3 +229,15 @@ class History(models.Model):
 
     def get_absolute_url(self):
         return reverse('history-detail', kwargs={'pk': self.pk})
+
+    def is_pending(self):
+        return self.status == 'PE'
+
+    def is_processing(self):
+        return self.status == 'PR'
+
+    def is_sent(self):
+        return self.status == 'SE'
+
+    def is_failed(self):
+        return self.status == 'FA'
