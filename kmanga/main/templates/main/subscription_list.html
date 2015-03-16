@@ -8,15 +8,17 @@
 <p>No request</p>
 {% endif %}
 <ul>
-  {% for subscription in object_list %}
+  {% for subscription in object_list|slice:":5" %}
   <li>{{ subscription }}</li>
   <ul>
-    {% for history in subscription.history_set.latests|slice:":2" %}
+    {% for history in subscription.history_set.latests|slice:":5" %}
     <li>{{ history }}</li>
     {% empty %}
-    <p>No history</li>
+    <p>No history.</p>
     {% endfor %}
   </ul>
+  {% empty %}
+  <p>You don't have any subscription yet.</p>
   {% endfor %}
 </ul>
 {% endblock %}
