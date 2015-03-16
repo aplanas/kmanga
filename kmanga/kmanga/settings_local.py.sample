@@ -1,1 +1,34 @@
 # Local settings for KManga
+
+DEBUG = False
+
+ALLOWED_HOSTS = [
+    '.example.com',   # Allow domain and subdomains
+    '.example.com.',  # Also allow FQDN and subdomains
+]
+
+STATIC_ROOT = '/full/path/static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/full/path/media/'
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'PASSWORD': 'password',
+    },
+    'high': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'PASSWORD': 'password',
+    },
+    'low': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'PASSWORD': 'password',
+    }
+}
