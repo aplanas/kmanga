@@ -8,6 +8,7 @@ django-rq==0.7.0
 enum34==1.0.4
 lxml==3.4.2
 Pillow==2.7.0
+psycopg2==2.6
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
 pycparser==2.10
@@ -22,7 +23,7 @@ Twisted==15.0.0
 w3lib==1.11.0
 zope.interface==4.1.2
 
-# bpython==0.13.1
+# bpython==0.14.1
 # django-braces==1.4.0
 # django-model-utils==2.2
 # logutils==0.3.3
