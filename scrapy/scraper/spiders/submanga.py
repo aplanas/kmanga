@@ -121,7 +121,7 @@ class SubManga(MangaSpider):
         # Reading direction
         manga['reading_direction'] = 'RL'
         # Status
-        manga['status'] = 'ONGOING'
+        manga['status'] = 'Ongoing'
         # Genres
         xp = '//div[@class="b250 bmr0"]/' \
              'p[contains(., "Creado por")]/' \

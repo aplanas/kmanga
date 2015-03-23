@@ -299,7 +299,14 @@ class CleanPipeline(CleanBasePipeline):
             'reading_direction': (self._clean_field_set,
                                   {'values': ('LR', 'RL')}),
             'status': (self._clean_field_set,
-                       {'values': ('ONGOING', 'COMPLETED')}),
+                       {
+                           'values': ('O', 'C'),
+                           'translator':
+                           {
+                               'Ongoing': 'O',
+                               'Completed': 'C',
+                           },
+                       }),
             'genres': (self._clean_field_list, {'optional': True}),
             'rank': (self._clean_field_int, {'optional': True}),
             'rank_order': (self._clean_field_set,
@@ -344,8 +351,8 @@ class CleanPipeline(CleanBasePipeline):
     # -- Batoto fields
     def clean_field_batoto_manga_status(self, field):
         status = {
-            'Complete': 'COMPLETED',
-            'Ongoing': 'ONGOING',
+            'Ongoing': 'O',
+            'Complete': 'C',
         }
         return self._clean_field_set(field, status.values(), translator=status)
 
