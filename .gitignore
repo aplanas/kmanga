@@ -3,3 +3,10 @@
 
 # Python compiled files
 *.pyc
+
+# Local environment
+.venv
+
+# Local configuration files
+kmanga.conf
+settings_local.py
