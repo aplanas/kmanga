@@ -1,0 +1,8 @@
+PYTHON=python2.7
+
+# Only used in development
+# VENV=.venv
+# PSQL=
+# PSQL_VER=
+# REDIS=
+# REDIS_VER=

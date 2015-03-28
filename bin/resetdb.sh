@@ -1,15 +1,14 @@
 # !/bin/sh
 
 # Load the configuration file if exist
-if [ -f "etc/config.sh" ]; then
-    . etc/config.sh
+if [ ! -f "bin/kmanga.conf" ]; then
+    echo "Please, create a bin/kmanga.conf configuration file."
+    exit 1
 fi
+. bin/kmanga.conf
 
-if [ -z "$PYTHON" ]; then
-    PYTHON=python
-fi
-
-rm kmanga/db.sqlite3
+dropdb --if-exists kmanga
+createdb kmanga
 rm kmanga/main/migrations/000*
 rm kmanga/registration/migrations/000*
 $PYTHON kmanga/manage.py makemigrations
