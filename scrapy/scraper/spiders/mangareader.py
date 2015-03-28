@@ -107,7 +107,8 @@ class MangaReader(MangaSpider):
         manga['name'] = response.xpath(xp).extract()
         # Alternate name
         xp = '//td[contains(text(),"%s")]/following-sibling::td/text()'
-        manga['alt_name'] = response.xpath(xp % 'Alternate Name:').extract()
+        _alt_name = response.xpath(xp % 'Alternate Name:')
+        manga['alt_name'] = _alt_name.re(r'([^,;]+)')
         # Author
         manga['author'] = response.xpath(xp % 'Author:').extract()
         # Artist

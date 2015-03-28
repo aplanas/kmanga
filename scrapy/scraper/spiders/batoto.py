@@ -123,7 +123,7 @@ class Batoto(MangaSpider):
         manga['name'] = response.xpath(xp).extract()
         # Alternate name
         xp = '//td[contains(text(),"%s")]/following-sibling::td/.//text()'
-        manga['alt_name'] = response.xpath(xp % 'Alt Names:').extract()
+        manga['alt_name'] = response.xpath(xp % 'Alt Names:').re(r'([^,;]+)')
         # Author
         manga['author'] = response.xpath(xp % 'Author:').extract()
         # Artist
