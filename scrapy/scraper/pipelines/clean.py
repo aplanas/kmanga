@@ -137,9 +137,12 @@ class CleanBasePipeline(object):
         """Convert the object into a list."""
         return obj if isinstance(obj, (list, tuple)) else [obj]
 
-    def _clean_field_str(self, field, clean_html=False, optional=False):
+    def _clean_field_str(self, field, clean_html=False,
+                         optional=False, max_length=None):
         """Generic clean method for string field."""
         value = self._as_str(field)
+        if max_length:
+            value = value[:max_length]
         if clean_html:
             value = replace_entities(remove_tags(value))
         if not value and not optional:
@@ -171,8 +174,9 @@ class CleanBasePipeline(object):
                                  " or can't be converted to a float")
         return value
 
-    def _clean_field_list(self, field, cleaner=None, cleaner_params=None,
-                          optional=False, exclude=None, drop=False):
+    def _clean_field_list(self, field, cleaner=None,
+                          cleaner_params=None, optional=False,
+                          exclude=None, drop=False, max_length=None):
         """Generic clean method for list field."""
         if cleaner:
             cleaner_params = cleaner_params if cleaner_params else ()
@@ -193,6 +197,8 @@ class CleanBasePipeline(object):
             value = [e.strip() for e in self._as_list(field)]
         if exclude:
             value = [e for e in value if e not in exclude]
+        if max_length:
+            value = [e[:max_length] for e in value]
         if not value and not optional:
             raise ValueError('field is not optional'
                              " or can't be converted to a list")
@@ -293,9 +299,21 @@ class CleanPipeline(CleanBasePipeline):
     def clean_manga(self, item, spider):
         cleaning_plan = {
             'name': self._clean_field_str,
-            'alt_name': (self._clean_field_list, {'optional': True}),
-            'author': (self._clean_field_str, {'optional': True}),
-            'artist': (self._clean_field_str, {'optional': True}),
+            'alt_name': (self._clean_field_list,
+                         {
+                             'optional': True,
+                             'max_length': 200,
+                         }),
+            'author': (self._clean_field_str,
+                       {
+                           'optional': True,
+                           'max_length': 200,
+                       }),
+            'artist': (self._clean_field_str,
+                       {
+                           'optional': True,
+                           'max_length': 200,
+                       }),
             'reading_direction': (self._clean_field_set,
                                   {'values': ('LR', 'RL')}),
             'status': (self._clean_field_set,
@@ -307,12 +325,19 @@ class CleanPipeline(CleanBasePipeline):
                                'Completed': 'C',
                            },
                        }),
-            'genres': (self._clean_field_list, {'optional': True}),
+            'genres': (self._clean_field_list,
+                       {
+                           'optional': True,
+                           'max_length': 200,
+                       }),
             'rank': (self._clean_field_int, {'optional': True}),
             'rank_order': (self._clean_field_set,
                            {'values': ('ASC', 'DESC')}),
             'description': (self._clean_field_str,
-                            {'clean_html': True, 'optional': True}),
+                            {
+                                'clean_html': True,
+                                'optional': True,
+                            }),
             # 'image_urls'
             # 'images'
             'issues': (self._clean_field_list,
@@ -328,7 +353,7 @@ class CleanPipeline(CleanBasePipeline):
     # -- Issue
     def clean_issue(self, item, spider):
         cleaning_plan = {
-            'name': self._clean_field_str,
+            'name': (self._clean_field_str, {'max_length': 200}),
             'number': (self._clean_field_float, {'optional': True}),
             'language': (self._clean_field_set,
                          {'values': ('EN', 'ES')}),
