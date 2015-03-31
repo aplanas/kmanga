@@ -68,6 +68,20 @@ class MangaQuerySet(models.QuerySet):
             models.Max('issue__last_modified')
         ).order_by('-issue__last_modified__max')
 
+    def search(self, q):
+        return self.raw('''
+SELECT main_manga.*
+FROM main_manga
+JOIN main_manga_fts_view ON main_manga.id = main_manga_fts_view.id
+WHERE main_manga_fts_view.document @@ plainto_tsquery(%s)
+ORDER BY ts_rank(main_manga_fts_view.document, plainto_tsquery(%s)) DESC;
+''', [q, q])
+
+    def refresh(self):
+        from django.db import connection
+        cursor = connection.cursor()
+        cursor.execute('REFRESH MATERIALIZED VIEW main_manga_fts_view;')
+
 
 def _cover_path(instance, filename):
     return os.path.join(instance.source.spider, filename)
