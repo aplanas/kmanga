@@ -16,9 +16,8 @@ class Migration(migrations.Migration):
 CREATE MATERIALIZED VIEW main_manga_fts_view AS
 SELECT main_manga.id,
        setweight(to_tsvector(main_manga.name), 'A') ||
-       setweight(to_tsvector(main_manga.description), 'D') ||
-       setweight(to_tsvector(coalesce(string_agg(main_altname.name, ' '))),
-                 'B') as document
+       to_tsvector(main_manga.description) ||
+       to_tsvector(coalesce(string_agg(main_altname.name, ' '))) as document
 FROM main_manga
 JOIN main_altname ON main_manga.id = main_altname.manga_id
 GROUP BY main_manga.id;
