@@ -3,7 +3,7 @@
 # It is also provided as a convenience to those who want to deploy these URLs
 # elsewhere.
 
-from django.conf.urls import patterns, url
+from django.conf.urls import include, url
 
 from .views import logout
 from .views import password_change
@@ -35,5 +35,3 @@ urlpatterns = [
 
     url(r'^profile/$', UserProfileView.as_view(), name='profile'),
 ]
-
-urlpatterns = patterns('', *urlpatterns)

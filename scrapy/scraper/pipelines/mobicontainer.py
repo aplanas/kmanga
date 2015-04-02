@@ -29,11 +29,11 @@ except:
 from scrapy.mail import MailSender
 from scrapy.utils.decorator import inthread
 
-from main.models import Issue
+from core.models import Issue
 
 from mobi import Container, MangaMobi
 
-# https://docs.djangoproject.com/en/dev/releases/1.7/#standalone-scripts
+# https://docs.djangoproject.com/en/dev/releases/1.8/#standalone-scripts
 import django
 django.setup()
 

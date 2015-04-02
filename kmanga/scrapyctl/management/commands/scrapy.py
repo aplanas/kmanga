@@ -8,8 +8,8 @@ from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 from django.db import connection
 
-from main.models import Manga
-from main.models import Source
+from core.models import Manga
+from core.models import Source
 from scrapy import log
 import scrapyctl.utils
 

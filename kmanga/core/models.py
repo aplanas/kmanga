@@ -11,7 +11,7 @@ class Source(models.Model):
     name = models.CharField(max_length=200)
     spider = models.CharField(max_length=80)
     url = models.URLField()
-    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.url)
@@ -36,7 +36,7 @@ class SourceLanguage(models.Model):
 
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES)
     source = models.ForeignKey(Source)
-    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.language
@@ -45,7 +45,7 @@ class SourceLanguage(models.Model):
 @python_2_unicode_compatible
 class ConsolidateGenre(models.Model):
     name = models.CharField(max_length=200)
-    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -56,7 +56,7 @@ class Genre(models.Model):
     name = models.CharField(max_length=200)
     source = models.ForeignKey(Source)
     # consolidategenre = models.ForeignKey(ConsolidateGenre)
-    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -70,17 +70,17 @@ class MangaQuerySet(models.QuerySet):
 
     def search(self, q):
         return self.raw('''
-SELECT main_manga.*
-FROM main_manga
-JOIN main_manga_fts_view ON main_manga.id = main_manga_fts_view.id
-WHERE main_manga_fts_view.document @@ plainto_tsquery(%s)
-ORDER BY ts_rank(main_manga_fts_view.document, plainto_tsquery(%s)) DESC;
+SELECT core_manga.*
+FROM core_manga
+JOIN core_manga_fts_view ON core_manga.id = core_manga_fts_view.id
+WHERE core_manga_fts_view.document @@ plainto_tsquery(%s)
+ORDER BY ts_rank(core_manga_fts_view.document, plainto_tsquery(%s)) DESC;
 ''', [q, q])
 
     def refresh(self):
         from django.db import connection
         cursor = connection.cursor()
-        cursor.execute('REFRESH MATERIALIZED VIEW main_manga_fts_view;')
+        cursor.execute('REFRESH MATERIALIZED VIEW core_manga_fts_view;')
 
 
 def _cover_path(instance, filename):
@@ -130,7 +130,7 @@ class Manga(models.Model):
     cover = models.ImageField(upload_to=_cover_path)
     url = models.URLField()
     source = models.ForeignKey(Source)
-    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     objects = MangaQuerySet.as_manager()
 
@@ -150,7 +150,7 @@ class Manga(models.Model):
 class AltName(models.Model):
     name = models.CharField(max_length=200)
     manga = models.ForeignKey(Manga)
-    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -165,7 +165,7 @@ class Issue(models.Model):
     release = models.DateField()
     url = models.URLField()
     manga = models.ForeignKey(Manga)
-    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -234,7 +234,7 @@ class History(models.Model):
     status = models.CharField(max_length=2, choices=STATUS_CHOICES,
                               default=PENDING)
     send_date = models.DateTimeField(auto_now_add=True)
-    last_modified = models.DateTimeField(auto_now=True, auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     objects = HistoryQuerySet.as_manager()
 

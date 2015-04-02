@@ -26,6 +26,7 @@ class LoginRequiredMixin(object):
 class MangaListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
     model = Manga
     paginate_by = 10
+    template_name = 'core/manga_list.html'
 
     def get_context_data(self, **kwargs):
         """Extend the context data with the search query value."""
@@ -39,7 +40,7 @@ class MangaListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
         q = self.request.GET.get('q', None)
         mangas = Manga.objects.latests()
         if q:
-            mangas = mangas.filter(name__icontains=q)
+            mangas = list(mangas.search(q))
         return mangas
 
 

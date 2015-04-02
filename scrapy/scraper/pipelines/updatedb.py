@@ -24,9 +24,9 @@ from django.core.files import File
 from django.db import transaction
 from scrapy import log
 
-from main.models import Source, Manga, Issue
+from core.models import Source, Manga, Issue
 
-# https://docs.djangoproject.com/en/dev/releases/1.7/#standalone-scripts
+# https://docs.djangoproject.com/en/dev/releases/1.8/#standalone-scripts
 import django
 django.setup()
 

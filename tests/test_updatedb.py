@@ -26,7 +26,7 @@ from django.test.runner import DiscoverRunner
 import scraper.items
 from scraper.pipelines import UpdateDBPipeline
 
-from main.models import Source, SourceLanguage, Genre, Manga
+from core.models import Source, SourceLanguage, Genre, Manga
 
 
 # Configure Django to run tests outside the manage.py tool

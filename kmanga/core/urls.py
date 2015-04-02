@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import include, url
 
 from .views import HistoryListView
 from .views import HistoryDetailView
@@ -51,6 +51,4 @@ urlpatterns = [
         name='history-update'),
     url(r'^history/delete/(?P<pk>\d+)$', HistoryDeleteView.as_view(),
         name='history-delete'),
-    ]
-
-urlpatterns = patterns('', *urlpatterns)
+]
