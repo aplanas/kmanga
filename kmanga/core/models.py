@@ -68,13 +68,18 @@ class MangaQuerySet(models.QuerySet):
             models.Max('issue__last_modified')
         ).order_by('-issue__last_modified__max')
 
+    def _to_tsquery(self, q):
+        """Convert a query with the prefix syntax."""
+        return ' & '.join(u + ':*' for u in q.split())
+
     def search(self, q):
+        q = self._to_tsquery(q)
         return self.raw('''
 SELECT core_manga.*
 FROM core_manga
 JOIN core_manga_fts_view ON core_manga.id = core_manga_fts_view.id
-WHERE core_manga_fts_view.document @@ plainto_tsquery(%s)
-ORDER BY ts_rank(core_manga_fts_view.document, plainto_tsquery(%s)) DESC;
+WHERE core_manga_fts_view.document @@ to_tsquery(%s)
+ORDER BY ts_rank(core_manga_fts_view.document, to_tsquery(%s)) DESC;
 ''', [q, q])
 
     def refresh(self):
