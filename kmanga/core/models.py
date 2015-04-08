@@ -1,7 +1,9 @@
 import os.path
+import re
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.db import connection
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
@@ -62,6 +64,51 @@ class Genre(models.Model):
         return self.name
 
 
+class FTSRawQuerySet(models.query.RawQuerySet):
+    """RawQuerySet subclass with advanced options."""
+    def __init__(self, raw_query, model=None, query=None, params=None,
+                 translations=None, using=None, hints=None):
+        super(FTSRawQuerySet, self).__init__(raw_query, model=model,
+                                             query=query,
+                                             params=params,
+                                             translations=translations,
+                                             using=using, hints=hints)
+        # XXX TODO - Store a version of `raw_query` more easy to
+        # manipulate the head and the tail.  Potentially this change
+        # can break the query.
+        self.raw_query = ' '.join(raw_query.split())
+
+        self.count_query = re.sub(r'^SELECT .*? FROM', 'SELECT COUNT(*) FROM',
+                                  self.raw_query)
+        self.count_query = re.sub(' ORDER BY .*$', ';', self.count_query)
+
+        self.paged_query = self.raw_query
+        if self.paged_query.endswith(';'):
+            self.paged_query = self.paged_query[:-1]
+        self.paged_query += ' LIMIT %s OFFSET %s;'
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            start, stop = key.start, key.stop
+        else:
+            start, stop = key, key + 1
+        params = self.params + [stop-start, start]
+        return models.query.RawQuerySet(self.paged_query,
+                                        model=self.model,
+                                        params=params,
+                                        translations=self.translations,
+                                        using=self._db,
+                                        hints=self._hints)
+
+    def __len__(self):
+        cursor = connection.cursor()
+        # TODO XXX - Another hack.  We remove the last element of
+        # `self.params` because this was a parameter for the ORDER BY,
+        # that is removed from the query.
+        cursor.execute(self.count_query, self.params[:-1])
+        return cursor.fetchone()[0]
+
+
 class MangaQuerySet(models.QuerySet):
     def latests(self):
         return self.annotate(
@@ -74,16 +121,15 @@ class MangaQuerySet(models.QuerySet):
 
     def search(self, q):
         q = self._to_tsquery(q)
-        return self.raw('''
+        return FTSRawQuerySet('''
 SELECT core_manga.*
 FROM core_manga
 JOIN core_manga_fts_view ON core_manga.id = core_manga_fts_view.id
 WHERE core_manga_fts_view.document @@ to_tsquery(%s)
 ORDER BY ts_rank(core_manga_fts_view.document, to_tsquery(%s)) DESC;
-''', [q, q])
+        ''', model=self.model, params=[q, q], using=self.db)
 
     def refresh(self):
-        from django.db import connection
         cursor = connection.cursor()
         cursor.execute('REFRESH MATERIALIZED VIEW core_manga_fts_view;')
 
