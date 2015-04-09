@@ -102,10 +102,14 @@ class FTSRawQuerySet(models.query.RawQuerySet):
 
     def __len__(self):
         cursor = connection.cursor()
-        # TODO XXX - Another hack.  We remove the last element of
-        # `self.params` because this was a parameter for the ORDER BY,
-        # that is removed from the query.
-        cursor.execute(self.count_query, self.params[:-1])
+        # Remove the last elements of `self.params` to adjust it to
+        # the real number of parameters.  We can, potentially, remove
+        # the one used for the ORDER BY.
+        nparams = self.count_query.count('%s')
+        params = self.params
+        if nparams < len(params):
+            params = params[:nparams-len(params)]
+        cursor.execute(self.count_query, params)
         return cursor.fetchone()[0]
 
 
