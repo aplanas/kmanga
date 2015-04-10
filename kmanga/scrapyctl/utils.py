@@ -37,7 +37,7 @@ class ReactorFeedControl(object):
         self.crawlers_running = 0
 
     def run(self):
-        while self.crawlers_running <= self.max_crawlers:
+        while self.crawlers and self.crawlers_running <= self.max_crawlers:
             self.add_crawler()
         reactor.run()
 
