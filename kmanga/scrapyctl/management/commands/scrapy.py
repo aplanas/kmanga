@@ -32,6 +32,9 @@ class Command(BaseCommand):
             '-e', '--send', action='store', dest='send', default=None,
             help='Send issues to the user (<list_of_numbers|all>).'),
         make_option(
+            '--subscribe', action='store', dest='subscribe', default=None,
+            help='Create a subscription for an user to a manga (<days>).'),
+        make_option(
             '-m', '--manga', action='store', dest='manga', default=None,
             help='Name of the manga (<text>).'),
         make_option(
@@ -88,154 +91,172 @@ class Command(BaseCommand):
                 raise CommandError('Spider %s not found.' % name)
 
         if options['list']:
-            header = 'List of current spiders:'
+            self.list_spiders(all_spiders)
+        elif options['update']:
+            command = options['update']
+            manga = options['manga']
+            url = options['url']
+            until = options['until']
+            loglevel = options['loglevel']
+            dry_run = options['dry-run']
+            self.update(spiders, command, manga, url, until, loglevel, dry_run)
+        elif options['search']:
+            manga = options['search']
+            lang = options['lang']
+            details = options['details']
+            self.search(spiders, manga, lang, details)
+        elif options['subscribe']:
+            pass
+        elif options['send']:
+            numbers = options['send']
+            manga = options['manga']
+            url = options['url']
+            lang = options['lang']
+            _from = options['from']
+            to = options['to']
+            loglevel = options['loglevel']
+            self.send(spiders, numbers, manga, url, lang, _from, to, loglevel)
+
+    def list_spiders(self, spiders):
+        """List current spiders than can be activated."""
+        header = 'List of current spiders:'
+        self.stdout.write(header)
+        self.stdout.write('=' * len(header))
+        self.stdout.write('')
+        for name in spiders:
+            self.stdout.write('- %s' % name)
+
+    def update(self, spiders, command, manga, url, until, loglevel, dry_run):
+        """Refesh from the database part of the manga information."""
+        if command == 'genres':
+            scrapyctl.utils.update_genres(spiders, loglevel, dry_run)
+        elif command == 'catalog':
+            scrapyctl.utils.update_catalog(spiders, loglevel, dry_run)
+        elif command == 'collection':
+            if len(spiders) > 1:
+                raise CommandError('Please, specify a single source')
+
+            if not manga and not url:
+                raise CommandError("Provide parameters 'manga' or 'url'")
+
+            _manga = self._get_manga(spiders[0], manga=manga, url=url)
+            if not _manga and not url:
+                raise CommandError(
+                    "'manga' not found, please, provide 'url'")
+
+            manga_name = _manga.name if _manga else manga
+            manga_name = manga_name if manga_name else '<NoName>'
+            _url = _manga.url if _manga else url
+
+            scrapyctl.utils.update_collection(spiders, manga_name, _url,
+                                              loglevel, dry_run)
+        elif command == 'latest':
+            if isinstance(until, basestring):
+                day, month, year = [int(x) for x in until.split('-')]
+                until = date(year=year, month=month, day=day)
+            scrapyctl.utils.update_latest(spiders, until, loglevel, dry_run)
+        else:
+            raise CommandError('Not valid value for update')
+
+        # Refresh the MATERIALIZED VIEW for full text search
+        Manga.objects.refresh()
+
+        # Print the SQL statistics in DEBUG mode
+        if loglevel == 'DEBUG':
+            queries = ['[%s]: %s' % (q['time'], q['sql'])
+                       for q in connection.queries]
+            log.msg('\n'.join(queries), level=log.DEBUG)
+
+    def search(self, spiders, manga, lang, details):
+        """Search a manga in the database."""
+        for name in spiders:
+            header = 'Results from %s:' % name
             self.stdout.write(header)
             self.stdout.write('=' * len(header))
             self.stdout.write('')
-            for name in all_spiders:
-                self.stdout.write('- %s' % name)
-        elif options['update']:
-            command = options['update']
-            if command == 'genres':
-                scrapyctl.utils.update_genres(spiders, options['loglevel'],
-                                              options['dry-run'])
-            elif command == 'catalog':
-                scrapyctl.utils.update_catalog(spiders, options['loglevel'],
-                                               options['dry-run'])
-            elif command == 'collection':
-                if len(spiders) > 1:
-                    raise CommandError('Please, specify a single source')
-
-                if not options['manga'] and not options['url']:
-                    raise CommandError("Provide parameters 'manga' or 'url'")
-
-                manga = self._get_manga(spiders[0], manga=options['manga'],
-                                        url=options['url'])
-                if not manga and not options['url']:
-                    raise CommandError(
-                        "'manga' not found, please, provide 'url'")
-
-                manga_name = manga.name if manga else options['manga']
-                manga_name = manga_name if manga_name else '<NoName>'
-                url = manga.url if manga else options['url']
-
-                scrapyctl.utils.update_collection(spiders, manga_name, url,
-                                                  options['loglevel'],
-                                                  options['dry-run'])
-            elif command == 'latest':
-                until = options['until']
-                if isinstance(until, basestring):
-                    day, month, year = [int(x) for x in until.split('-')]
-                    until = date(year=year, month=month, day=day)
-                scrapyctl.utils.update_latest(spiders, until,
-                                              options['loglevel'],
-                                              options['dry-run'])
-            else:
-                raise CommandError('Not valid value for update')
-
-            # Refresh the MATERIALIZED VIEW for full text search
-            Manga.objects.refresh()
-
-            # Print the SQL statistics in DEBUG mode
-            if options['loglevel'] == 'DEBUG':
-                queries = ['[%s]: %s' % (q['time'], q['sql'])
-                           for q in connection.queries]
-                log.msg('\n'.join(queries), level=log.DEBUG)
-        elif options['search']:
-            for name in spiders:
-                header = 'Results from %s:' % name
-                self.stdout.write(header)
-                self.stdout.write('=' * len(header))
+            source = Source.objects.get(spider=name)
+            q = manga
+            for manga in source.manga_set.filter(name__icontains=q):
+                self.stdout.write('- %s' % manga)
+                issues = manga.issue_set
+                if lang:
+                    lang = lang.upper()
+                    issues = issues.filter(language=lang)
+                for issue in issues.order_by('number'):
+                    if details:
+                        self.stdout.write(u' [%s] [%s] [%s] [%s] %s' %
+                                          (issue.language,
+                                           issue.number,
+                                           issue.release,
+                                           issue.url,
+                                           issue.name))
+                    else:
+                        self.stdout.write(u' [%s] [%s] %s' %
+                                          (issue.language,
+                                           issue.number,
+                                           issue.name))
                 self.stdout.write('')
-                source = Source.objects.get(spider=name)
-                q = options['search']
-                for manga in source.manga_set.filter(name__icontains=q):
-                    self.stdout.write('- %s' % manga)
-                    issues = manga.issue_set
-                    if options['lang']:
-                        lang = options['lang'].upper()
-                        issues = issues.filter(language=lang)
-                    for issue in issues.order_by('number'):
-                        if options['details']:
-                            self.stdout.write(u' [%s] [%s] [%s] [%s] %s' %
-                                              (issue.language,
-                                               issue.number,
-                                               issue.release,
-                                               issue.url,
-                                               issue.name))
-                        else:
-                            self.stdout.write(u' [%s] [%s] %s' %
-                                              (issue.language,
-                                               issue.number,
-                                               issue.name))
-                    self.stdout.write('')
-        elif options['send']:
-            if len(spiders) > 1:
-                raise CommandError('Please, specify a single source')
-            spider = spiders[0]
-            source = Source.objects.get(spider=spider)
 
-            if not options['manga']:
-                raise CommandError("Parameter 'manga' is not optional")
-            manga = self._get_manga(spiders[0], manga=options['manga'])
-            if not manga:
-                raise CommandError('Manga %s not found in %s' % (
-                    options['manga'], spider))
+    def send(self, spiders, numbers, manga, url, lang, _from, to, loglevel):
+        """Send a list of issues to an user."""
+        if len(spiders) > 1:
+            raise CommandError('Please, specify a single source')
+        spider = spiders[0]
+        source = Source.objects.get(spider=spider)
 
-            lang = options['lang'].upper() if options['lang'] else None
-            source_langs = [str(l) for l in source.sourcelanguage_set.all()]
-            if lang not in source_langs:
-                if len(source_langs) == 1 and not lang:
-                    lang = source_langs[0]
-                elif lang:
-                    raise CommandError('Language %s not in %s' % (lang,
-                                                                  spider))
-                else:
-                    raise CommandError(
-                        'Please, set a valid language from %s' % source_langs)
+        if not manga:
+            raise CommandError("Parameter 'manga' is not optional")
+        manga = self._get_manga(spiders[0], manga=manga)
+        if not manga:
+            raise CommandError('Manga %s not found in %s' % (manga, spider))
 
-            urls = []
-            issues = []
-            if options['send'] == 'all':
-                _issues = manga.issue_set.filter(language=lang)
-                # If a URL is set, send only this single manga
-                if options['url']:
-                    _issues = _issues.filter(url=options['url'])
-
-                for issue in _issues.order_by('number'):
-                    urls.append(issue.url)
-                    issues.append(issue.number)
+        lang = lang.upper() if lang else None
+        source_langs = [str(l) for l in source.sourcelanguage_set.all()]
+        if lang not in source_langs:
+            if len(source_langs) == 1 and not lang:
+                lang = source_langs[0]
+            elif lang:
+                raise CommandError('Language %s not in %s' % (lang, spider))
             else:
-                _issues = []
-                for issue in options['send'].split(','):
-                    if '-' in issue:
-                        a, b = issue.split('-')
-                        _issues.extend(range(int(a), int(b)+1))
-                    else:
-                        _issues.append(float(issue))
+                raise CommandError(
+                    'Please, set a valid language from %s' % source_langs)
 
-                for number in _issues:
-                    issue = manga.issue_set.filter(number=number,
-                                                   language=lang)
-                    issue_count = issue.count()
-                    if issue_count:
-                        if issue_count > 1:
-                            msg = 'Multiple issues %s in %s. Adding all matches.'
-                            print msg % (number, manga)
+        urls = []
+        issues = []
+        if numbers == 'all':
+            _issues = manga.issue_set.filter(language=lang)
+            # If a URL is set, send only this single manga
+            if url:
+                _issues = _issues.filter(url=url)
 
-                        for i in issue:
-                            issues.append(i.number)
-                            urls.append(i.url)
-                    else:
-                        raise CommandError('Issue %s not in %s' % (number,
-                                                                   manga))
+            for issue in _issues.order_by('number'):
+                urls.append(issue.url)
+                issues.append(issue.number)
+        else:
+            _issues = []
+            for issue in numbers.split(','):
+                if '-' in issue:
+                    a, b = issue.split('-')
+                    _issues.extend(range(int(a), int(b)+1))
+                else:
+                    _issues.append(float(issue))
 
-            _from = options['from']
-            _from = _from if _from else settings.KMANGA_EMAIL
+            for number in _issues:
+                issue = manga.issue_set.filter(number=number, language=lang)
+                issue_count = issue.count()
+                if issue_count:
+                    if issue_count > 1:
+                        msg = 'Multiple issues %s in %s. Adding all matches.'
+                        print msg % (number, manga)
 
-            if not options['to']:
-                raise CommandError("Parameter 'to' is not optional")
-            to = options['to']
+                    for i in issue:
+                        issues.append(i.number)
+                        urls.append(i.url)
+                else:
+                    raise CommandError('Issue %s not in %s' % (number, manga))
 
-            scrapyctl.utils.send(spider, manga.name, issues, urls, _from, to,
-                                 options['loglevel'])
+        _from = _from if _from else settings.KMANGA_EMAIL
+        if not to:
+            raise CommandError("Parameter 'to' is not optional")
+        scrapyctl.utils.send(spider, manga.name, issues, urls, _from, to,
+                             loglevel)
