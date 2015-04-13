@@ -29,9 +29,12 @@ except:
 from scrapy.mail import MailSender
 from scrapy.utils.decorator import inthread
 
+# from core.models import History
 from core.models import Issue
+# from core.models import Subscription
 
-from mobi import Container, MangaMobi
+from mobi import Container
+from mobi import MangaMobi
 
 # https://docs.djangoproject.com/en/dev/releases/1.8/#standalone-scripts
 import django
@@ -172,7 +175,7 @@ class MobiContainer(object):
                 image_path = i['images'][0]['path']
             else:
                 image_path = EMPTY
-                self.stats.inc_value('mobi/missing_images')
+                self.stats.inc_value('mobi/missing_pages')
             _images.append(os.path.join(self.images_store, image_path))
         container.add_images(_images, adjust=Container.ROTATE, as_link=True)
 
@@ -215,6 +218,13 @@ class MobiContainer(object):
             spider, name, number, url = key
 
             issue = Issue.objects.get(url=url)
+
+            # XXX TODO - Set the History in PROCESSING status
+            # subscription = Subscription.objects.get(
+            #     manga=issue.manga,
+            #     user__userprofile__email_kindle=self.settings['MAIL_TO'])
+            # history = History.objects.get_or_create(issue=issue,
+            #                                         subscription=subscription)
 
             if key not in cache:
                 # The containers need to be cleaned here.
