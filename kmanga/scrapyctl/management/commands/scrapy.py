@@ -24,34 +24,34 @@ class Command(BaseCommand):
             help='Update an element (<genres|catalog|collection|latest>).'),
         make_option(
             '-s', '--search', action='store', dest='search', default=None,
-            help='Search locally mangas.'),
+            help='Search locally mangas (<text>).'),
         make_option(
             '--details', action='store_true', dest='details', default=False,
             help='Add more details in the list of mangas.'),
         make_option(
             '-e', '--send', action='store', dest='send', default=None,
-            help='Send issues to the user (list of numbers, or all).'),
+            help='Send issues to the user (<list_of_numbers|all>).'),
         make_option(
             '-m', '--manga', action='store', dest='manga', default=None,
-            help='Name of the manga.'),
+            help='Name of the manga (<text>).'),
         make_option(
             '--url', action='store', dest='url', default=None,
-            help='Set the start url for the operation.'),
+            help='Set the start url for the operation (<url>).'),
         make_option(
             '--lang', action='store', dest='lang', default=None,
             help='Language of the manga (<EN|ES>).'),
         make_option(
             '--until', action='store', dest='until', default=date.today(),
-            help='Until parameter to latest update (DD-MM-YYYY).'),
+            help='Until parameter to latest update (<DD-MM-YYYY>).'),
         make_option(
             '--from', action='store', dest='from', default=None,
-            help='Email address from where to send the issue.'),
+            help='Email address from where to send the issue (<email>).'),
         make_option(
             '--to', action='store', dest='to', default=None,
-            help='Email address to send the issue.'),
+            help='Email address to send the issue (<email>).'),
         make_option(
             '--loglevel', action='store', dest='loglevel', default='INFO',
-            help='Log level for scrapy.'),
+            help='Scrapy log level (<CRITICAL|ERROR|WARNING|INFO|DEBUG>).'),
         make_option(
             '--dry-run', action='store_true', dest='dry-run', default=False,
             help='Bypass all the pipelines.'),
