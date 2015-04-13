@@ -32,7 +32,7 @@ class Command(BaseCommand):
             '-e', '--send', action='store', dest='send', default=None,
             help='Send issues to the user (list of numbers, or all).'),
         make_option(
-            '--manga', action='store', dest='manga', default=None,
+            '-m', '--manga', action='store', dest='manga', default=None,
             help='Name of the manga.'),
         make_option(
             '--url', action='store', dest='url', default=None,
