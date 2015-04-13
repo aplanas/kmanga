@@ -130,6 +130,9 @@ class MobiContainer(object):
         if hasattr(spider, 'dry-run'):
             return item
 
+        # Recover the `stats` from the crawler
+        self.stats = spider.crawler.stats
+
         if spider._operation == 'manga':
             key = (spider.name, spider.manga, spider.issue, spider.url)
             if key not in self.items:
@@ -151,10 +154,15 @@ class MobiContainer(object):
         container = Container(os.path.join(self.mobi_store, dir_name))
         container.create(clean=True)
         images = sorted(images, key=lambda x: x['number'])
-        images = [os.path.join(self.images_store,
-                               i['images'][0]['path'] if i['images'] else EMPTY)
-                  for i in images]
-        container.add_images(images, adjust=Container.ROTATE, as_link=True)
+        _images = []
+        for i in images:
+            if i['images']:
+                image_path = i['images'][0]['path']
+            else:
+                image_path = EMPTY
+                self.stats.inc_value('mobi/missing_images')
+            _images.append(os.path.join(self.images_store, image_path))
+        container.add_images(_images, adjust=Container.ROTATE, as_link=True)
 
         if container.get_size() > self.volume_max_size:
             containers = container.split(self.volume_max_size, clean=True)
