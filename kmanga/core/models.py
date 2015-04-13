@@ -288,6 +288,7 @@ class History(models.Model):
     subscription = models.ForeignKey(Subscription)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES,
                               default=PENDING)
+    missing_pages = models.IntegerField(default=0)
     send_date = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
 
