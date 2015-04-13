@@ -38,6 +38,10 @@ import django
 django.setup()
 
 
+# Empty page.  Used when the original one can't be downloaded.
+EMPTY = 'empty.png'
+
+
 class MobiCache(collections.MutableMapping):
     def __init__(self, mobi_store):
         self.mobi_store = mobi_store
@@ -142,17 +146,18 @@ class MobiContainer(object):
                 return self.create_mobi()
 
     def _create_mobi(self, name, number, images, issue):
-        """Create the MOBI file and return a generator."""
+        """Create the MOBI file and return a list of values and containers."""
         dir_name = '%s_%03d' % (name, int(number))
         container = Container(os.path.join(self.mobi_store, dir_name))
-        container.create()
+        container.create(clean=True)
         images = sorted(images, key=lambda x: x['number'])
-        images = [os.path.join(self.images_store, i['images'][0]['path'])
+        images = [os.path.join(self.images_store,
+                               i['images'][0]['path'] if i['images'] else EMPTY)
                   for i in images]
         container.add_images(images, adjust=Container.ROTATE, as_link=True)
 
         if container.get_size() > self.volume_max_size:
-            containers = container.split(self.volume_max_size)
+            containers = container.split(self.volume_max_size, clean=True)
             container.clean()
         else:
             containers = [container]
@@ -166,7 +171,6 @@ class MobiContainer(object):
                 else:
                     self.title = '%s %03d' % (issue.manga.name,
                                               issue.number)
-                # self.title = issue.name
                 self.language = issue.language.lower()
                 self.author = issue.manga.author
                 self.publisher = issue.manga.source.name
@@ -181,8 +185,6 @@ class MobiContainer(object):
             mobi = MangaMobi(container, info, kindlegen=self.kindlegen)
             mobi_name, mobi_file = mobi.create()
             values_and_containers.append(((mobi_name, mobi_file), container))
-            # Containers are cleaned by the caller (create_mobi)
-            # container.clean()
         return values_and_containers
 
     @inthread

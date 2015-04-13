@@ -46,10 +46,13 @@ class Container(object):
         self._image_info = []
         self._npages = 0
 
-    def create(self):
+    def create(self, clean=False):
         """Create an empty container."""
         if os.path.exists(self.path):
-            raise ValueError('Container %s is not empty' % self.path)
+            if clean:
+                self.clean()
+            else:
+                raise ValueError('Container %s is not empty' % self.path)
         os.makedirs(os.path.join(self.path, 'html/images'))
 
     def clean(self):
@@ -96,7 +99,8 @@ class Container(object):
         """Return the total number of pages / images."""
         if not self._npages:
             images_path = os.path.join(self.path, 'html', 'images')
-            files = [f for f in os.listdir(images_path) if f.endswith('jpg')]
+            files = [f for f in os.listdir(images_path)
+                     if f.endswith(('jpg', 'png'))]
             self._npages = len(files)
         return self._npages
 
@@ -106,7 +110,8 @@ class Container(object):
             html_path = os.path.join(self.path, 'html')
             images_path = os.path.join(self.path, 'html', 'images')
             files = [os.path.join('images', f)
-                     for f in os.listdir(images_path) if f.endswith('jpg')]
+                     for f in os.listdir(images_path)
+                     if f.endswith(('jpg', 'png'))]
             for file_ in sorted(files):
                 file_path = os.path.join(html_path, file_)
                 self._image_info.append(
@@ -114,11 +119,20 @@ class Container(object):
                      os.path.getsize(file_path)))
         return self._image_info
 
-    def get_image_path(self, number, relative=False):
+    def _get_image_path(self, number, ext, relative=False):
         """Get the path an image."""
-        image_path = os.path.join('html', 'images', '%03d.jpg' % number)
+        image_path = os.path.join('html', 'images',
+                                  '%03d.%s' % (number, ext))
         if not relative:
             image_path = os.path.join(self.path, image_path)
+        return image_path
+
+    def get_image_path(self, number, relative=False):
+        """Get the path an image."""
+        # First try with the JPG extension, if not, is a PNG
+        image_path = self._get_image_path(number, 'jpg', relative)
+        if not os.path.exists(image_path):
+            image_path = self._get_image_path(number, 'png', relative)
         return image_path
 
     def get_cover_path(self, relative=False):
@@ -197,7 +211,7 @@ class Container(object):
 
         return img
 
-    def split(self, size):
+    def split(self, size, clean=False):
         """Split the container in volumes of same size."""
         current_size = self.get_size()
         nvolumes = 1 + current_size / size
@@ -218,7 +232,7 @@ class Container(object):
                 current_size = sum(i[2] for i in images[begin:end])
 
             image_slice = [self.get_image_path(i) for i in range(begin, end)]
-            container.create()
+            container.create(clean)
             container.add_images(image_slice, as_link=True)
             if self.has_cover:
                 container.set_cover(self.get_cover_path(), as_link=True)
