@@ -43,6 +43,18 @@ EMPTY = 'empty.png'
 
 
 class MobiCache(collections.MutableMapping):
+    """Cache for `.mobi` documents.
+
+    This cache avoid the creation of new MOBI documents previously
+    created.
+
+    key = ('spider_name', 'manga_name', 'manga_number', 'url')
+    value = (
+        [('mobi1.1.mobi', 'tests/fixtures/cache/mobi1.1.mobi'),
+         ('mobi1.2.mobi', 'tests/fixtures/cache/mobi1.2.mobi')],
+        stats_dict)
+
+    """
     def __init__(self, mobi_store):
         self.mobi_store = mobi_store
         self.index = os.path.join(mobi_store, 'cache', 'index')
@@ -82,7 +94,7 @@ class MobiCache(collections.MutableMapping):
         # Create first the links into the data store.
         data_file_prefix = self.__data_file(key)
         value_ext = [(v[0], v[1], '%s-%02d' % (data_file_prefix, i))
-                     for i, v in enumerate(value)]
+                     for i, v in enumerate(value[0])]
         for _, mobi_file, data_file in value_ext:
             os.link(mobi_file, data_file)
 
@@ -208,11 +220,13 @@ class MobiContainer(object):
                 # The containers need to be cleaned here.
                 values_and_containers = self._create_mobi(name, number,
                                                           value, issue)
-                cache[key] = [v[0] for v in values_and_containers]
+                cache[key] = ([v[0] for v in values_and_containers],
+                              self.stats.get_stats())
                 for _, container in values_and_containers:
                     container.clean()
 
-            for mobi_name, mobi_file in cache[key]:
+            mobi_info, stats = cache[key]
+            for mobi_name, mobi_file in mobi_info:
                 mail = MailSender.from_settings(self.settings)
                 deferred = mail.send(
                     to=[self.settings['MAIL_TO']],

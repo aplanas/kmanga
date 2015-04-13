@@ -126,13 +126,13 @@ class TestMobiCache(unittest.TestCase):
         shutil.rmtree('tests/fixtures/cache/cache')
 
     def test_cache(self):
-        self.cache[('spider', 'mobi', '1', 'url')] = [
-            ('mobi1.mobi', 'tests/fixtures/cache/mobi1.mobi')]
-        self.cache[('spider', 'mobi', '2', 'url')] = [
-            ('mobi2.1.mobi', 'tests/fixtures/cache/mobi2.1.mobi'),
-            ('mobi2.2.mobi', 'tests/fixtures/cache/mobi2.2.mobi')]
-        self.cache[('spider', 'mobi', '3', 'url')] = [
-            ('mobi3.mobi', 'tests/fixtures/cache/mobi3.mobi')]
+        self.cache[('spider', 'mobi', '1', 'url')] = (
+            [('mobi1.mobi', 'tests/fixtures/cache/mobi1.mobi')], {})
+        self.cache[('spider', 'mobi', '2', 'url')] = (
+            [('mobi2.1.mobi', 'tests/fixtures/cache/mobi2.1.mobi'),
+             ('mobi2.2.mobi', 'tests/fixtures/cache/mobi2.2.mobi')], {})
+        self.cache[('spider', 'mobi', '3', 'url')] = (
+            [('mobi3.mobi', 'tests/fixtures/cache/mobi3.mobi')], {})
         self.assertTrue(len(self.cache) == 3)
         for key in self.cache:
             self.assertTrue(len(key) == 4)
