@@ -237,7 +237,7 @@ class SubscriptionQuerySet(models.QuerySet):
 class Subscription(models.Model):
     manga = models.ForeignKey(Manga)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    issues_per_day = models.IntegerField(default=2)
+    issues_per_day = models.IntegerField(default=4)
     paused = models.BooleanField(default=False)
 
     objects = SubscriptionQuerySet.as_manager()
