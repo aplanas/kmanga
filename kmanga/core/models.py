@@ -177,7 +177,7 @@ class Manga(models.Model):
                               choices=STATUS,
                               default=ONGOING)
     genres = models.ManyToManyField(Genre)
-    rank = models.IntegerField(null=True, blank=True)
+    rank = models.FloatField(null=True, blank=True)
     rank_order = models.CharField(max_length=4,
                                   choices=RANK_ORDER,
                                   default=ASC)
