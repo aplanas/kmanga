@@ -77,12 +77,17 @@ def convert_to_date(str_, dmy=False):
 def convert_to_number(str_, as_int=False, default=0):
     """Parse issues / viewers numbers."""
     result = default
-    if str_.endswith('k'):
-        result = 1000 * float(str_[:-1])
-    elif str_.endswith('m'):
-        result = 1000 * 1000 * float(str_[:-1])
-    else:
-        result = float(str_)
+    try:
+        if str_.endswith('k'):
+            result = 1000 * float(str_[:-1])
+        elif str_.endswith('m'):
+            result = 1000 * 1000 * float(str_[:-1])
+        else:
+            result = float(str_)
+    except ValueError:
+        log.msg("Can't convert '%s' to a number. "
+                'Using default value %s' % (str_, default),
+                level=log.WARNING)
 
     if as_int:
         result = int(result)
