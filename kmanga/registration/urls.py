@@ -3,32 +3,32 @@
 # It is also provided as a convenience to those who want to deploy these URLs
 # elsewhere.
 
-from django.conf.urls import include, url
+from django.conf.urls import url
+from django.contrib.auth import views
 
-from .views import logout
-from .views import password_change
-from .views import password_change_done
-from .views import password_reset
-from .views import password_reset_done
-from .views import password_reset_confirm
-from .views import password_reset_complete
 from .views import UserCreateView
 from .views import UserCreateDoneView
 from .views import UserProfileView
 
 urlpatterns = [
-    url(r'^login/$', 'django.contrib.auth.views.login', name='login'),
-    url(r'^logout/$', logout, name='logout'),
-    url(r'^password_change/$', password_change, name='password_change'),
-    url(r'^password_change/done/$', password_change_done, name='password_change_done'),
-    url(r'^password_reset/$', password_reset, name='password_reset'),
-    url(r'^password_reset/done/$', password_reset_done, name='password_reset_done'),
+    # From django.contrib.auth.urls
+    url(r'^login/$', views.login, name='login'),
+    url(r'^logout/$', views.logout,
+        {'template_name': 'registration/logged_out_.html'}, name='logout'),
+    url(r'^password_change/$', views.password_change,
+        {'template_name': 'registration/password_change_form_.html'}, name='password_change'),
+    url(r'^password_change/done/$', views.password_change_done,
+        {'template_name': 'registration/password_change_done_.html'}, name='password_change_done'),
+    url(r'^password_reset/$', views.password_reset,
+        {'template_name': 'registration/password_reset_form_.html'}, name='password_reset'),
+    url(r'^password_reset/done/$', views.password_reset_done,
+        {'template_name': 'registration/password_reset_done_.html'}, name='password_reset_done'),
     url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-        password_reset_confirm, name='password_reset_confirm'),
-    url(r'^reset/done/$', password_reset_complete, name='password_reset_complete'),
+        views.password_reset_confirm, {'template_name': 'registration/password_reset_confirm_.html'},
+        name='password_reset_confirm'),
+    url(r'^reset/done/$', views.password_reset_complete,
+        {'template_name': 'registration/password_reset_complete_.html'}, name='password_reset_complete'),
 
-    url(r'^register/$', UserCreateView.as_view(), name='register'),
-    url(r'^register/done/$', UserCreateDoneView.as_view(), name='register_done'),
     # url(r'^confim/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
     #     'accounts.views.confirm', name='confirm'),
     # url(r'^confirm/done/$', 'django.contrib.auth.views.confirm_done', name='confirm_done'),
