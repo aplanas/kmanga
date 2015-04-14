@@ -56,7 +56,7 @@ class SubManga(MangaSpider):
         @scrapes names
         """
 
-        xp = '//div[@class="b250 bmr0"]/table/tr/td/a/text()'
+        xp = '//div[@class="container"]//td/a/text()'
         genres = Genres()
         genres['names'] = response.xpath(xp).extract()
         return genres
@@ -69,7 +69,7 @@ class SubManga(MangaSpider):
         @returns request 13000 15000
         """
 
-        xp = '//div[@class="b468"]/table/tr[td]'
+        xp = '//div[@class="container"]//tr[td[not(@colspan)]]'
         for item in response.xpath(xp):
             manga = Manga()
             # URL
@@ -83,6 +83,13 @@ class SubManga(MangaSpider):
             request = scrapy.Request(manga['url'][0], self.parse_collection,
                                      meta=meta)
             yield request
+
+        # Next page
+        xp = '//div[@id="paginacion"]//li[@class="next"]/a/@href'
+        next_url = response.xpath(xp).extract()
+        if next_url:
+            next_url = urljoin(response.url, next_url[0])
+            yield scrapy.Request(next_url, self.parse_catalog)
 
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
@@ -106,7 +113,7 @@ class SubManga(MangaSpider):
             return
 
         # Name
-        xp = '//div[@class="b468"]/h1/a/text()'
+        xp = '//div[@class="well"]/h1/text()'
         manga['name'] = response.xpath(xp).extract()
         # Alternate name
         manga['alt_name'] = []  # manga['name']
