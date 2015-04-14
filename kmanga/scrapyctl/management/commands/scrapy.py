@@ -10,6 +10,7 @@ from django.db import connection
 
 from core.models import Manga
 from core.models import Source
+from registration.models import UserProfile
 from scrapy import log
 import scrapyctl.utils
 
@@ -33,7 +34,7 @@ class Command(BaseCommand):
             help='Send issues to the user (<list_of_numbers|all>).'),
         make_option(
             '--subscribe', action='store', dest='subscribe', default=None,
-            help='Create a subscription for an user to a manga (<days>).'),
+            help='Create a subscription for an user to a manga (<user>).'),
         make_option(
             '-m', '--manga', action='store', dest='manga', default=None,
             help='Name of the manga (<text>).'),
@@ -46,6 +47,9 @@ class Command(BaseCommand):
         make_option(
             '--until', action='store', dest='until', default=date.today(),
             help='Until parameter to latest update (<DD-MM-YYYY>).'),
+        make_option(
+            '--issues', action='store', dest='issues', default=None,
+            help='Number of issues to send per day (<issues>).'),
         make_option(
             '--from', action='store', dest='from', default=None,
             help='Email address from where to send the issue (<email>).'),
@@ -62,9 +66,8 @@ class Command(BaseCommand):
     help = 'Launch scrapy spiders from command line.'
     args = '[<spider_name>]'
 
-    def _get_manga(self, spider, manga=None, url=None):
+    def _get_manga(self, source, manga=None, url=None):
         """Get a manga based on the name."""
-        source = Source.objects.get(spider=spider)
         kwargs = {}
         if manga:
             kwargs['name__icontains'] = manga
@@ -106,7 +109,11 @@ class Command(BaseCommand):
             details = options['details']
             self.search(spiders, manga, lang, details)
         elif options['subscribe']:
-            pass
+            user = options['subscribe']
+            manga = options['manga']
+            url = options['url']
+            issues = options['issues']
+            self.subscribe(spiders, user, manga, issues)
         elif options['send']:
             numbers = options['send']
             manga = options['manga']
@@ -135,11 +142,13 @@ class Command(BaseCommand):
         elif command == 'collection':
             if len(spiders) > 1:
                 raise CommandError('Please, specify a single source')
+            spider = spiders[0]
+            source = Source.objects.get(spider=spider)
 
             if not manga and not url:
                 raise CommandError("Provide parameters 'manga' or 'url'")
 
-            _manga = self._get_manga(spiders[0], manga=manga, url=url)
+            _manga = self._get_manga(source, manga=manga, url=url)
             if not _manga and not url:
                 raise CommandError(
                     "'manga' not found, please, provide 'url'")
@@ -197,6 +206,22 @@ class Command(BaseCommand):
                                            issue.name))
                 self.stdout.write('')
 
+    def subscribe(self, spiders, user, manga, issues):
+        """Subscribe an user to a manga."""
+        if len(spiders) > 1:
+            raise CommandError('Please, specify a single source')
+        spider = spiders[0]
+        source = Source.objects.get(spider=spider)
+
+        user_profile = UserProfile.objects.get(user__username=user)
+        issues = 4 if not issues else issues
+
+        manga = self._get_manga(source, manga=manga)
+        if not manga:
+            raise CommandError('Manga %s not found in %s' % (manga, spider))
+
+        manga.subscribe(user_profile.user, issues)
+
     def send(self, spiders, numbers, manga, url, lang, _from, to, loglevel):
         """Send a list of issues to an user."""
         if len(spiders) > 1:
@@ -206,7 +231,7 @@ class Command(BaseCommand):
 
         if not manga:
             raise CommandError("Parameter 'manga' is not optional")
-        manga = self._get_manga(spiders[0], manga=manga)
+        manga = self._get_manga(source, manga=manga)
         if not manga:
             raise CommandError('Manga %s not found in %s' % (manga, spider))
 

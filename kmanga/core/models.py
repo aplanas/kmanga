@@ -192,13 +192,16 @@ class Manga(models.Model):
     def __str__(self):
         return self.name
 
-    def subscribe(self, user, issues_per_day=2, paused=False):
+    def subscribe(self, user, issues_per_day=4, paused=False):
         """Subscribe an User to the current Manga."""
-        return Subscription.objects.create(
+        obj, created = Subscription.objects.update_or_create(
             manga=self,
             user=user,
-            issues_per_day=issues_per_day,
-            paused=paused)
+            defaults={
+                'issues_per_day': issues_per_day,
+                'paused': paused,
+            })
+        return obj
 
 
 @python_2_unicode_compatible
