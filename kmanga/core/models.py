@@ -251,6 +251,15 @@ class Subscription(models.Model):
     def __str__(self):
         return '%s (%d per day)' % (self.manga, self.issues_per_day)
 
+    def add_sent(self, issue):
+        """Add or update an History to a Subscription."""
+        return History.objects.update_or_create(
+            issue=issue,
+            subscription=self,
+            defaults={
+                'status': History.SENT,
+            })
+
 
 class HistoryQuerySet(models.QuerySet):
     def latests(self, status=None):
