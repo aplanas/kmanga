@@ -20,3 +20,10 @@ urlpatterns = [
     # Application URLs
     url(r'^django-rq/', include('django_rq.urls')),
 ]
+
+
+# Remove this in deployment
+# https://docs.djangoproject.com/en/1.8/howto/static-files/
+from django.conf import settings
+from django.conf.urls.static import static
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
