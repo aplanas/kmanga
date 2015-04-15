@@ -109,7 +109,8 @@ def update_catalog(spiders, loglevel='INFO', dry_run=False):
     _update(spiders, 'catalog', loglevel=loglevel, dry_run=dry_run)
 
 
-def update_collection(spiders, manga, url, loglevel='INFO', dry_run=False):
+def update_collection(spiders, manga, url, loglevel='INFO',
+                      dry_run=False):
     """Launch the scraper to update list of issues for one manga."""
     _update(spiders, 'collection', manga=manga, url=url,
             loglevel=loglevel, dry_run=dry_run)
@@ -137,8 +138,8 @@ def update_latest(spiders, until, loglevel='INFO', dry_run=False):
     reactor.run()
 
 
-def send(spider, manga, issues, urls, from_email, to_email, loglevel='INFO',
-         dry_run=False):
+def send(spider, manga, issues, urls, from_email, to_email,
+         loglevel='INFO', dry_run=False):
     """Send a list of issues to an user."""
     name = spider
 
