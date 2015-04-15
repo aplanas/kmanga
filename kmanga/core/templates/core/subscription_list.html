@@ -7,7 +7,7 @@
 <div class="row">
 {% endif %}
   <div class="col-xs-4">
-    <a href="#"><img src="{{ subscription.manga.cover }}"/></a>
+    <a href="#"><img src="{{ subscription.manga.cover.url }}" class="img-thumbnail" alt="{{ subscription.manga }}" height="300" width="300"/></a>
     {{ subscription.manga.name }}
     <ul>
       {% for history in subscription.history_set.latests|slice:":5" %}
