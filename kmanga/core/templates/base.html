@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="manga for kindle">
     <meta name="author" content="kmanga">
-    <link rel="icon" href="../../favicon.ico">
+    <link rel="icon" href="{% static 'favicon.ico' %}">
 
     <title>{% block title %}kmanga{% endblock title %}</title>
 
@@ -48,6 +48,15 @@
             <li><a href="#about">About</a></li>
             <li><a href="#contact">Contact</a></li>
           </ul>
+	  {% if view.request.user %}
+	  <button type="button" class="btn btn-default navbar-btn navbar-right">Log out</button>
+	  <form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+              <input type="text" class="form-control" placeholder="Search">
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+	  </form>
+	  {% endif %}
         </div><!--/.nav-collapse -->
       </div>
     </nav>
@@ -56,11 +65,7 @@
 
       <div class="starter-template">
 	<h1>{% block page_title %}Example Base Template{% endblock page_title %}</h1>
-        <p class="lead">Use this document as a way to quick start any new project.</p>
-
-	{% block content %}
-        <p>Use this document as a way to quick start any new project.</p>
-	{% endblock content %}
+	{% block content %}{% endblock content %}
       </div>
 
     </div><!-- /.container -->
