@@ -31,4 +31,5 @@ if [ -n "$REDIS" ]; then
 fi
 
 # Install Python packages
-pip install Scrapy Pillow django-rq service-identity psycopg2
+pip install Scrapy Pillow easy-thumbnails django-rq service-identity psycopg2
+

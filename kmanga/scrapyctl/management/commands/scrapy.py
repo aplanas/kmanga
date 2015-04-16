@@ -37,13 +37,16 @@ class Command(BaseCommand):
             '--details', action='store_true', dest='details', default=False,
             help='Add more details in the list of mangas.'),
         make_option(
-            '--until', action='store', dest='until', default=datetime.date.today(),
+            '--until', action='store', dest='until',
+            default=datetime.date.today(),
             help='Until parameter to latest update (<DD-MM-YYYY>).'),
         make_option(
-            '--issues-per-day', action='store', dest='issues-per-day', default=4,
+            '--issues-per-day', action='store', dest='issues-per-day',
+            default=4,
             help='Number of issues to send per day (<number>).'),
         make_option(
-            '--do-not-send', action='store_true', dest='do-not-send', default=False,
+            '--do-not-send', action='store_true', dest='do-not-send',
+            default=False,
             help='Avoid the send of the manga, but register the send.'),
         make_option(
             '--user', action='store', dest='user', default=None,
@@ -163,7 +166,8 @@ class Command(BaseCommand):
         spiders = self._get_spiders(options['spiders'])
 
         if not args or len(args) > 1:
-            raise CommandError('Please, provide one command: %s' % Command.args)
+            msg = 'Please, provide one command: %s' % Command.args
+            raise CommandError(msg)
         command = args[0]
 
         loglevel = options['loglevel']
@@ -197,10 +201,11 @@ class Command(BaseCommand):
             user = options['user']
             manga = options['manga']
             url = options['url']
+            lang = options['lang']
             issues_per_day = options['issues-per-day']
 
             manga = self._get_manga(spiders, manga, url)
-            self.subscribe(user, manga, issues_per_day)
+            self.subscribe(user, manga, lang, issues_per_day)
         elif command == 'send':
             issues = options['issues']
             manga = options['manga']
@@ -246,13 +251,13 @@ class Command(BaseCommand):
 
     def search(self, spiders, manga, lang, details):
         """Search a manga in the database."""
+        q = manga
         for name in spiders:
             header = 'Results from %s:' % name
             self.stdout.write(header)
             self.stdout.write('=' * len(header))
             self.stdout.write('')
             source = Source.objects.get(spider=name)
-            q = manga
             for manga in source.manga_set.filter(name__icontains=q):
                 self.stdout.write('- %s' % manga)
                 issues = manga.issue_set
@@ -274,10 +279,13 @@ class Command(BaseCommand):
                                            issue.name))
                 self.stdout.write('')
 
-    def subscribe(self, user, manga, issues_per_day):
+    def subscribe(self, user, manga, lang, issues_per_day):
         """Subscribe an user to a manga."""
         user_profile = UserProfile.objects.get(user__username=user)
-        manga.subscribe(user_profile.user, issues_per_day)
+        if lang:
+            lang = lang.upper()
+
+        manga.subscribe(user_profile.user, lang, issues_per_day)
 
     def send(self, spiders, manga, issues, _from, to, do_not_send,
              loglevel):

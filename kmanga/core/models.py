@@ -193,12 +193,14 @@ class Manga(models.Model):
     def __str__(self):
         return self.name
 
-    def subscribe(self, user, issues_per_day=4, paused=False):
+    def subscribe(self, user, language=None, issues_per_day=4, paused=False):
         """Subscribe an User to the current Manga."""
+        language = language if language else user.userprofile.language
         obj, created = Subscription.objects.update_or_create(
             manga=self,
             user=user,
             defaults={
+                'language': language,
                 'issues_per_day': issues_per_day,
                 'paused': paused,
             })
