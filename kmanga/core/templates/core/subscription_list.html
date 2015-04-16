@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load thumbnail %}
 
 {% block page_title%}Subscription <small>for user {{ view.request.user }}</small>{% endblock page_title %}
 {% block content %}
@@ -7,29 +8,35 @@
 <div class="row">
 {% endif %}
   <div class="col-xs-4">
-    <a href="#"><img src="{{ subscription.manga.cover.url }}" class="img-thumbnail" alt="{{ subscription.manga }}" height="300" width="300"/></a>
-    {{ subscription.manga.name }}
-    <ul>
-      {% for history in subscription.history_set.latests|slice:":5" %}
-      <li>
-	{% if history.is_pending %}
-	<span class="text-muted">
-	{% elif history.is_processing %}
-	<span class="text-warning">
-	{% elif history.is_sent %}
-	<span class="text-success">
-	{% elif history.is_failed %}
-	<span class="text-danger">
-        {% else %}
-	<span class="text-success">
-        {% endif %}
-	  {{ history }}
-        </span>
-      </li>
-      {% empty %}
-      <p>No history.</p>
-      {% endfor %}
-    </ul>
+    <div class="thumbnail">
+      <a href="#">
+	<img src="{{ subscription.manga.cover|thumbnail_url:'cover' }}" alt="{{ subscription.manga }}" height="400" width="300">
+      </a>
+      <div class="caption">
+	<h3>{{ subscription.manga.name }}</h3>
+	<ul>
+	  {% for history in subscription.history_set.latests|slice:":5" %}
+	  <li>
+	    {% if history.is_pending %}
+	    <span class="text-muted">
+	    {% elif history.is_processing %}
+	    <span class="text-warning">
+	    {% elif history.is_sent %}
+	    <span class="text-success">
+	    {% elif history.is_failed %}
+	    <span class="text-danger">
+	    {% else %}
+	    <span class="text-success">
+            {% endif %}
+	    {{ history }}
+	    </span>
+	  </li>
+	  {% empty %}
+	  <p>No history.</p>
+	  {% endfor %}
+	</ul>
+      </div>
+    </div>
   </div>
 {% if forloop.counter|divisibleby:3 %}
 </div>
