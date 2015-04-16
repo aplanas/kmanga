@@ -106,6 +106,7 @@ STATIC_URL = '/static/'
 INSTALLED_APPS += (
     # External applications
     'django_rq',
+    'easy_thumbnails',
     # Project applications
     'core',
     'registration',
@@ -115,6 +116,16 @@ INSTALLED_APPS += (
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+THUMBNAIL_ALIASES = {
+    'core.Manga.cover': {
+        'cover': {
+            'size': (300, 400),
+            'crop': True,
+            'bw': True,
+        },
+    },
+}
 
 RQ_QUEUES = {
     'default': {

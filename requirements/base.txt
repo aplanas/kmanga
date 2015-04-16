@@ -5,6 +5,7 @@ cryptography==0.8.2
 cssselect==0.9.1
 Django==1.8
 django-rq==0.7.0
+easy-thumbnails==2.2
 enum34==1.0.4
 lxml==3.4.2
 Pillow==2.8.1
