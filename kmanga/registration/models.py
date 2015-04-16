@@ -27,11 +27,17 @@ class UserProfile(models.Model):
         (ITALIAN, 'Italian'),
         (RUSSIAN, 'Russian'),
     )
+    ISSUES_PER_DAY = {
+        FREE: 10,
+        PAY: 50,
+    }
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     mode = models.CharField(max_length=1, choices=MODE_CHOICES,
                             default=FREE)
-    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES)
+    language = models.CharField(max_length=2,
+                                choices=LANGUAGE_CHOICES)
+    issues_per_day = models.IntegerField(default=ISSUES_PER_DAY[FREE])
     email_kindle = models.EmailField()
 
     def __str__(self):
