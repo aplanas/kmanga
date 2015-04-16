@@ -8,8 +8,10 @@ from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 from django.db import connection
 
+from core.models import History
 from core.models import Manga
 from core.models import Source
+from core.models import Subscription
 from registration.models import UserProfile
 from scrapy import log
 import scrapyctl.utils
@@ -74,6 +76,7 @@ class Command(BaseCommand):
         'search',
         'subscribe',
         'send',
+        'sendsub',
     ]
     args = '|'.join(commands)
 
@@ -213,6 +216,10 @@ class Command(BaseCommand):
             issues = self._get_issues(manga, issues, url, lang)
             self.send(spiders, manga, issues, _from, to, do_not_send,
                       loglevel)
+        elif command == 'sendsub':
+            user = options['user']
+            do_not_send = options['do-not-send']
+            self.sendsub(user, do_not_send, loglevel)
         else:
             raise CommandError('Not valid command value. '
                                'Please, provide a command: %s' % Command.args)
@@ -275,7 +282,10 @@ class Command(BaseCommand):
     def send(self, spiders, manga, issues, _from, to, do_not_send,
              loglevel):
         """Send a list of issues to an user."""
-        numbers, urls = zip(*issues.values_list('number', 'url'))
+        if isinstance(issues, list):
+            numbers, urls = zip(*[(i.number, i.url) for i in issues])
+        else:
+            numbers, urls = zip(*issues.values_list('number', 'url'))
 
         _from = _from if _from else settings.KMANGA_EMAIL
         if not to:
@@ -291,11 +301,10 @@ class Command(BaseCommand):
             raise CommandError('User not found for %s' % to)
 
         if not do_not_send:
-            scrapyctl.utils.send(spiders[0], manga.name, numbers, urls,
-                                 _from, user_profile.email_kindle,
-                                 loglevel)
-
-        if do_not_send:
+            scrapyctl.utils._send(spiders[0], manga.name, numbers, urls,
+                                  _from, user_profile.email_kindle,
+                                  loglevel)
+        else:
             # If the user have a subscription, mark the issues as sent
             user = user_profile.user
             try:
@@ -305,4 +314,37 @@ class Command(BaseCommand):
                     subscription.add_sent(issue)
             except:
                 msg = 'The user %s do not have a subscription to %s' % (user, manga)
+                self.stdout.write(msg)
+
+    def sendsub(self, user, do_not_send, loglevel):
+        """Send the daily subscriptions to an user."""
+        user_profile = UserProfile.objects.get(user__username=user)
+        user = user_profile.user
+
+        already_sent = History.objects.number_created_today(user)
+        remains = user_profile.issues_per_day - already_sent
+
+        issues = []
+        for subscription in user.subscription_set.order_by('?'):
+            for issue in subscription.issues_to_send():
+                # Exit if we reach the limit for today
+                if remains <= 0:
+                    break
+                issues.append(issue)
+                remains -= 1
+
+        if not do_not_send and issues:
+            scrapyctl.utils.send(issues, user, loglevel)
+        else:
+            # If the user have a subscription, mark the issues as sent
+            user = user_profile.user
+            try:
+                for issue in issues:
+                    subscription = Subscription.objects.get(
+                        user=user, manga=issue.manga)
+                    self.stdout.write("Marking '%s' as sent" % issue)
+                    subscription.add_sent(issue)
+            except:
+                msg = 'The user %s do not have a '\
+                      'subscription to %s' % (user, issue.manga)
                 self.stdout.write(msg)

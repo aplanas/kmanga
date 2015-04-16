@@ -138,7 +138,7 @@ def update_latest(spiders, until, loglevel='INFO', dry_run=False):
     reactor.run()
 
 
-def send(spider, manga, issues, urls, from_email, to_email,
+def _send(spider, manga, issues, urls, from_email, to_email,
          loglevel='INFO', dry_run=False):
     """Send a list of issues to an user."""
     name = spider
@@ -156,6 +156,29 @@ def send(spider, manga, issues, urls, from_email, to_email,
         if dry_run:
             kwargs['dry-run'] = dry_run
         spider = crawler.spiders.create(name, **kwargs)
+        crawler.crawl(spider)
+        crawlers.append(crawler)
+
+    reactor_control = ReactorFeedControl(crawlers)
+    log.start(loglevel=loglevel)
+    reactor_control.run()
+
+
+def send(issues, user, loglevel='INFO', dry_run=False):
+    """High level function to send issues to an user."""
+    crawlers = []
+    for issue in issues:
+        crawler = _create_crawler()
+        kwargs = {
+            'manga': issue.manga.name,
+            'issue': issue.number,
+            'url': issue.url,
+            'from': settings.KMANGA_EMAIL,
+            'to': user.userprofile.kindle_email,
+        }
+        if dry_run:
+            kwargs['dry-run'] = dry_run
+        spider = crawler.spiders.create(issue.manga.name, **kwargs)
         crawler.crawl(spider)
         crawlers.append(crawler)
 
