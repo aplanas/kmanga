@@ -241,6 +241,8 @@ class SubscriptionQuerySet(models.QuerySet):
 class Subscription(models.Model):
     manga = models.ForeignKey(Manga)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    language = models.CharField(max_length=2,
+                                choices=SourceLanguage.LANGUAGE_CHOICES)
     issues_per_day = models.IntegerField(default=4)
     paused = models.BooleanField(default=False)
 
@@ -254,7 +256,9 @@ class Subscription(models.Model):
 
     def issues_to_send(self):
         """Return the list of issues to send, ordered by number."""
-        return self.manga.issue_set.exclude(
+        return self.manga.issue_set.filter(
+            language=self.language
+        ).exclude(
             pk__in=self.history_set.values('issue_id')
         ).order_by('number')[:self.issues_per_day]
 
