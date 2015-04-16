@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import connection
 from django.db import models
+from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 
 
@@ -251,6 +252,12 @@ class Subscription(models.Model):
     def __str__(self):
         return '%s (%d per day)' % (self.manga, self.issues_per_day)
 
+    def issues_to_send(self):
+        """Return the list of issues to send, ordered by number."""
+        return self.manga.issue_set.exclude(
+            pk__in=self.history_set.values('issue_id')
+        ).order_by('number')[:self.issues_per_day]
+
     def add_sent(self, issue):
         """Add or update an History to a Subscription."""
         return History.objects.update_or_create(
@@ -269,6 +276,15 @@ class HistoryQuerySet(models.QuerySet):
         return latests.annotate(
             models.Max('send_date')
         ).order_by('-send_date__max')
+
+    def number_created_today(self, user):
+        """Return the number of `History` created today for a user."""
+        today = timezone.now()
+        yesterday = today - timezone.timedelta(1)
+        return self.filter(
+            subscription__user=user,
+            last_modified__range=[yesterday, today],
+        ).count()
 
     def pending(self):
         return self.latests(status=History.PENDING)
