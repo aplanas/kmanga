@@ -116,9 +116,16 @@ class FTSRawQuerySet(models.query.RawQuerySet):
 
 class MangaQuerySet(models.QuerySet):
     def latests(self):
-        return self.annotate(
+        # The correct annotation expression is the next one, but due
+        # to an error in Django ORM, this empression uses a full GROUP
+        # BY with the data fields.  This produce a slow query.
+        #
+        # return self.annotate(
+        #     models.Max('issue__last_modified')
+        # ).order_by('-issue__last_modified__max')
+        return self.filter(pk__in=self.values('pk').annotate(
             models.Max('issue__last_modified')
-        ).order_by('-issue__last_modified__max')
+        ).order_by('-issue__last_modified__max').values('pk'))
 
     def _to_tsquery(self, q):
         """Convert a query with the prefix syntax."""
