@@ -25,7 +25,7 @@ class LoginRequiredMixin(object):
 
 class MangaListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
     model = Manga
-    paginate_by = 10
+    paginate_by = 9
 
     def get_context_data(self, **kwargs):
         """Extend the context data with the search query value."""
@@ -81,8 +81,9 @@ class IssueDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('issue-list')
 
 
-class SubscriptionListView(LoginRequiredMixin, ListView):
+class SubscriptionListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
     model = Subscription
+    paginate_by = 9
 
     def get_queryset(self):
         user = self.request.user

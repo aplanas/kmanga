@@ -4,13 +4,13 @@
 {% block page_title%}Subscription <small>for user {{ view.request.user }}</small>{% endblock page_title %}
 {% block content %}
 {% for subscription in object_list %}
-{% if forloop.first %}
+  {% if forloop.first %}
 <div class="row">
-{% endif %}
+  {% endif %}
   <div class="col-xs-4">
     <div class="thumbnail">
       <a href="{{ subscription.manga.url }}">
-	<img src="{{ subscription.manga.cover|thumbnail_url:'cover' }}" alt="{{ subscription.manga }}" height="400" width="300">
+	<img src="{{ subscription.manga.cover|thumbnail_url:'cover' }}" alt="{{ subscription.manga }}" height="360" width="270">
       </a>
       <div class="caption">
 	<h3>{{ subscription.manga.name }} <small><span class="label label-default">{{ subscription.manga.source.name }}</span></small></h3>
@@ -39,15 +39,31 @@
       </div>
     </div>
   </div>
-{% if forloop.counter|divisibleby:3 %}
+  {% if forloop.counter|divisibleby:3 %}
 </div>
 <div class="row">
-{% endif %}
-{% if forloop.last %}
+  {% endif %}
+  {% if forloop.last %}
 </div>
-{% endif %}
+  {% endif %}
 {% empty %}
 <p>You don't have any subscription yet.</p>
 {% endfor %}
-</ul>
+
+<nav>
+  <ul class="pager">
+    {% if page_obj.has_previous %}
+    <li><a {% if q %}href="?page={{ page_obj.previous_page_number }}&q={{ q }}"{% else %}href="?page={{ page_obj.previous_page_number }}"{% endif %}>Previous</a>
+    </li>
+    {% else %}
+    <li class="disabled"><a href="#" onclick="javascript:return false;">Previous</a></li>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <li><a {% if q %}href="?page={{ page_obj.next_page_number }}&q={{ q }}"{% else %}href="?page={{ page_obj.next_page_number }}"{% endif %}>Next</a>
+    </li>
+    {% else %}
+    <li class="disabled"><a href="#" onclick="javascript:return false;">Next</a></li>
+    {% endif %}
+  </ul>
+</nav>
 {% endblock %}
