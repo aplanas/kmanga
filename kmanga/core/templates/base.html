@@ -50,9 +50,9 @@
 	  </ul>
 	  {% if view.request.user %}
 	  <button type="button" class="btn btn-default navbar-btn navbar-right">Log out</button>
-	  <form class="navbar-form navbar-right" role="search">
+	  <form class="navbar-form navbar-right" role="search" action="{% url 'manga-list' %}">
 	    <div class="form-group">
-	      <input type="text" class="form-control" placeholder="Search">
+	      <input type="text" class="form-control" placeholder="Search" name="q">
 	    </div>
 	    <button type="submit" class="btn btn-default">Submit</button>
 	  </form>
