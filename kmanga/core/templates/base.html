@@ -49,7 +49,7 @@
 	    <li><a href="#contact">Contact</a></li>
 	  </ul>
 	  {% if view.request.user %}
-	  <button type="button" class="btn btn-default navbar-btn navbar-right">Log out</button>
+	  <a href="{% url 'logout' %}" class="btn btn-default navbar-btn navbar-right" role="button">Log out</a>
 	  <form class="navbar-form navbar-right" role="search" action="{% url 'manga-list' %}">
 	    <div class="form-group">
 	      <input type="text" class="form-control" placeholder="Search" name="q">
@@ -64,7 +64,9 @@
     <div class="container">
 
       <div class="starter-template">
-	<h1>{% block page_title %}Example Base Template{% endblock page_title %}</h1>
+	<div class="page-header">
+	  <h1>{% block page_title %}Example Base Template{% endblock page_title %}</h1>
+	</div>
 	{% block content %}{% endblock content %}
       </div>
 
