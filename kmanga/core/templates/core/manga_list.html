@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load thumbnail %}
 
-{% block page_title%}Manga{% endblock page_title %}
+{% block page_title%}Manga Search <small>page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>{% endblock page_title %}
 {% block content %}
 {% for manga in object_list %}
   {% if forloop.first %}
@@ -13,7 +13,7 @@
 	<img src="{{ manga.cover|thumbnail_url:'cover' }}" alt="{{ manga }}" height="360" width="270">
       </a>
       <div class="caption">
-	<h3>{{ manga.name }} <small><span class="label label-default">{{ manga.source.name }}</span></small></h3>
+	<h3>{{ manga.name }} <span class="label label-default">{{ manga.source.name }}</span></h3>
       </div>
     </div>
   </div>

@@ -13,7 +13,7 @@
 	<img src="{{ subscription.manga.cover|thumbnail_url:'cover' }}" alt="{{ subscription.manga }}" height="360" width="270">
       </a>
       <div class="caption">
-	<h3>{{ subscription.manga.name }} <small><span class="label label-default">{{ subscription.manga.source.name }}</span></small></h3>
+	<h3>{{ subscription.manga.name }} <span class="label label-default">{{ subscription.manga.source.name }}</span></h3>
 
 	<ul>
 	  {% for history in subscription.history_set.latests|slice:":5" %}
