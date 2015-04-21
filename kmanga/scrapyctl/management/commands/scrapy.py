@@ -108,7 +108,7 @@ class Command(BaseCommand):
 
         kwargs = {}
         if manga:
-            kwargs['name__icontains'] = manga
+            kwargs['name'] = manga
         if url:
             kwargs['url'] = url
         mangas = source.manga_set.filter(**kwargs)
@@ -119,6 +119,7 @@ class Command(BaseCommand):
             for manga in mangas:
                 self.stdout.write('- %s' % manga)
             self.stdout.write('Please, choose one and try again')
+            raise CommandError('Manga not found')
 
         if not mangas:
             raise CommandError('Manga not found')
@@ -321,7 +322,8 @@ class Command(BaseCommand):
                     self.stdout.write("Marking '%s' as sent" % issue)
                     subscription.add_sent(issue)
             except:
-                msg = 'The user %s do not have a subscription to %s' % (user, manga)
+                msg = 'The user %s do not have a subscription to %s' % (user,
+                                                                        manga)
                 self.stdout.write(msg)
 
     def sendsub(self, user, do_not_send, loglevel):

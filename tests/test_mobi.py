@@ -136,6 +136,9 @@ class TestMobiCache(unittest.TestCase):
         self.assertTrue(len(self.cache) == 3)
         for key in self.cache:
             self.assertTrue(len(key) == 4)
+            v = self.cache[key]
+            self.assertTrue(len(v) == 2)
+            self.assertTrue(v[1] == {})
         del self.cache[('spider', 'mobi', '1', 'url')]
         self.assertTrue(len(self.cache) == 2)
         self.assertTrue(('spider', 'mobi', '1', 'url') not in self.cache)

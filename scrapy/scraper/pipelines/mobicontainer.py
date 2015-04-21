@@ -69,16 +69,20 @@ class MobiCache(collections.MutableMapping):
                 os.makedirs(directory)
 
     def __file(self, key):
+        """Return the MD5 hash for the key."""
+        # Generate an unique hash from the key components.
         spider, name, issue, url = key
         name = '%s_%s_%03d_%s' % (spider, name, int(issue), url)
         name = hashlib.md5(name).hexdigest()
         return name
 
     def __index_file(self, key):
+        """Return the full path of the index file."""
         name = self.__file(key)
         return os.path.join(self.index, name)
 
     def __data_file(self, key):
+        """Return the full path of the data file."""
         name = self.__file(key)
         return os.path.join(self.data, name)
 
@@ -101,14 +105,16 @@ class MobiCache(collections.MutableMapping):
         for _, mobi_file, data_file in value_ext:
             os.link(mobi_file, data_file)
 
-        # Store the index in the index file.
+        # Store the index in the index file.  The index file is
+        # composed of the mobi name, the path of the mobi file, the
+        # statistics and the key.
         index = [(v[0], v[2]) for v in value_ext]
-        index.append(key)
+        index = [index, value[-1], key]
         pickle.dump(index, open(self.__index_file(key), 'wb'),
                     pickle.HIGHEST_PROTOCOL)
 
     def __delitem__(self, key):
-        index = self[key]
+        index, _ = self[key]
         for _, _data_file in index:
             os.unlink(_data_file)
         os.unlink(self.__index_file(key))
@@ -234,7 +240,6 @@ class MobiContainer(object):
                               self.stats.get_stats())
                 for _, container in values_and_containers:
                     container.clean()
-
             mobi_info, stats = cache[key]
             for mobi_name, mobi_file in mobi_info:
                 mail = MailSender.from_settings(self.settings)
@@ -258,7 +263,7 @@ class MobiContainer(object):
         #     history__from_issue__lte=manga_issue,
         #     history__to_issue__gte=manga_issue)
         # for h in hl:
-        #     print 'HEEEEEEEEEEEEEEEEEEEEEEEERE', h
+        #     print h
         print 'Mail OK', from_mail, to_mail, manga_name, manga_issue
 
     def mail_err(self, result, from_mail, to_mail, manga_name, manga_issue):
