@@ -12,12 +12,12 @@ Pillow==2.8.1
 psycopg2==2.6
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
-pycparser==2.10
+pycparser==2.12
 pyOpenSSL==0.15.1
 queuelib==1.2.2
 redis==2.10.3
 rq==0.5.2
-Scrapy==0.24.5
+Scrapy==0.24.6
 service-identity==14.0.0
 six==1.9.0
 Twisted==15.1.0
