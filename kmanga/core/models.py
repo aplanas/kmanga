@@ -138,7 +138,9 @@ SELECT core_manga.*
 FROM core_manga
 JOIN core_manga_fts_view ON core_manga.id = core_manga_fts_view.id
 WHERE core_manga_fts_view.document @@ to_tsquery(%s)
-ORDER BY ts_rank(core_manga_fts_view.document, to_tsquery(%s)) DESC;
+ORDER BY ts_rank(core_manga_fts_view.document, to_tsquery(%s)) DESC,
+  core_manga.name ASC,
+  core_manga.url ASC;
         ''', model=self.model, params=[q, q], using=self.db)
 
     def refresh(self):
