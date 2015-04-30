@@ -121,7 +121,8 @@ THUMBNAIL_ALIASES = {
     'core.Manga.cover': {
         'cover': {
             'size': (270, 360),
-            'crop': True,
+            'crop': 'smart',
+            'upscale': True,
             'bw': True,
         },
     },
