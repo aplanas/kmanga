@@ -7,7 +7,7 @@ Django==1.8
 django-rq==0.8.0
 easy-thumbnails==2.2
 enum34==1.0.4
-lxml==3.4.3
+lxml==3.4.4
 Pillow==2.8.1
 psycopg2==2.6
 pyasn1==0.1.7
