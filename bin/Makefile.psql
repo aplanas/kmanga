@@ -1,0 +1,15 @@
+# PostgreSQL Makefile
+client cli:
+	~/webapps/postgresql/bin/psql -p 23530 kmanga
+
+start:
+	~/webapps/postgresql/bin/pg_ctl status -D ~/webapps/postgresql/pgsql/data || ~/webapps/postgresql/bin/pg_ctl start -D ~/webapps/postgresql/pgsql/data -l ~/webapps/postgresql/logs/postgresql.log
+
+restart:
+	~/webapps/postgresql/bin/pg_ctl restart -D ~/webapps/postgresql/pgsql/data -l ~/webapps/postgresql/logs/postgresql.log
+
+stop:
+	~/webapps/postgresql/bin/pg_ctl stop -D ~/webapps/postgresql/pgsql/data -m smart
+
+backup:
+	~/webapps/postgresql/bin/pg_dump -p 23530 -Z6 -f ~/backup/kmanga-`date "+%Y-%m-%d"`.sql.gz kmanga
