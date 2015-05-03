@@ -15,7 +15,7 @@ cd $PSQL
 tar -xjvf postgresql-$V.tar.bz2
 cd postgresql-$V
 ./configure --prefix=$PREFIX
-make -j 4 && make install
+make world -j 4 && make install
 cd ..
 rm -fr postgresql-$V
 
