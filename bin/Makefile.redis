@@ -1,9 +1,9 @@
 # Redis Makefile
 client cli:
-        ~/webapps/redis/bin/redis-cli
+	~/webapps/redis/bin/redis-cli
 
 start restart:
-        ~/webapps/redis/bin/redis-server ~/webapps/redis/etc/redis.conf
+	~/webapps/redis/bin/redis-server ~/webapps/redis/etc/redis.conf
 
 stop:
-        cat ~/webapps/redis/var/redis.pid | xargs kill
+	cat ~/webapps/redis/var/redis.pid | xargs kill
