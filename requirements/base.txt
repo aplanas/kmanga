@@ -3,7 +3,7 @@ characteristic==14.3.0
 click==4.0
 cryptography==0.8.2
 cssselect==0.9.1
-Django==1.8
+Django==1.8.1
 django-rq==0.8.0
 easy-thumbnails==2.2
 enum34==1.0.4
