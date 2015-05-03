@@ -256,6 +256,7 @@ class Subscription(models.Model):
                                 choices=SourceLanguage.LANGUAGE_CHOICES)
     issues_per_day = models.IntegerField(default=4)
     paused = models.BooleanField(default=False)
+    deleted = models.BooleanField(default=False)
 
     objects = SubscriptionQuerySet.as_manager()
 
