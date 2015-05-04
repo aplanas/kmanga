@@ -118,31 +118,31 @@ class SubManga(MangaSpider):
         # Alternate name
         manga['alt_name'] = []  # manga['name']
         # Author
-        xp = '//div[@class="b250 bmr0"]/' \
-             'p[contains(., "Creado por")]/a/text()'
+        xp = '//div[@class="well"]/' \
+             'a[contains(@href, "http://submanga.com/autor/")]/text()'
         manga['author'] = response.xpath(xp).extract()
         # Artist
-        xp = '//div[@class="b250 bmr0"]/' \
-             'p[contains(., "Publicado en la revista")]/a/text()'
+        xp = '//div[@class="well"]/' \
+             'a[contains(@href, "http://submanga.com/revista/")]/text()'
         manga['artist'] = response.xpath(xp).extract()
         # Reading direction
         manga['reading_direction'] = 'RL'
         # Status
         manga['status'] = 'Ongoing'
         # Genres
-        xp = '//div[@class="b250 bmr0"]/' \
-             'p[contains(., "Creado por")]/' \
-             'preceding-sibling::p/a/text()'
+        xp = '//div[@class="well"]/' \
+             'a[contains(@href, "http://submanga.com/genero/")]/text()'
         manga['genres'] = response.xpath(xp).extract()
         # Description
-        xp = '//div[@class="b250 bmr0"]/p[3]/text()'
-        manga['description'] = '\n'.join(response.xpath(xp).extract())
+        xp = '//div[@class="well"]/text()'
+        description = response.xpath(xp).extract()
+        manga['description'] = max((len(i), i) for i in description)[1]
         # Cover image
-        xp = '//div[@class="b250 bmr0"]/p/img/@src'
+        xp = '//div[@class="well"]/img/@src'
         manga['image_urls'] = response.xpath(xp).extract()
 
         # Full list of issues
-        xp = '//div[@id="sm"]/a[2]/@href'
+        xp = '//ul[@class="nav nav-tabs"]/li[2]/a/@href'
         issues_url = response.xpath(xp).extract()
         meta = {'manga': manga}
         request = scrapy.Request(issues_url[0], self._parse_issues, meta=meta)
@@ -165,19 +165,20 @@ class SubManga(MangaSpider):
 
         # Parse the manga issues list
         manga['issues'] = []
-        xp = '//td[@class="s"]'
+        xp = '//table[@class="table table-striped table-hover"]/' \
+             'tbody/tr[td[not(@colspan)]]'
         for line in response.xpath(xp):
             issue = Issue(language='ES')
             # Name
-            xp = 'a[1]/text()'
+            xp = 'td[1]/a/text()'
             name_1 = line.xpath(xp).extract()
-            xp = 'a/strong/text()'
+            xp = 'td[1]/a/strong/text()'
             name_2 = line.xpath(xp).extract()
             issue['name'] = name_1 + name_2
             # Number
             issue['number'] = name_2
             # URL
-            xp = 'a[1]/@href'
+            xp = 'td[1]/a/@href'
             issue['url'] = line.xpath(xp).extract()
             manga['issues'].append(issue)
 
@@ -232,7 +233,7 @@ class SubManga(MangaSpider):
         issues = response.meta['issues']
 
         # Release
-        xp = '//div[@class="b468"]/p[2]/text()'
+        xp = '//div[@class="well"]/text()'
         issue['release'] = response.xpath(xp).re(r'\d{2}/\d{2}/\d{4}')
 
         # In Submanga a 404 page returns a 200.  If we do not have
@@ -266,15 +267,16 @@ class SubManga(MangaSpider):
         else:
             signal = {'continue': True}
 
-        xp = '//table[contains(@class, "caps")]/tr/td[@class="s"]'
+        xp = '//table[@class="table table-striped table-hover"]/' \
+             'tbody/tr[td[not(@colspan)]]'
         for line in response.xpath(xp):
             manga = Manga()
             # Name
-            xp = 'a[1]/text()'
+            xp = 'td[1]/a/text()'
             manga['name'] = line.xpath(xp).extract()
             # URL
-            xp = 'a/@href'
-            # Recover the URL from the issue url.
+            xp = 'td[1]/a/@href'
+            # Recover the URL from the issue address.
             url = line.xpath(xp).extract()[0]
             url = url.split('/')[3]
             url = 'http://submanga.com/%s' % url
@@ -284,15 +286,15 @@ class SubManga(MangaSpider):
             issue = Issue(language='ES')
             manga['issues'] = [issue]
             # Name
-            xp = 'a[1]/text()'
+            xp = 'td[1]/a/text()'
             name_1 = line.xpath(xp).extract()
-            xp = 'a/strong/text()'
+            xp = 'td[1]/a/strong/text()'
             name_2 = line.xpath(xp).extract()
             issue['name'] = name_1 + name_2
             # Number
             issue['number'] = name_2
             # URL
-            xp = 'a/@href'
+            xp = 't[1]/a/@href'
             issue['url'] = line.xpath(xp).extract()
 
             meta = {
@@ -305,7 +307,7 @@ class SubManga(MangaSpider):
             yield request
 
         # Next page
-        xp = '//th/a/@href'
+        xp = '//div[@id="paginacion"]//li[@class="next"]/a/@href'
         next_url = response.xpath(xp).extract()
         if next_url and signal['continue']:
             next_url = next_url[0]
@@ -324,7 +326,7 @@ class SubManga(MangaSpider):
         issue = manga['issues'][0]
 
         # Release
-        xp = '//div[@class="b468"]/p[2]/text()'
+        xp = '//div[@class="well"]/text()'
         update_date = response.xpath(xp).re(r'\d{2}/\d{2}/\d{4}')
         update_date = convert_to_date(update_date[0], dmy=True)
         issue['release'] = update_date
@@ -335,34 +337,23 @@ class SubManga(MangaSpider):
             return manga
 
     def parse_manga(self, response, manga, issue):
-        xp = '//div[@id="cp"]/a/@href'
-        url = response.xpath(xp).extract()
+        xp = '//a[contains(@class, "lectora")]/@href'
+        # Point to the first page
+        url = response.xpath(xp).extract() + '/1'
         meta = {
             'manga': manga,
             'issue': issue,
         }
-        return scrapy.Request(url[0], self._parse_manga, meta=meta)
-
-    def _parse_manga(self, response):
-        manga = response.meta['manga']
-        issue = response.meta['issue']
-
-        xp = '//select/option/@value'
-        for number, number in enumerate(response.xpath(xp).extract()):
-            meta = {
-                'manga': manga,
-                'issue': issue,
-                'number': number,
-            }
-            url = urljoin(response.url, number)
-            yield scrapy.Request(url, self._parse_page, meta=meta)
+        return scrapy.Request(url[0], self._parse_page, meta=meta)
 
     def _parse_page(self, response):
         manga = response.meta['manga']
         issue = response.meta['issue']
-        number = response.meta['number']
 
-        xp = '//div/a/img/@src'
+        # The page number is the last element in the URL
+        number = response.url.split('/')[-1]
+
+        xp = '//div[@id="paginadora"]/a/img/@src'
         url = response.xpath(xp).extract()
         issue_page = IssuePage(
             manga=manga,
@@ -370,4 +361,12 @@ class SubManga(MangaSpider):
             number=number,
             image_urls=[url[0]]
         )
-        return issue_page
+        yield issue_page
+
+        # Next page
+        xp = '//li[@class="pagina"]/a/@href'
+        next_url = response.xpath(xp).extract()[1]
+        next_number = next_url.split('/')[-1]
+        if int(next_number) == int(number) + 1:
+            yield scrapy.Request(next_url, self._parse_page,
+                                 meta=response.meta)
