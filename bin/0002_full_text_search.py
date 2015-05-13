@@ -15,6 +15,8 @@ class Migration(migrations.Migration):
             sql='''
 CREATE MATERIALIZED VIEW core_manga_fts_view AS
 SELECT core_manga.id,
+       core_manga.name,
+       core_manga.url,
        setweight(to_tsvector(core_manga.name), 'A') ||
        to_tsvector(core_manga.description) ||
        to_tsvector(coalesce(string_agg(core_altname.name, ' '))) as document

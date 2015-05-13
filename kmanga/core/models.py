@@ -1,5 +1,4 @@
 import os.path
-import re
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -67,26 +66,17 @@ class Genre(models.Model):
 
 class FTSRawQuerySet(models.query.RawQuerySet):
     """RawQuerySet subclass with advanced options."""
-    def __init__(self, raw_query, model=None, query=None, params=None,
+    def __init__(self, raw_query, paged_query, count_query,
+                 model=None, query=None, params=None,
                  translations=None, using=None, hints=None):
         super(FTSRawQuerySet, self).__init__(raw_query, model=model,
                                              query=query,
                                              params=params,
                                              translations=translations,
                                              using=using, hints=hints)
-        # XXX TODO - Store a version of `raw_query` more easy to
-        # manipulate the head and the tail.  Potentially this change
-        # can break the query.
-        self.raw_query = ' '.join(raw_query.split())
-
-        self.count_query = re.sub(r'^SELECT .*? FROM', 'SELECT COUNT(*) FROM',
-                                  self.raw_query)
-        self.count_query = re.sub(' ORDER BY .*$', ';', self.count_query)
-
-        self.paged_query = self.raw_query
-        if self.paged_query.endswith(';'):
-            self.paged_query = self.paged_query[:-1]
-        self.paged_query += ' LIMIT %s OFFSET %s;'
+        self.raw_query = raw_query
+        self.paged_query = paged_query
+        self.count_query = count_query
 
     def __getitem__(self, key):
         if isinstance(key, slice):
@@ -103,14 +93,7 @@ class FTSRawQuerySet(models.query.RawQuerySet):
 
     def __len__(self):
         cursor = connection.cursor()
-        # Remove the last elements of `self.params` to adjust it to
-        # the real number of parameters.  We can, potentially, remove
-        # the one used for the ORDER BY.
-        nparams = self.count_query.count('%s')
-        params = self.params
-        if nparams < len(params):
-            params = params[:nparams-len(params)]
-        cursor.execute(self.count_query, params)
+        cursor.execute(self.count_query, self.params)
         return cursor.fetchone()[0]
 
 
@@ -133,15 +116,44 @@ class MangaQuerySet(models.QuerySet):
 
     def search(self, q):
         q = self._to_tsquery(q)
-        return FTSRawQuerySet('''
+        raw_query = '''
 SELECT core_manga.*
-FROM core_manga
-JOIN core_manga_fts_view ON core_manga.id = core_manga_fts_view.id
-WHERE core_manga_fts_view.document @@ to_tsquery(%s)
-ORDER BY ts_rank(core_manga_fts_view.document, to_tsquery(%s)) DESC,
-  core_manga.name ASC,
-  core_manga.url ASC;
-        ''', model=self.model, params=[q, q], using=self.db)
+FROM (
+  SELECT id
+  FROM core_manga_fts_view,
+       to_tsquery(%s) AS q
+  WHERE document @@ q
+  ORDER BY ts_rank(document, q) DESC,
+           name ASC,
+           url ASC
+) AS ids
+INNER JOIN core_manga ON core_manga.id = ids.id;
+'''
+        paged_query = '''
+SELECT core_manga.*
+FROM (
+  SELECT id
+  FROM core_manga_fts_view,
+       to_tsquery(%s) AS q
+  WHERE document @@ q
+  ORDER BY ts_rank(document, q) DESC,
+           name ASC,
+           url ASC
+  LIMIT %s
+  OFFSET %s
+) AS ids
+INNER JOIN core_manga ON core_manga.id = ids.id;
+'''
+        count_query = '''
+SELECT COUNT(*)
+FROM core_manga_fts_view
+WHERE document @@ to_tsquery(%s);
+'''
+        return FTSRawQuerySet(raw_query=raw_query,
+                              paged_query=paged_query,
+                              count_query=count_query,
+                              model=self.model, params=[q],
+                              using=self.db)
 
     def refresh(self):
         cursor = connection.cursor()
