@@ -215,7 +215,7 @@ class Manga(models.Model):
         return self.name
 
     def subscribe(self, user, language=None, issues_per_day=4, paused=False):
-        """Subscribe an User to the current Manga."""
+        """Subscribe an User to the current manga."""
         language = language if language else user.userprofile.language
         obj, created = Subscription.objects.update_or_create(
             manga=self,
@@ -226,6 +226,10 @@ class Manga(models.Model):
                 'paused': paused,
             })
         return obj
+
+    def is_subscribed(self, user):
+        """Check if an user is subscribed to this manga."""
+        return self.subscription_set.filter(user=user).exists()
 
 
 @python_2_unicode_compatible
