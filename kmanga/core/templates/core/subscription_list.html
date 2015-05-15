@@ -10,7 +10,7 @@
   <div class="col-xs-4">
     <div class="thumbnail">
       <a href="{% url 'subscription-read' subscription.pk %}">
-	<img src="{{ subscription.manga.cover|thumbnail_url:'cover' }}" alt="{{ subscription.manga }}" height="360" width="270">
+	<img src="{{ subscription.manga.cover|default:'default_cover.png'|thumbnail_url:'cover' }}" alt="{{ subscription.manga }}" height="360" width="270">
       </a>
       <div class="caption">
 	<h3>{{ subscription.manga.name }} <a href="{{ subscription.manga.url }}" class="label label-default">{{ subscription.manga.source.name }}</a></h3>
