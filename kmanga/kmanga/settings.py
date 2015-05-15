@@ -118,7 +118,7 @@ STATICFILES_DIRS = (
 )
 
 THUMBNAIL_ALIASES = {
-    'core.Manga.cover': {
+    '': {
         'cover': {
             'size': (270, 360),
             'crop': 'smart',
