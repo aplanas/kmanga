@@ -14,27 +14,27 @@
       </a>
       <div class="caption">
 	<h3>{{ subscription.manga.name }} <a href="{{ subscription.manga.url }}" class="label label-default">{{ subscription.manga.source.name }}</a></h3>
-
-	<ul>
-	  {% for history in subscription.history_set.latests|slice:":5" %}
-	  <li>
-	    {% if history.is_pending %}
-	    <span class="text-muted">
-	    {% elif history.is_processing %}
-	    <span class="text-warning">
-	    {% elif history.is_sent %}
-	    <span class="text-success">
-	    {% elif history.is_failed %}
-	    <span class="text-danger">
-	    {% else %}
-	    <span class="text-success">
-	    {% endif %}
-	    {{ history }}
-	    </span>
+	<ul class="nav nav-pills" role="tablist">
+	  <li class="pill" role="presentation">
+	    <div data-toggle="tooltip" data-placement="top" title="Issues sent">
+	      <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span><span class="badge">{{ subscription.history_set.sent.count }}</span>
+	    </div>
 	  </li>
-	  {% empty %}
-	  <p>No history.</p>
-	  {% endfor %}
+	  <li class="pill" role="presentation">
+	    <div data-toggle="tooltip" data-placement="top" title="Issues failed">
+	      <span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span><span class="badge">{{ subscription.history_set.failed.count }}</span>
+	    </div>
+	  </li>
+	  <li class="pill" role="presentation">
+	    <div data-toggle="tooltip" data-placement="top" title="Total issues">
+	      <span class="glyphicon glyphicon-plus text-info" aria-hidden="true"></span><span class="badge">{{ subscription.manga.issue_set.count }}</span>
+	    </div>
+	  </li>
+	  <li class="pill" role="presentation">
+	    <div data-toggle="tooltip" data-placement="top" title="Issues per day">
+	      <span class="glyphicon glyphicon-play text-default" aria-hidden="true"></span><span class="badge">{{ subscription.issues_per_day }}</span>
+	    </div>
+	  </li>
 	</ul>
       </div>
     </div>
@@ -66,4 +66,12 @@
     {% endif %}
   </ul>
 </nav>
-{% endblock %}
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+{% endblock extra_js %}

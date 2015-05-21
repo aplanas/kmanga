@@ -1,6 +1,51 @@
 {% extends "base.html" %}
+{% load kmanga %}
+{% load thumbnail %}
 
-{% block page_title%}Subscription{% endblock page_title %}
+{% block page_title%}{{ object.manga.name }} <a href="{{ object.manga.url }}" class="label label-default">{{ object.manga.source.name }}</a>{% endblock page_title %}
 {% block content %}
-{{ object }}
-{% endblock %}
+<div class="row">
+  <div class="col-xs-4">
+    <div class="thumbnail">
+      <img src="{{ object.manga.cover|default:'default_cover.png'|thumbnail_url:'cover' }}" alt="{{ manga }}" height="360" width="270">
+    </div>
+  </div>
+  <div class="col-xs-8">
+    <h3>Description</h3>
+    <p>{{ object.manga.description }}</p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-8">
+    <h3>Issues</h3>
+    <table class="table table-hover">
+      <caption>List of issues</caption>
+      <thead>
+	<tr>
+	  <th>number</th>
+	  <th>name</th>
+	  <th>language</th>
+	  <th>sent</th>
+	</tr>
+      </thead>
+      <tbody>
+	{% for issue in object.manga.issue_set.all %}
+	<tr>
+	  <th scope="row">{{ issue.number }}</th>
+	  <td><a href="issue.url">{{ issue.name }}</a></td>
+	  <td>{{ issue.language }}</td>
+	  <td>.</td>
+	</tr>
+	{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="col-xs-4">
+    {% if object.manga|is_subscribed:view.request.user %}
+    <p><a href="#" class="btn btn-default" role="button">Unsubscribe <span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></p>
+    {% else %}
+    <p><a href="#" class="btn btn-info" role="button">Subscribe <span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a></p>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}

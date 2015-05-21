@@ -233,7 +233,11 @@ class Manga(TimeStampedModel):
 
     def is_subscribed(self, user):
         """Check if an user is subscribed to this manga."""
-        return self.subscription_set.filter(user=user).exists()
+        return self.subscription(user).exists()
+
+    def subscription(self, user):
+        """Return the users' subscription of this manga."""
+        return self.subscription_set.filter(user=user)
 
 
 @python_2_unicode_compatible
@@ -255,8 +259,20 @@ class Issue(TimeStampedModel):
     url = models.URLField()
     manga = models.ForeignKey(Manga)
 
+    class Meta:
+        ordering = ('number', 'name')
+
     def __str__(self):
         return self.name
+
+    def is_sent(self, user):
+        """Check if an user has received this issue."""
+        return self.history(user).exists()
+
+    def history(self, user):
+        """Return the History for an user for this issue."""
+        return self.history_set.filter(issue=self,
+                                       subscription__user=user)
 
 
 class SubscriptionQuerySet(models.QuerySet):
@@ -317,17 +333,17 @@ class HistoryQuerySet(models.QuerySet):
             models.Max('modified')
         ).order_by('-modified__max')
 
-    def created_last_24hs(self, user, subscription=None, status=None):
-        """Return the number of `History` created during the last 24 hours."""
+    def modified_last_24hs(self, user, subscription=None, status=None):
+        """Return the number of `History` modified during the last 24 hours."""
         today = timezone.now()
         yesterday = today - timezone.timedelta(days=1)
-        # TODO XXX - Objects are created always after time T.  If the
-        # send process is slow, the error margin can be bigger than
-        # the one used here.
+        # TODO XXX - Objects are created / modified always after time
+        # T.  If the send process is slow, the error margin can be
+        # bigger than the one used here.
         yesterday += timezone.timedelta(hours=4)
         query = self.filter(
             subscription__user=user,
-            created__range=[yesterday, today],
+            modified__range=[yesterday, today],
         )
         if subscription:
             query.filter(subscription=subscription)
@@ -337,7 +353,7 @@ class HistoryQuerySet(models.QuerySet):
 
     def sent_last_24hs(self, user, subscription=None):
         """Return the number of `History` sent during the last 24 hours."""
-        return self.created_last_24hs(user, subscription, status=History.SENT)
+        return self.modified_last_24hs(user, subscription, status=History.SENT)
 
     def pending(self):
         return self.latests(status=History.PENDING)

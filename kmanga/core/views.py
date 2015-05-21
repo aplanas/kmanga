@@ -96,6 +96,11 @@ class SubscriptionDetailView(LoginRequiredMixin, DetailView):
 
 class SubscriptionCreateView(LoginRequiredMixin, CreateView):
     model = Subscription
+    fields = ['manga', 'user', 'language']
+
+    def get_success_url(self):
+        return reverse_lazy('subscription-read',
+                            args=[self.object.pk])
 
 
 class SubscriptionUpdateView(LoginRequiredMixin, UpdateView):
