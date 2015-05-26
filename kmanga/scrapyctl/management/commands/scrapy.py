@@ -216,8 +216,8 @@ class Command(BaseCommand):
             to = options['to']
             do_not_send = options['do-not-send']
 
-            # The URL can be poinint to a manga or an issue, so we can
-            # use safely in both calls
+            # The URL can point to a manga or an issue, so we can use
+            # safely in both calls
             manga = self._get_manga(spiders, manga, url)
             issues = self._get_issues(manga, issues, url, lang)
             self.send(spiders, manga, issues, _from, to, do_not_send,
@@ -239,7 +239,6 @@ class Command(BaseCommand):
             queries = ['[%s]: %s' % (q['time'], q['sql'])
                        for q in connection.queries]
             log.msg('\n'.join(queries), level=log.DEBUG)
-
 
     def list_spiders(self, spiders):
         """List current spiders than can be activated."""
