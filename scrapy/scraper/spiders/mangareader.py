@@ -114,7 +114,7 @@ class MangaReader(MangaSpider):
         # Artist
         manga['artist'] = response.xpath(xp % 'Artist:').extract()
         # Reading direction
-        rd = response.xpath(xp % 'Reading Direction:').extract()
+        rd = response.xpath(xp % 'Reading Direction:').extract()[0]
         manga['reading_direction'] = ('RL' if rd == 'Right to Left'
                                       else 'LR')
         # Status
