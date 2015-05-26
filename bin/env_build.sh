@@ -16,6 +16,12 @@ fi
 virtualenv $VENV
 source $VENV/bin/activate
 
+export LD_LIBRARY_PATH=$VENV/lib
+
+# Link some modules to the local library
+ln -rs mobi $VENV/lib/python2.7/site-packages/
+ln -rs scrapy/scraper $VENV/lib/python2.7/site-packages/
+
 # Install PostgreSQL
 if [ -n "$PSQL" ]; then
     bin/psql_build.sh
@@ -31,5 +37,5 @@ if [ -n "$REDIS" ]; then
 fi
 
 # Install Python packages
+# pip install pyOpenSSL==0.13.1
 pip install Scrapy Pillow easy-thumbnails django-rq service-identity psycopg2
-
