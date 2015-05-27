@@ -37,5 +37,5 @@ if [ -n "$REDIS" ]; then
 fi
 
 # Install Python packages
-# pip install pyOpenSSL==0.13.1
+pip install pyOpenSSL==0.13.1
 pip install Scrapy Pillow easy-thumbnails django-rq service-identity psycopg2
