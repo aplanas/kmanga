@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import datetime
+import logging
 from optparse import make_option
 
 from django.conf import settings
@@ -13,13 +14,13 @@ from core.models import Manga
 from core.models import Source
 from core.models import Subscription
 from registration.models import UserProfile
-from scrapy import log
-import scrapyctl.utils
+from scrapyctl.scrapyctl import ScrapyCtl
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
-
         # Parameters used by some commands
         make_option(
             '-m', '--manga', action='store', dest='manga', default=None,
@@ -83,11 +84,11 @@ class Command(BaseCommand):
     ]
     args = '|'.join(commands)
 
-    def _get_spiders(self, spiders):
+    def _get_spiders(self, scrapy, spiders):
         """Parse the `spiders` option and return a valid list of spider names.
 
         """
-        all_spiders = scrapyctl.utils.spider_list()
+        all_spiders = scrapy.spider_list()
         spiders = spiders.split(',')
         if 'all' in spiders:
             spiders = all_spiders
@@ -163,9 +164,6 @@ class Command(BaseCommand):
         return _issues
 
     def handle(self, *args, **options):
-        # Get the list of spiders names that we are going to work with
-        spiders = self._get_spiders(options['spiders'])
-
         if not args or len(args) > 1:
             msg = 'Please, provide one command: %s' % Command.args
             raise CommandError(msg)
@@ -174,25 +172,31 @@ class Command(BaseCommand):
         loglevel = options['loglevel']
         dry_run = options['dry-run']
 
+        # Create the ScrapyCtl object to store the CrawlerProcess.
+        scrapy = ScrapyCtl(loglevel)
+
+        # Get the list of spiders names that we are going to work with
+        spiders = self._get_spiders(scrapy, options['spiders'])
+
         if command == 'list':
             self.list_spiders(spiders)
         elif command == 'update-genres':
-            scrapyctl.utils.update_genres(spiders, loglevel, dry_run)
+            scrapy.update_genres(spiders, dry_run)
         elif command == 'update-catalog':
-            scrapyctl.utils.update_catalog(spiders, loglevel, dry_run)
+            scrapy.update_catalog(spiders, dry_run)
         elif command == 'update-collection':
             manga = options['manga']
             url = options['url']
 
             manga = self._get_manga(spiders, manga, url)
-            scrapyctl.utils.update_collection(spiders, manga.name, manga.url,
-                                              loglevel, dry_run)
+            scrapy.update_collection(spiders, manga.name, manga.url,
+                                     dry_run)
         elif command == 'update-latest':
             until = options['until']
 
             if isinstance(until, basestring):
                 until = datetime.datetime.strptime(until, '%d-%m-%Y').date()
-            scrapyctl.utils.update_latest(spiders, until, loglevel, dry_run)
+            scrapy.update_latest(spiders, until, dry_run)
         elif command == 'search':
             manga = options['manga']
             lang = options['lang']
@@ -220,12 +224,12 @@ class Command(BaseCommand):
             # safely in both calls
             manga = self._get_manga(spiders, manga, url)
             issues = self._get_issues(manga, issues, url, lang)
-            self.send(spiders, manga, issues, _from, to, do_not_send,
-                      loglevel)
+            self.send(scrapy, spiders, manga, issues, _from, to,
+                      do_not_send)
         elif command == 'sendsub':
             user = options['user']
             do_not_send = options['do-not-send']
-            self.sendsub(user, do_not_send, loglevel)
+            self.sendsub(scrapy, user, do_not_send)
         else:
             raise CommandError('Not valid command value. '
                                'Please, provide a command: %s' % Command.args)
@@ -238,7 +242,7 @@ class Command(BaseCommand):
         if loglevel == 'DEBUG':
             queries = ['[%s]: %s' % (q['time'], q['sql'])
                        for q in connection.queries]
-            log.msg('\n'.join(queries), level=log.DEBUG)
+            logger.debug('\n'.join(queries))
 
     def list_spiders(self, spiders):
         """List current spiders than can be activated."""
@@ -287,8 +291,8 @@ class Command(BaseCommand):
 
         manga.subscribe(user_profile.user, lang, issues_per_day)
 
-    def send(self, spiders, manga, issues, _from, to, do_not_send,
-             loglevel):
+    def send(self, scrapy, spiders, manga, issues, _from, to,
+             do_not_send):
         """Send a list of issues to an user."""
         if isinstance(issues, list):
             numbers, urls = zip(*[(i.number, i.url) for i in issues])
@@ -309,9 +313,8 @@ class Command(BaseCommand):
             raise CommandError('User not found for %s' % to)
 
         if not do_not_send:
-            scrapyctl.utils._send(spiders[0], manga.name, numbers, urls,
-                                  _from, user_profile.email_kindle,
-                                  loglevel)
+            scrapy._send(spiders[0], manga.name, numbers, urls, _from,
+                         user_profile.email_kindle)
         else:
             # If the user have a subscription, mark the issues as sent
             user = user_profile.user
@@ -325,7 +328,7 @@ class Command(BaseCommand):
                                                                         manga)
                 self.stdout.write(msg)
 
-    def sendsub(self, user, do_not_send, loglevel):
+    def sendsub(self, scrapy, user, do_not_send):
         """Send the daily subscriptions to an user."""
         user_profile = UserProfile.objects.get(user__username=user)
         user = user_profile.user
@@ -343,7 +346,7 @@ class Command(BaseCommand):
                 remains -= 1
 
         if not do_not_send and issues:
-            scrapyctl.utils.send(issues, user, loglevel)
+            scrapy.send(issues, user)
         else:
             # If the user have a subscription, mark the issues as sent
             user = user_profile.user

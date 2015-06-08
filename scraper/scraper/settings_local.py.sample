@@ -1,0 +1,9 @@
+# Local settings for KManga
+
+# Mail configuration
+# MAIL_FROM = 'kindle@kmanga.net'
+# MAIL_HOST = 'localhost'
+# MAIL_PORT = 25
+# MAIL_USER = None
+# MAIL_PASS = None
+# MAIL_SSL = True

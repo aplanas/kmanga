@@ -58,7 +58,9 @@ class MangaSpider(scrapy.Spider):
         # - url:        (OPTIONAL) Initial URL for the spider.
         #
         # - from:       (OPTIONAL) Email address set in the FROM
-        #               field.
+        #               field. The real `from` is taken from the
+        #               settings configuration, but this is used in
+        #               the mail header.
         #
         # - to:         (OPTIONAL) Email address set in the TO field.
         #
@@ -108,16 +110,6 @@ class MangaSpider(scrapy.Spider):
                             '[-a dry-run=1]'))
             print 'scrapy crawl %s SPIDER' % msg
             exit(1)
-
-    def set_crawler(self, crawler):
-        """Intercept the method to configure update the settings."""
-        # Store the parameters as a settings configuration, so
-        # pipelines can read the parameters too.
-        super(MangaSpider, self).set_crawler(crawler)
-        if hasattr(self, 'from_email'):
-            self.settings.set('MAIL_FROM', self.from_email)
-        if hasattr(self, 'to_email'):
-            self.settings.set('MAIL_TO', self.to_email)
 
     def parse(self, response):
         if hasattr(self, 'genres'):

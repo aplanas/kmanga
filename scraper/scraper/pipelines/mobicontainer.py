@@ -27,7 +27,7 @@ except:
     import pickle
 
 from scrapy.mail import MailSender
-from scrapy.utils.decorator import inthread
+from scrapy.utils.decorators import inthread
 
 # from core.models import History
 from core.models import Issue
@@ -130,12 +130,11 @@ class MobiCache(collections.MutableMapping):
 
 class MobiContainer(object):
     def __init__(self, kindlegen, images_store, mobi_store,
-                 volume_max_size, settings):
+                 volume_max_size):
         self.kindlegen = kindlegen
         self.images_store = images_store
         self.mobi_store = mobi_store
         self.volume_max_size = volume_max_size
-        self.settings = settings
         self.items = {}
 
     @classmethod
@@ -143,8 +142,7 @@ class MobiContainer(object):
         return cls(settings['KINDLEGEN'],
                    settings['IMAGES_STORE'],
                    settings['MOBI_STORE'],
-                   settings['VOLUME_MAX_SIZE'],
-                   settings)
+                   settings['VOLUME_MAX_SIZE'])
 
     def process_item(self, item, spider):
         # Bypass the pipeline if called with dry-run parameter.
@@ -167,7 +165,7 @@ class MobiContainer(object):
         # used as an indication of error in the download.
         if hasattr(spider, '_operation'):
             if spider._operation == 'manga':
-                return self.create_mobi()
+                return self.create_mobi(spider)
 
     def _create_mobi(self, name, number, images, issue):
         """Create the MOBI file and return a list of values and containers."""
@@ -217,18 +215,19 @@ class MobiContainer(object):
         return values_and_containers
 
     @inthread
-    def create_mobi(self):
+    def create_mobi(self, spider):
         cache = MobiCache(self.mobi_store)
 
         for key, value in self.items.items():
-            spider, name, number, url = key
+            # First element is the spider name
+            _, name, number, url = key
 
             issue = Issue.objects.get(url=url)
 
             # XXX TODO - Set the History in PROCESSING status
             # subscription = Subscription.objects.get(
             #     manga=issue.manga,
-            #     user__userprofile__email_kindle=self.settings['MAIL_TO'])
+            #     user__userprofile__email_kindle=spider.to_email)
             # history = History.objects.get_or_create(issue=issue,
             #                                         subscription=subscription)
 
@@ -242,19 +241,19 @@ class MobiContainer(object):
                     container.clean()
             mobi_info, stats = cache[key]
             for mobi_name, mobi_file in mobi_info:
-                mail = MailSender.from_settings(self.settings)
-                deferred = mail.send(
-                    to=[self.settings['MAIL_TO']],
-                    subject='Your kmanga.net request',
-                    body='',
-                    attachs=((mobi_name, 'application/x-mobipocket-ebook',
-                              open(mobi_file, 'rb')),))
-                cb_data = [self.settings['MAIL_FROM'],
-                           self.settings['MAIL_TO'],
-                           name, number]
-                deferred.addCallbacks(self.mail_ok, self.mail_err,
-                                      callbackArgs=cb_data,
-                                      errbackArgs=cb_data)
+                pass
+                # mail = MailSender.from_settings(spider.settings)
+                # deferred = mail.send(
+                #     to=[spider.to_email],
+                #     subject='Your kmanga.net request',
+                #     body='',
+                #     attachs=((mobi_name, 'application/x-mobipocket-ebook',
+                #               open(mobi_file, 'rb')),))
+                # cb_data = [spider.from_email, spider.to_email, name,
+                #            number]
+                # deferred.addCallbacks(self.mail_ok, self.mail_err,
+                #                       callbackArgs=cb_data,
+                #                       errbackArgs=cb_data)
                 # XXX TODO - Send email when errors
 
     def mail_ok(self, result, from_mail, to_mail, manga_name, manga_issue):

@@ -20,7 +20,7 @@ export LD_LIBRARY_PATH=$VENV/lib
 
 # Link some modules to the local library
 ln -rs mobi $VENV/lib/python2.7/site-packages/
-ln -rs scrapy/scraper $VENV/lib/python2.7/site-packages/
+ln -rs scraper/scraper $VENV/lib/python2.7/site-packages/
 
 # Install PostgreSQL
 if [ -n "$PSQL" ]; then

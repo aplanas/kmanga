@@ -18,11 +18,13 @@
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date, datetime, timedelta
+import logging
 import re
 
-from scrapy import log
 from scrapy.exceptions import DropItem
 from scrapy.utils.markup import remove_tags, replace_entities
+
+logger = logging.getLogger(__name__)
 
 
 def convert_to_date(str_, dmy=False):
@@ -85,9 +87,8 @@ def convert_to_number(str_, as_int=False, default=0):
         else:
             result = float(str_)
     except ValueError:
-        log.msg("Can't convert '%s' to a number. "
-                'Using default value %s' % (str_, default),
-                level=log.WARNING)
+        logger.warning("Can't convert '%s' to a number. "
+                       'Using default value %s' % (str_, default))
 
     if as_int:
         result = int(result)
@@ -124,9 +125,8 @@ class CleanBasePipeline(object):
         elif hasattr(self, item_method):
             return getattr(self, item_method)(item, spider)
         else:
-            log.msg('Method (%s, %s) not found,'
-                    'item not cleaned' % (item_method, spider_method),
-                    level=log.DEBUG)
+            logger.debug('Method (%s, %s) not found,'
+                         'item not cleaned' % (item_method, spider_method))
         return item
 
     def _as_str(self, obj, separator=' '):
@@ -279,11 +279,10 @@ class CleanBasePipeline(object):
                     else:
                         _item[field_name] = _call[0](value, **_call[1])
                 else:
-                    log.msg('Method (%s, %s) not found,'
-                            'field %s not cleaned' % (item_method,
-                                                      spider_method,
-                                                      field_name),
-                            level=log.DEBUG)
+                    logger.debug('Method (%s, %s) not found,'
+                                 'field %s not cleaned' % (item_method,
+                                                           spider_method,
+                                                           field_name))
             except ValueError as e:
                 msg = 'Error processing %s: %s [%s]'
                 raise DropItem(msg % (field_name, str(value), e.message))

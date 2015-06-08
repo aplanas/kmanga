@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import os.path
 import urlparse
 
 from django.core.files import File
 from django.db import transaction
-from scrapy import log
 
 from core.models import Source, Manga, Issue
 
@@ -30,15 +30,16 @@ from core.models import Source, Manga, Issue
 import django
 django.setup()
 
+logger = logging.getLogger(__name__)
+
 
 class UpdateDBPipeline(object):
-    def __init__(self, images_store, settings):
+    def __init__(self, images_store):
         self.images_store = images_store
-        self.settings = settings
 
     @classmethod
     def from_settings(cls, settings):
-        return cls(settings['IMAGES_STORE'], settings)
+        return cls(settings['IMAGES_STORE'])
 
     def process_item(self, item, spider):
         # Bypass the pipeline if called with dry-run parameter.
@@ -51,8 +52,8 @@ class UpdateDBPipeline(object):
         if hasattr(self, update_method):
             getattr(self, update_method)(item, spider)
         else:
-            log.msg('Method %s not found, item %s not stored' % update_method,
-                    level=log.DEBUG)
+            logger.debug('Method %s not found, '
+                         'item %s not stored' % update_method)
         return item
 
     def _update_relation(self, obj, field_obj, field_rel_obj, items,
@@ -141,16 +142,14 @@ class UpdateDBPipeline(object):
             source, 'genre_set', 'name', items, self._update_name)
 
         for i in new_values:
-            log.msg('Added new genre in %s: %s' % (spider_name, i),
-                    level=log.DEBUG)
+            logger.debug('Added new genre in %s: %s' % (spider_name, i))
 
         for i in update_values:
-            log.msg('Update genre in %s: %s' % (spider_name, i),
-                    level=log.DEBUG)
+            logger.debug('Update genre in %s: %s' % (spider_name, i))
 
         for i in del_values:
-            log.msg('Removed outdated genre in %s: %s' % (spider_name, i),
-                    level=log.DEBUG)
+            logger.debug('Removed outdated genre '
+                         'in %s: %s' % (spider_name, i))
 
     # @transaction.atomic
     def update_catalog(self, item, spider):
