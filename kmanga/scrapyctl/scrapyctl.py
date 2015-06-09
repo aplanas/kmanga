@@ -95,23 +95,29 @@ class ScrapyCtl(object):
             self.process.crawl(name, **kwargs)
         self.process.start()
 
+    def _create_crawler(self, spider, manga, issue, url, from_email,
+                        to_email, dry_run):
+        """Utility method to create (crawler, kwargs) tuples."""
+        kwargs = {
+            'manga': manga,
+            'issue': issue,
+            'url': url,
+            'from': from_email,
+            'to': to_email,
+        }
+        if dry_run:
+            kwargs['dry-run'] = dry_run
+        crawler = self.process._create_crawler(spider)
+        return (crawler, kwargs)
+
     def _send(self, spider, manga, issues, urls, from_email, to_email,
               dry_run=False):
         """Send a list of issues to an user."""
         crawlers = []
         for issue, url in zip(issues, urls):
-            kwargs = {
-                'manga': manga,
-                'issue': issue,
-                'url': url,
-                'from': from_email,
-                'to': to_email,
-            }
-            if dry_run:
-                kwargs['dry-run'] = dry_run
-            crawler = self.process._create_crawler(spider)
-            crawlers.append((crawler, kwargs))
-
+            crawlers.append(self._create_crawler(spider, manga, issue,
+                                                 url, from_email,
+                                                 to_email, dry_run))
         process_control = ProcessControl(crawlers, self.process)
         process_control.run()
 
@@ -119,17 +125,14 @@ class ScrapyCtl(object):
         """High level function to send issues to an user."""
         crawlers = []
         for issue in issues:
-            kwargs = {
-                'manga': issue.manga.name,
-                'issue': issue.number,
-                'url': issue.url,
-                'from': settings.KMANGA_EMAIL,
-                'to': user.userprofile.kindle_email,
-            }
-            if dry_run:
-                kwargs['dry-run'] = dry_run
-            crawler = self.process._create_crawler(issue.manga.spider.name)
-            crawlers.append((crawler, kwargs))
-
+            crawlers.append(self._create_crawler(
+                issue.manga.spider.name,
+                issue.manga.name,
+                issue.number,
+                issue.url,
+                settings.KMANGA_EMAIL,
+                user.userprofile.kindle_email,
+                dry_run
+            ))
         process_control = ProcessControl(crawlers, self.process)
         process_control.run()
