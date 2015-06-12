@@ -11,4 +11,6 @@ if [ ! -d $VENV ]; then
 fi
 
 export LD_LIBRARY_PATH=$VENV/lib
+export PYTHONPATH=`pwd`:`pwd`/kmanga:`pwd`/scraper
+
 source $VENV/bin/activate
