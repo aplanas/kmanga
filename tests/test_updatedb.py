@@ -45,8 +45,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.old_config = self.dr.setup_databases()
 
         self.updatedb = UpdateDBPipeline(
-            images_store='tests/fixtures/images',
-            settings=None)
+            images_store='tests/fixtures/images')
         source = Source.objects.create(
             name='source',
             spider='spider',
@@ -111,7 +110,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
             author='Author',
             artist='Artist',
             reading_direction='LR',
-            status='ONGOING',
+            status='O',
             genres=['g1', 'g2'],
             rank=1,
             rank_order='ASC',
@@ -147,7 +146,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.assertEqual(m.author, 'Author')
         self.assertEqual(m.artist, 'Artist')
         self.assertEqual(m.reading_direction, 'LR')
-        self.assertEqual(m.status, 'ONGOING')
+        self.assertEqual(m.status, 'O')
         self.assertEqual(len(m.genres.all()), 2)
         self.assertEqual({o.name for o in m.genres.all()},
                          set(('g1', 'g2')))
@@ -187,7 +186,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
             author='Author',
             artist='Artist',
             reading_direction='LR',
-            status='ONGOING',
+            status='O',
             genres=['g1', 'g2'],
             rank=1,
             rank_order='ASC',
@@ -236,7 +235,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.updatedb.update_collection(manga, self.spider)
 
         # Change status
-        manga['status'] = 'COMPLETED'
+        manga['status'] = 'C'
         self.updatedb.update_collection(manga, self.spider)
 
         # Add a new genre
@@ -284,7 +283,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.assertEqual(m.author, 'Another Author')
         self.assertEqual(m.artist, 'Artist')
         self.assertEqual(m.reading_direction, 'LR')
-        self.assertEqual(m.status, 'COMPLETED')
+        self.assertEqual(m.status, 'C')
         self.assertEqual(len(m.genres.all()), 2)
         self.assertEqual({o.name for o in m.genres.all()},
                          set(('g1', 'g3')))
@@ -324,7 +323,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
             author='Author',
             artist='Artist',
             reading_direction='LR',
-            status='ONGOING',
+            status='O',
             genres=['g1', 'g2'],
             rank=1,
             rank_order='ASC',
@@ -379,7 +378,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.assertEqual(m.author, 'Author')
         self.assertEqual(m.artist, 'Artist')
         self.assertEqual(m.reading_direction, 'LR')
-        self.assertEqual(m.status, 'ONGOING')
+        self.assertEqual(m.status, 'O')
         self.assertEqual(len(m.genres.all()), 2)
         self.assertEqual({o.name for o in m.genres.all()},
                          set(('g1', 'g2')))
