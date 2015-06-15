@@ -1,6 +1,9 @@
 # Emacs backup files
 *~
 
+# Coverage information
+.coverage
+
 # Python compiled files
 *.pyc
 
