@@ -18,7 +18,6 @@
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date
-from urlparse import urljoin
 
 import scrapy
 
@@ -88,7 +87,7 @@ class SubManga(MangaSpider):
         xp = '//div[@id="paginacion"]//li[@class="next"]/a/@href'
         next_url = response.xpath(xp).extract()
         if next_url:
-            next_url = urljoin(response.url, next_url[0])
+            next_url = response.urljoin(next_url[0])
             yield scrapy.Request(next_url, self.parse_catalog)
 
     def parse_collection(self, response, manga=None):

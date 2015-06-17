@@ -18,7 +18,6 @@
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date
-from urlparse import urljoin
 
 import scrapy
 
@@ -74,7 +73,7 @@ class MangaReader(MangaSpider):
             manga['rank_order'] = 'ASC'
             # URL
             xp = './/div[@class="manga_name"]//a/@href'
-            manga['url'] = urljoin(response.url, item.xpath(xp).extract()[0])
+            manga['url'] = response.urljoin(item.xpath(xp).extract()[0])
             meta = {'manga': manga}
             request = scrapy.Request(manga['url'], self.parse_collection,
                                      meta=meta)
@@ -84,7 +83,7 @@ class MangaReader(MangaSpider):
         xp = '//div[@id="sp"]/a[contains(., ">")]/@href'
         next_url = response.xpath(xp).extract()
         if next_url:
-            next_url = urljoin(response.url, next_url[0])
+            next_url = response.urljoin(next_url[0])
             yield scrapy.Request(next_url, self.parse_catalog)
 
     def parse_collection(self, response, manga=None):
@@ -149,7 +148,7 @@ class MangaReader(MangaSpider):
             # URL
             xp = './/a/@href'
             url = line.xpath(xp).extract()
-            issue['url'] = urljoin(response.url, url[0])
+            issue['url'] = response.urljoin(url[0])
             manga['issues'].append(issue)
         yield manga
 
@@ -184,7 +183,7 @@ class MangaReader(MangaSpider):
             # URL
             xp = './/a[@class="chapter"]/@href'
             url = update.xpath(xp).extract()
-            manga['url'] = urljoin(response.url, url[0])
+            manga['url'] = response.urljoin(url[0])
 
             # Parse the manga issues list
             manga['issues'] = []
@@ -202,7 +201,7 @@ class MangaReader(MangaSpider):
                 # URL
                 xp = '@href'
                 url = line.xpath(xp).extract()
-                issue['url'] = urljoin(response.url, url[0])
+                issue['url'] = response.urljoin(url[0])
                 manga['issues'].append(issue)
             yield manga
 
@@ -210,7 +209,7 @@ class MangaReader(MangaSpider):
         xp = '//div[@id="latest"]/div[@id="sp"]/a[contains(., ">")]/@href'
         next_url = response.xpath(xp).extract()
         if next_url:
-            next_url = urljoin(response.url, next_url[0])
+            next_url = response.urljoin(next_url[0])
             meta = {'until': until}
             yield scrapy.Request(next_url, self.parse_latest, meta=meta)
 
@@ -222,7 +221,7 @@ class MangaReader(MangaSpider):
                 'issue': issue,
                 'number': number + 1,
             }
-            yield scrapy.Request(urljoin(response.url, url),
+            yield scrapy.Request(response.urljoin(url),
                                  self._parse_page, meta=meta)
 
     def _parse_page(self, response):
@@ -236,6 +235,6 @@ class MangaReader(MangaSpider):
             manga=manga,
             issue=issue,
             number=number,
-            image_urls=[urljoin(response.url, url[0])]
+            image_urls=[response.urljoin(url[0])]
         )
         return issue_page
