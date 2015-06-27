@@ -36,9 +36,15 @@ if [ -n "$REDIS" ]; then
     ln -rs bin/redis_stop.sh $VENV/bin/
 fi
 
+# Install a local copy of libffi
+if [ -n "$LIBFFI" ]; then
+    bin/libffi_build.sh
+    export PKG_CONFIG_PATH=$VENV/lib/pkgconfig
+fi
+
 # Install Python packages
-pip install pyOpenSSL==0.13.1
-pip install Scrapy==1.0.0rc3 Pillow easy-thumbnails django-rq service-identity psycopg2
+# pip install pyOpenSSL==0.13.1
+pip install Scrapy Pillow easy-thumbnails django-rq service-identity psycopg2
 
 if [ -n "$DEVEL" ]; then
     pip install coverage
