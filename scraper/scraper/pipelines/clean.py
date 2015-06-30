@@ -139,8 +139,12 @@ class CleanBasePipeline(object):
         return unicode(obj).strip()
 
     def _as_list(self, obj):
-        """Convert the object into a list."""
-        return obj if isinstance(obj, (list, tuple)) else [obj]
+        """Convert the object into a list of elements."""
+        if isinstance(obj, (list, tuple)):
+            l = [self._as_list(i) for i in obj]
+            return [j for i in l for j in i]
+        else:
+            return [obj]
 
     def _clean_field_str(self, field, clean_html=False,
                          optional=False, max_length=None):
@@ -403,3 +407,13 @@ class CleanPipeline(CleanBasePipeline):
 
     def clean_field_submanga_issue_release(self, field):
         return self._clean_field_date(field, dmy=True)
+
+    # -- Mangafox fields
+    def clean_field_mangafox_manga_name(self, field):
+        # Remove the prefix Manga | Manhwa | Manhua
+        values = field[0].split()[:-1]
+        return self._clean_field_str(values)
+
+    def clean_field_mangafox_manga_alt_name(self, field):
+        values = [i.split(';') for i in field]
+        return self._clean_field_list(values, exclude=('',))
