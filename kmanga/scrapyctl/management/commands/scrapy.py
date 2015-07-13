@@ -227,9 +227,16 @@ class Command(BaseCommand):
             self.send(scrapy, spiders, manga, issues, _from, to,
                       do_not_send)
         elif command == 'sendsub':
-            user = options['user']
+            if options['user']:
+                username = options['user']
+                user_profile = UserProfile.objects.get(user__username=username)
+                user_profiles = [user_profile]
+            else:
+                user_profiles = UserProfile.objects.filter(
+                    user__subscription__id__gt=0).distinct()
             do_not_send = options['do-not-send']
-            self.sendsub(scrapy, user, do_not_send)
+            for user_profile in user_profiles:
+                self.sendsub(scrapy, user_profile, do_not_send)
         else:
             raise CommandError('Not valid command value. '
                                'Please, provide a command: %s' % Command.args)
@@ -321,16 +328,15 @@ class Command(BaseCommand):
             try:
                 subscription = user.subscription_set.get(manga=manga)
                 for issue in issues:
-                    self.stdout.write("Marking '%s' as sent" % issue)
+                    self.stdout.write("Marked '%s' as sent" % issue)
                     subscription.add_sent(issue)
             except:
                 msg = 'The user %s do not have a subscription to %s' % (user,
                                                                         manga)
                 self.stdout.write(msg)
 
-    def sendsub(self, scrapy, user, do_not_send):
+    def sendsub(self, scrapy, user_profile, do_not_send):
         """Send the daily subscriptions to an user."""
-        user_profile = UserProfile.objects.get(user__username=user)
         user = user_profile.user
 
         already_sent = History.objects.number_created_today(user)
