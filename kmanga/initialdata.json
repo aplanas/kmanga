@@ -31,6 +31,16 @@
     },
     {
         "fields": {
+            "last_modified": "2014-10-25T00:00:00.000Z",
+            "name": "MangaFox",
+            "spider": "mangafox",
+            "url": "http://mangafox.me/"
+        },
+        "model": "core.source",
+        "pk": 4
+    },
+    {
+        "fields": {
             "language": "EN",
             "last_modified": "2014-10-25T00:00:00.000Z",
             "source": 1
