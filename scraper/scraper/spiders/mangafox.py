@@ -74,7 +74,7 @@ class Mangafox(MangaSpider):
             xp = './/a[@class="title"]/@href'
             manga['url'] = item.xpath(xp).extract()
             meta = {'manga': manga}
-            request = scrapy.Request(manga['url'], self.parse_collection,
+            request = scrapy.Request(manga['url'][0], self.parse_collection,
                                      meta=meta)
             yield request
 
@@ -137,7 +137,7 @@ class Mangafox(MangaSpider):
             name_1 = line.xpath(xp).extract()
             xp = '(.//h3|.//h4)/span[@class="title nowrap"]/text()'
             name_2 = line.xpath(xp).extract()
-            issue['name'] = ' '.join((name_1, name_2))
+            issue['name'] = name_1 + name_2
             # Number
             xp = '(.//h3|.//h4)/a/text()'
             issue['number'] = line.xpath(xp).re(r'.*?(\d+)')
