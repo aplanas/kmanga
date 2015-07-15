@@ -140,7 +140,7 @@ class Mangafox(MangaSpider):
             issue['name'] = name_1 + name_2
             # Number
             xp = '(.//h3|.//h4)/a/text()'
-            issue['number'] = line.xpath(xp).re(r'.*?(\d+)')
+            issue['number'] = line.xpath(xp).re(r'.*?(\d+)$')
             # Release
             xp = './/span[@class="date"]/text()'
             issue['release'] = line.xpath(xp).extract()
