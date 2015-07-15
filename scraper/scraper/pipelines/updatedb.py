@@ -97,7 +97,17 @@ class UpdateDBPipeline(object):
                 update(new_obj, values_items[i])
                 rel_obj.add(new_obj)
             else:
-                rel_obj.add(values_m2m[i])
+                # Sometimes the m2m relation is based on a string, and
+                # we can try a different uppercase / lowercase
+                # combination
+                if i in values_m2m:
+                    rel_obj.add(values_m2m[i])
+                else:
+                    if isinstance(i, basestring):
+                        for (k, v) in values_m2m.iteritems():
+                            if i.lower() == k.lower():
+                                rel_obj.add(v)
+                                break
 
         # Updated values
         # XXX TODO - update m2m relation
