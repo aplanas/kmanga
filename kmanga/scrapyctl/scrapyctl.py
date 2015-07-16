@@ -126,7 +126,7 @@ class ScrapyCtl(object):
         crawlers = []
         for issue in issues:
             crawlers.append(self._create_crawler(
-                issue.manga.source.name,
+                issue.manga.source.name.lower(),
                 issue.manga.name,
                 issue.number,
                 issue.url,
