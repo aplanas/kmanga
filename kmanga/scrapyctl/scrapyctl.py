@@ -131,7 +131,7 @@ class ScrapyCtl(object):
                 issue.number,
                 issue.url,
                 settings.KMANGA_EMAIL,
-                user.userprofile.kindle_email,
+                user.userprofile.email_kindle,
                 dry_run
             ))
         process_control = ProcessControl(crawlers, self.process)
