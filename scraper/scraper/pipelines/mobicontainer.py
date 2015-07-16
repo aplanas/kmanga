@@ -29,9 +29,9 @@ except:
 from scrapy.mail import MailSender
 from scrapy.utils.decorators import inthread
 
-# from core.models import History
+from core.models import History
 from core.models import Issue
-# from core.models import Subscription
+from core.models import Subscription
 
 from mobi import Container
 from mobi import MangaMobi
@@ -224,12 +224,15 @@ class MobiContainer(object):
 
             issue = Issue.objects.get(url=url)
 
-            # XXX TODO - Set the History in PROCESSING status
-            # subscription = Subscription.objects.get(
-            #     manga=issue.manga,
-            #     user__userprofile__email_kindle=spider.to_email)
-            # history = History.objects.get_or_create(issue=issue,
-            #                                         subscription=subscription)
+            # Move the History status to PROCESSING
+            subscription = Subscription.objects.get(
+                manga=issue.manga,
+                user__userprofile__email_kindle=spider.to_email)
+            history, _ = History.objects.get_or_create(
+                issue=issue,
+                subscription=subscription)
+            history.status = History.PROCESSING
+            history.save()
 
             if key not in cache:
                 # The containers need to be cleaned here.
@@ -241,29 +244,26 @@ class MobiContainer(object):
                     container.clean()
             mobi_info, stats = cache[key]
             for mobi_name, mobi_file in mobi_info:
-                pass
-                # mail = MailSender.from_settings(spider.settings)
-                # deferred = mail.send(
-                #     to=[spider.to_email],
-                #     subject='Your kmanga.net request',
-                #     body='',
-                #     attachs=((mobi_name, 'application/x-mobipocket-ebook',
-                #               open(mobi_file, 'rb')),))
-                # cb_data = [spider.from_email, spider.to_email, name,
-                #            number]
-                # deferred.addCallbacks(self.mail_ok, self.mail_err,
-                #                       callbackArgs=cb_data,
-                #                       errbackArgs=cb_data)
+                mail = MailSender.from_settings(spider.settings)
+                deferred = mail.send(
+                    to=[spider.to_email],
+                    subject='Your kmanga.net request',
+                    body='',
+                    attachs=((mobi_name, 'application/x-mobipocket-ebook',
+                              open(mobi_file, 'rb')),))
+                cb_data = [spider.from_email, spider.to_email, name,
+                           number, history]
+                deferred.addCallbacks(self.mail_ok, self.mail_err,
+                                      callbackArgs=cb_data,
+                                      errbackArgs=cb_data)
                 # XXX TODO - Send email when errors
 
-    def mail_ok(self, result, from_mail, to_mail, manga_name, manga_issue):
-        # hl = HistoryLine.objects.filter(
-        #     history__name=manga_name,
-        #     history__from_issue__lte=manga_issue,
-        #     history__to_issue__gte=manga_issue)
-        # for h in hl:
-        #     print h
-        print 'Mail OK', from_mail, to_mail, manga_name, manga_issue
+    def mail_ok(self, result, from_mail, to_mail, manga_name,
+                manga_issue, history):
+        history.status = History.SENT
+        history.save()
 
-    def mail_err(self, result, from_mail, to_mail, manga_name, manga_issue):
-        print 'Mail ERROR', from_mail, to_mail, manga_name, manga_issue
+    def mail_err(self, result, from_mail, to_mail, manga_name,
+                 manga_issue, history):
+        history.status = History.FAILED
+        history.save()

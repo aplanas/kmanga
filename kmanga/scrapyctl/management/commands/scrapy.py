@@ -342,6 +342,8 @@ class Command(BaseCommand):
         already_sent = History.objects.number_created_today(user)
         remains = user_profile.issues_per_day - already_sent
 
+        # TODO XXX - Fix the algorithm to consider the number of
+        # issues per day in a subscription
         issues = []
         for subscription in user.subscription_set.order_by('?'):
             for issue in subscription.issues_to_send():
@@ -355,6 +357,8 @@ class Command(BaseCommand):
             scrapy.send(issues, user)
         else:
             # If the user have a subscription, mark the issues as sent
+            # TODO XXX - Is also marked as sent in the mobicontainer
+            # pipeline
             user = user_profile.user
             try:
                 for issue in issues:
