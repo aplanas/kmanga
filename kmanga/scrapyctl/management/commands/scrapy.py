@@ -353,7 +353,7 @@ class Command(BaseCommand):
         #     that can be sent for this user today. This calculation
         #     is done in `Subscription.issues_to_send()`
 
-        already_sent = History.objects.created_last_24hs(user)
+        already_sent = History.objects.sent_last_24hs(user)
         remains = user_profile.issues_per_day - already_sent
 
         issues = []
