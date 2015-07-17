@@ -339,11 +339,23 @@ class Command(BaseCommand):
         """Send the daily subscriptions to an user."""
         user = user_profile.user
 
-        already_sent = History.objects.number_created_today(user)
+        # Basic algorithm:
+        #
+        #   * Get the number of issues sent during the last 24hs for
+        #     an user, and calculate the remaining number of issues to
+        #     send to this user.
+        #
+        #   * Get the list of subscriptions for this user in random
+        #     order.
+        #
+        #   * For each subcription, get the number of issues sent
+        #     during the last 24hs, and calculate the number of issues
+        #     that can be sent for this user today. This calculation
+        #     is done in `Subscription.issues_to_send()`
+
+        already_sent = History.objects.created_last_24hs(user)
         remains = user_profile.issues_per_day - already_sent
 
-        # TODO XXX - Fix the algorithm to consider the number of
-        # issues per day in a subscription
         issues = []
         for subscription in user.subscription_set.order_by('?'):
             for issue in subscription.issues_to_send():
@@ -356,9 +368,8 @@ class Command(BaseCommand):
         if not do_not_send and issues:
             scrapy.send(issues, user)
         else:
-            # If the user have a subscription, mark the issues as sent
-            # TODO XXX - Is also marked as sent in the mobicontainer
-            # pipeline
+            # If the user have a subscription but we are not sending
+            # issues, mark them as sent
             user = user_profile.user
             try:
                 for issue in issues:

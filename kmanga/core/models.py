@@ -284,11 +284,14 @@ class Subscription(models.Model):
 
     def issues_to_send(self):
         """Return the list of issues to send, ordered by number."""
+        already_sent = History.objects.created_last_24hs(self.user,
+                                                         subscription=self)
+        remains = self.issues_per_day - already_sent
         return self.manga.issue_set.filter(
             language=self.language
         ).exclude(
             pk__in=self.history_set.values('issue_id')
-        ).order_by('number')[:self.issues_per_day]
+        ).order_by('number')[:remains]
 
     def add_sent(self, issue):
         """Add or update an History to a Subscription."""
@@ -309,14 +312,17 @@ class HistoryQuerySet(models.QuerySet):
             models.Max('send_date')
         ).order_by('-send_date__max')
 
-    def number_created_today(self, user):
-        """Return the number of `History` created today for a user."""
+    def created_last_24hs(self, user, subscription=None):
+        """Return the number of `History` created during the last 24 hours."""
         today = timezone.now()
         yesterday = today - timezone.timedelta(1)
-        return self.filter(
+        query = self.filter(
             subscription__user=user,
             last_modified__range=[yesterday, today],
-        ).count()
+        )
+        if subscription:
+            query.filter(subscription=subscription)
+        return query.count()
 
     def pending(self):
         return self.latests(status=History.PENDING)
