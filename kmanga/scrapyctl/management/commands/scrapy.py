@@ -354,7 +354,7 @@ class Command(BaseCommand):
         #     is done in `Subscription.issues_to_send()`
 
         already_sent = History.objects.sent_last_24hs(user)
-        remains = user_profile.issues_per_day - already_sent
+        remains = max(0, user_profile.issues_per_day-already_sent)
 
         issues = []
         for subscription in user.subscription_set.order_by('?'):

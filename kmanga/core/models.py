@@ -286,7 +286,7 @@ class Subscription(models.Model):
         """Return the list of issues to send, ordered by number."""
         already_sent = History.objects.sent_last_24hs(self.user,
                                                       subscription=self)
-        remains = self.issues_per_day - already_sent
+        remains = max(0, self.issues_per_day-already_sent)
         return self.manga.issue_set.filter(
             language=self.language
         ).exclude(
