@@ -319,7 +319,8 @@ class HistoryQuerySet(models.QuerySet):
         yesterday = today - timezone.timedelta(1)
         query = self.filter(
             subscription__user=user,
-            last_modified__range=[yesterday, today],
+            # `send_date` contains the date of creation
+            send_date__range=[yesterday, today],
         )
         if subscription:
             query.filter(subscription=subscription)
