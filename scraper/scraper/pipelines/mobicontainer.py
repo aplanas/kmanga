@@ -32,6 +32,7 @@ from scrapy.utils.decorators import inthread
 from core.models import History
 from core.models import Issue
 from core.models import Subscription
+from django.utils import timezone
 
 from mobi import Container
 from mobi import MangaMobi
@@ -260,6 +261,7 @@ class MobiContainer(object):
 
     def mail_ok(self, result, from_mail, to_mail, manga_name,
                 manga_issue, history):
+        history.send_date = timezone.now()
         history.status = History.SENT
         history.save()
 

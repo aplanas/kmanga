@@ -299,6 +299,7 @@ class Subscription(models.Model):
             issue=issue,
             subscription=self,
             defaults={
+                'send_date': timezone.now(),
                 'status': History.SENT,
             })
 
