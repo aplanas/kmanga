@@ -320,7 +320,11 @@ class HistoryQuerySet(models.QuerySet):
     def created_last_24hs(self, user, subscription=None, status=None):
         """Return the number of `History` created during the last 24 hours."""
         today = timezone.now()
-        yesterday = today - timezone.timedelta(1)
+        yesterday = today - timezone.timedelta(days=1)
+        # TODO XXX - Objects are created always after time T.  If the
+        # send process is slow, the error margin can be bigger than
+        # the one used here.
+        yesterday += timezone.timedelta(hours=4)
         query = self.filter(
             subscription__user=user,
             created__range=[yesterday, today],
