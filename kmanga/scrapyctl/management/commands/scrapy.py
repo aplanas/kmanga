@@ -365,6 +365,10 @@ class Command(BaseCommand):
                 issues.append(issue)
                 remains -= 1
 
+        # Reverse the order of issues to send. This will help when the
+        # MOBI arrives to the Kindle for ordering.
+        issues.reverse()
+
         if not do_not_send and issues:
             scrapy.send(issues, user)
         else:
