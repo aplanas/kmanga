@@ -381,13 +381,13 @@ class History(TimeStampedModel):
         return reverse('history-detail', kwargs={'pk': self.pk})
 
     def is_pending(self):
-        return self.status == 'PE'
+        return self.status == History.PENDING
 
     def is_processing(self):
-        return self.status == 'PR'
+        return self.status == History.PROCESSING
 
     def is_sent(self):
-        return self.status == 'SE'
+        return self.status == History.SENT
 
     def is_failed(self):
-        return self.status == 'FA'
+        return self.status == History.FAILED
