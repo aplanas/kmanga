@@ -8,19 +8,26 @@ from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 
 
+class TimeStampedModel(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
 @python_2_unicode_compatible
-class Source(models.Model):
+class Source(TimeStampedModel):
     name = models.CharField(max_length=200)
     spider = models.CharField(max_length=80)
     url = models.URLField()
-    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.url)
 
 
 @python_2_unicode_compatible
-class SourceLanguage(models.Model):
+class SourceLanguage(TimeStampedModel):
     GERMAN = 'DE'
     ENGLISH = 'EN'
     SPANISH = 'ES'
@@ -38,27 +45,24 @@ class SourceLanguage(models.Model):
 
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES)
     source = models.ForeignKey(Source)
-    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.language
 
 
 @python_2_unicode_compatible
-class ConsolidateGenre(models.Model):
+class ConsolidateGenre(TimeStampedModel):
     name = models.CharField(max_length=200)
-    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
 
 
 @python_2_unicode_compatible
-class Genre(models.Model):
+class Genre(TimeStampedModel):
     name = models.CharField(max_length=200)
     source = models.ForeignKey(Source)
     # consolidategenre = models.ForeignKey(ConsolidateGenre)
-    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -99,16 +103,17 @@ class FTSRawQuerySet(models.query.RawQuerySet):
 
 class MangaQuerySet(models.QuerySet):
     def latests(self):
+        """Return the lastest mangas with new/updated issues."""
         # The correct annotation expression is the next one, but due
         # to an error in Django ORM, this empression uses a full GROUP
         # BY with the data fields.  This produce a slow query.
         #
         # return self.annotate(
-        #     models.Max('issue__last_modified')
-        # ).order_by('-issue__last_modified__max')
+        #     models.Max('issue__modified')
+        # ).order_by('-issue__modified__max')
         return self.filter(pk__in=self.values('pk').annotate(
-            models.Max('issue__last_modified')
-        ).order_by('-issue__last_modified__max').values('pk'))
+            models.Max('issue__modified')
+        ).order_by('-issue__modified__max').values('pk'))
 
     def _to_tsquery(self, q):
         """Convert a query with the prefix syntax."""
@@ -165,7 +170,7 @@ def _cover_path(instance, filename):
 
 
 @python_2_unicode_compatible
-class Manga(models.Model):
+class Manga(TimeStampedModel):
     LEFT_TO_RIGHT = 'LR'
     RIGHT_TO_LEFT = 'RL'
     READING_DIRECTION = (
@@ -207,7 +212,6 @@ class Manga(models.Model):
     cover = models.ImageField(upload_to=_cover_path)
     url = models.URLField()
     source = models.ForeignKey(Source)
-    last_modified = models.DateTimeField(auto_now=True)
 
     objects = MangaQuerySet.as_manager()
 
@@ -233,17 +237,16 @@ class Manga(models.Model):
 
 
 @python_2_unicode_compatible
-class AltName(models.Model):
+class AltName(TimeStampedModel):
     name = models.CharField(max_length=200)
     manga = models.ForeignKey(Manga)
-    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
 
 
 @python_2_unicode_compatible
-class Issue(models.Model):
+class Issue(TimeStampedModel):
     name = models.CharField(max_length=200)
     number = models.DecimalField(max_digits=5, decimal_places=1)
     language = models.CharField(max_length=2,
@@ -251,7 +254,6 @@ class Issue(models.Model):
     release = models.DateField()
     url = models.URLField()
     manga = models.ForeignKey(Manga)
-    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -259,13 +261,15 @@ class Issue(models.Model):
 
 class SubscriptionQuerySet(models.QuerySet):
     def latests(self):
-        return self.annotate(
-            models.Max('history__send_date')
-        ).order_by('-history__send_date__max')
+        """Return the latests subscriptions with history changes."""
+        # See the notes from `MangaQuerySet.latests()`
+        return self.filter(pk__in=self.values('pk').annotate(
+            models.Max('history__modified')
+        ).order_by('-history__modified__max').values('pk'))
 
 
 @python_2_unicode_compatible
-class Subscription(models.Model):
+class Subscription(TimeStampedModel):
     manga = models.ForeignKey(Manga)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     language = models.CharField(max_length=2,
@@ -310,8 +314,8 @@ class HistoryQuerySet(models.QuerySet):
         if status:
             latests = latests.filter(status=status)
         return latests.annotate(
-            models.Max('send_date')
-        ).order_by('-send_date__max')
+            models.Max('modified')
+        ).order_by('-modified__max')
 
     def created_last_24hs(self, user, subscription=None, status=None):
         """Return the number of `History` created during the last 24 hours."""
@@ -319,8 +323,7 @@ class HistoryQuerySet(models.QuerySet):
         yesterday = today - timezone.timedelta(1)
         query = self.filter(
             subscription__user=user,
-            # `send_date` contains the date of creation
-            send_date__range=[yesterday, today],
+            created__range=[yesterday, today],
         )
         if subscription:
             query.filter(subscription=subscription)
@@ -346,7 +349,7 @@ class HistoryQuerySet(models.QuerySet):
 
 
 @python_2_unicode_compatible
-class History(models.Model):
+class History(TimeStampedModel):
     PENDING = 'PE'
     PROCESSING = 'PR'
     SENT = 'SE'
@@ -363,8 +366,7 @@ class History(models.Model):
     status = models.CharField(max_length=2, choices=STATUS_CHOICES,
                               default=PENDING)
     missing_pages = models.IntegerField(default=0)
-    send_date = models.DateTimeField(auto_now_add=True)
-    last_modified = models.DateTimeField(auto_now=True)
+    send_date = models.DateTimeField(null=True, blank=True)
 
     objects = HistoryQuerySet.as_manager()
 

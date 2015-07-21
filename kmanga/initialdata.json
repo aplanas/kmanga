@@ -1,7 +1,8 @@
 [
     {
         "fields": {
-            "last_modified": "2014-10-25T00:00:00.000Z",
+            "created": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
             "name": "Batoto",
             "spider": "batoto",
             "url": "http://bato.to/"
@@ -11,7 +12,8 @@
     },
     {
         "fields": {
-            "last_modified": "2014-10-25T00:00:00.000Z",
+            "created": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
             "name": "MangaReader",
             "spider": "mangareader",
             "url": "http://mangareader.net/"
@@ -21,7 +23,8 @@
     },
     {
         "fields": {
-            "last_modified": "2014-10-25T00:00:00.000Z",
+            "created": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
             "name": "Submanga",
             "spider": "submanga",
             "url": "http://submanga.com/"
@@ -31,7 +34,8 @@
     },
     {
         "fields": {
-            "last_modified": "2014-10-25T00:00:00.000Z",
+            "created": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
             "name": "MangaFox",
             "spider": "mangafox",
             "url": "http://mangafox.me/"
@@ -41,8 +45,9 @@
     },
     {
         "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
             "language": "EN",
-            "last_modified": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
             "source": 1
         },
         "model": "core.sourcelanguage",
@@ -50,8 +55,9 @@
     },
     {
         "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
             "language": "ES",
-            "last_modified": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
             "source": 1
         },
         "model": "core.sourcelanguage",
@@ -59,8 +65,9 @@
     },
     {
         "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
             "language": "EN",
-            "last_modified": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
             "source": 2
         },
         "model": "core.sourcelanguage",
@@ -68,8 +75,9 @@
     },
     {
         "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
             "language": "ES",
-            "last_modified": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
             "source": 3
         },
         "model": "core.sourcelanguage",
