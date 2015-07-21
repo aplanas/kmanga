@@ -47,5 +47,5 @@ fi
 pip install Scrapy Pillow easy-thumbnails django-rq service-identity psycopg2
 
 if [ -n "$DEVEL" ]; then
-    pip install coverage
+    pip install coverage django-debug-toolbar
 fi
