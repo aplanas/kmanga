@@ -18,34 +18,30 @@ class GenreInline(admin.StackedInline):
     model = Genre
 
 
+@admin.register(Source)
 class SourceAdmin(admin.ModelAdmin):
     inlines = [SourceLanguageInline, GenreInline]
 
 
-admin.site.register(Source, SourceAdmin)
-# admin.site.register(ConsolidateGenre)
+# @admin.register(ConsolidateGenre)
+# class ConsolidateGenreAdmin(admin.ModelAdmin):
+#     pass
 
 
 class IssueAdmin(admin.StackedInline):
     model = Issue
 
 
+@admin.register(Manga)
 class MangaAdmin(admin.ModelAdmin):
     inlines = [IssueAdmin]
 
 
-admin.site.register(Manga, MangaAdmin)
-
-
+@admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    model = Subscription
+    pass
 
 
-admin.site.register(Subscription, SubscriptionAdmin)
-
-
+@admin.register(History)
 class HistoryAdmin(admin.ModelAdmin):
-    model = History
-
-
-admin.site.register(History, HistoryAdmin)
+    date_hierarchy = 'modified'
