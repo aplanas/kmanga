@@ -328,7 +328,8 @@ class Command(BaseCommand):
             try:
                 subscription = user.subscription_set.get(manga=manga)
                 for issue in issues:
-                    self.stdout.write("Marked '%s' as sent" % issue)
+                    # TODO XXX - Remove `unicode` in Python 3
+                    self.stdout.write("Marked '%s' as sent" % unicode(issue))
                     subscription.add_sent(issue)
             except:
                 msg = 'The user %s do not have a subscription to %s' % (user,
