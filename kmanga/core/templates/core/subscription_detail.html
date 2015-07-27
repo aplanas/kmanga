@@ -32,7 +32,7 @@
 	{% for issue in object.manga.issue_set.all %}
 	<tr>
 	  <th scope="row">{{ issue.number }}</th>
-	  <td><a href="issue.url">{{ issue.name }}</a></td>
+	  <td><a href="{{ issue.url }}">{{ issue.name }}</a></td>
 	  <td>{{ issue.language }}</td>
 	  <td>.</td>
 	</tr>
