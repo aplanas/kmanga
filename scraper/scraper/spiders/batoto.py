@@ -187,10 +187,10 @@ class Batoto(MangaSpider):
                     yield manga
                 manga = Manga(issues=[])
                 # Name
-                xp = './/a[2]/text()'
+                xp = 'td[2]/a[2]/text()'
                 manga['name'] = update.xpath(xp).extract()
                 # URL
-                xp = './/a[2]/@href'
+                xp = 'td[2]/a[2]/@href'
                 manga['url'] = update.xpath(xp).extract()
             else:
                 issue = Issue()
