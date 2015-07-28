@@ -75,7 +75,7 @@ def convert_to_date(str_, dmy=False):
         else:
             return datetime.strptime(str_, '%m/%d/%Y').date()
     else:
-        raise ValueError('Format not recognized')
+        raise ValueError('Format "%s" not recognized' % str_)
 
 
 def convert_to_number(str_, as_int=False, default=0):
