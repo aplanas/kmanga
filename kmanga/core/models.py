@@ -333,8 +333,8 @@ class HistoryQuerySet(models.QuerySet):
             models.Max('modified')
         ).order_by('-modified__max')
 
-    def modified_last_24hs(self, user, subscription=None, status=None):
-        """Return the number of `History` modified during the last 24 hours."""
+    def _modified_last_24hs(self, user, subscription=None, status=None):
+        """Return the list of `History` modified during the last 24 hours."""
         today = timezone.now()
         yesterday = today - timezone.timedelta(days=1)
         # TODO XXX - Objects are created / modified always after time
@@ -351,9 +351,30 @@ class HistoryQuerySet(models.QuerySet):
             query.filter(status=status)
         return query.count()
 
+    def modified_last_24hs(self, user, subscription=None, status=None):
+        """Return the number of `History` modified during the last 24 hours."""
+        return self._modified_last_24hs(user, subscription, status).count()
+
+    def _sent_last_24hs(self, user, subscription=None):
+        """Return the list of `History` sent during the last 24 hours."""
+        today = timezone.now()
+        yesterday = today - timezone.timedelta(days=1)
+        # TODO XXX - Objects are created / modified always after time
+        # T.  If the send process is slow, the error margin can be
+        # bigger than the one used here.
+        yesterday += timezone.timedelta(hours=4)
+        query = self.filter(
+            subscription__user=user,
+            send_date__range=[yesterday, today],
+            status=History.SENT,
+        )
+        if subscription:
+            query.filter(subscription=subscription)
+        return query
+
     def sent_last_24hs(self, user, subscription=None):
         """Return the number of `History` sent during the last 24 hours."""
-        return self.modified_last_24hs(user, subscription, status=History.SENT)
+        return self._sent_last_24hs(user, subscription).count()
 
     def pending(self):
         return self.latests(status=History.PENDING)
