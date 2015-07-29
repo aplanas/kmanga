@@ -173,7 +173,7 @@ class UpdateDBPipeline(object):
         # The removal (delete) of collection are done outside.  Here
         # we only receive one item at a time, so we can't see the
         # items that are not anymore in the database.  The field
-        # last_modified can be used here (only for collection, that is
+        # `updated` can be used here (only for collection, that is
         # always updated)
 
         spider_name = spider.name.lower()
