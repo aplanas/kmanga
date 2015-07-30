@@ -45,13 +45,33 @@ if [ $run_coverage -eq 0 ]; then
 			  python -m unittest discover -s ./tests
 else
     DJANGO_SETTINGS_MODULE=kmanga.settings \
-			  coverage run --branch -m --source=mobi,scraper \
-			  unittest discover -s ./tests
+			  coverage run --branch --source=mobi,scraper \
+			  -m unittest discover -s ./tests
 fi
 if [ $? -ne 0 ]; then
     echo "Error in external tests"
     error_code=1
 fi
+
+# Scrapy tests
+cd scraper
+spiders="batoto mangafox mangareader submanga"
+for spider in $spiders; do
+    if [ $run_coverage -eq 0 ]; then
+	DJANGO_SETTINGS_MODULE=kmanga.settings scrapy check $spider
+    else
+	mv ../.coverage .
+	DJANGO_SETTINGS_MODULE=kmanga.settings \
+			      coverage run -a --branch --source=scraper \
+			      $VENV/bin/scrapy check $spider
+	mv .coverage ../
+    fi
+    if [ $? -ne 0 ]; then
+	echo "Error in spider $spider test "
+	error_code=1
+    fi
+done
+cd ..
 
 # Django tests
 cd kmanga
@@ -65,6 +85,23 @@ fi
 if [ $? -ne 0 ]; then
     echo "Error in django tests"
     error_code=1
+fi
+cd ..
+
+# Compare the max coverage
+coverage=`coverage report | awk '/TOTAL/ {print $NF}' | grep -o '[^%]*'`
+coverage_max=0
+if [ -f ".coverage_max" ]; then
+    coverage_max=`cat .coverage_max`
+fi
+if [ "$coverage_max" -gt "$coverage" ]; then
+    echo "The coverage has decreased from $coverage_max% to $coverage%"
+    error_code=2
+elif [ "$coverage_max" -lt "$coverage" ]; then
+    echo "The coverage has increased to $coverage% from $coverage_max%"
+    echo $coverage > .coverage_max
+else
+    echo "Same coverage of $coverage%"
 fi
 
 exit $error_code
