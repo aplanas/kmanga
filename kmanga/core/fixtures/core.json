@@ -1,0 +1,670 @@
+[
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "Source 1",
+            "spider": "source1",
+            "url": "http://source1.com"
+        },
+        "model": "core.source",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "Source 2",
+            "spider": "source2",
+            "url": "http://source2.com"
+        },
+        "model": "core.source",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "modified": "2015-08-01T00:00:00.000Z",
+            "source": 1
+        },
+        "model": "core.sourcelanguage",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "modified": "2015-08-01T00:00:00.000Z",
+            "source": 2
+        },
+        "model": "core.sourcelanguage",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "ES",
+            "modified": "2015-08-01T00:00:00.000Z",
+            "source": 2
+        },
+        "model": "core.sourcelanguage",
+        "pk": 3
+    },
+
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "source1_genre1",
+            "source": 1
+        },
+        "model": "core.genre",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "source1_genre2",
+            "source": 1
+        },
+        "model": "core.genre",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "source1_genre3",
+            "source": 1
+        },
+        "model": "core.genre",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "source2_genre1",
+            "source": 2
+        },
+        "model": "core.genre",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "source2_genre3",
+            "source": 2
+        },
+        "model": "core.genre",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "source2_genre3",
+            "source": 2
+        },
+        "model": "core.genre",
+        "pk": 6
+    },
+
+    {
+        "fields": {
+            "artist": "Artist",
+            "author": "Author",
+            "cover": "cover.jpg",
+            "created": "2015-08-01T00:00:00.000Z",
+            "description": "Description",
+            "genres": [
+                1,
+                2
+            ],
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "Manga 1",
+            "rank": 1.0,
+            "rank_order": "DESC",
+            "reading_direction": "RL",
+            "source": 1,
+            "status": "O",
+            "url": "http://source1.com/manga1"
+        },
+        "model": "core.manga",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "artist": "Artist",
+            "author": "Author",
+            "cover": "cover.jpg",
+            "created": "2015-08-01T00:00:00.000Z",
+            "description": "Description",
+            "genres": [
+                2,
+                3
+            ],
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "Manga 2",
+            "rank": 1.0,
+            "rank_order": "DESC",
+            "reading_direction": "RL",
+            "source": 1,
+            "status": "O",
+            "url": "http://source1.com/manga2"
+        },
+        "model": "core.manga",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "artist": "Artist",
+            "author": "Author",
+            "cover": "cover.jpg",
+            "created": "2015-08-01T00:00:00.000Z",
+            "description": "Description",
+            "genres": [
+                1,
+                2
+            ],
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "Manga 3",
+            "rank": 1.0,
+            "rank_order": "DESC",
+            "reading_direction": "RL",
+            "source": 2,
+            "status": "O",
+            "url": "http://source2.com/manga3"
+        },
+        "model": "core.manga",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "artist": "Artist",
+            "author": "Author",
+            "cover": "cover.jpg",
+            "created": "2015-08-01T00:00:00.000Z",
+            "description": "Description",
+            "genres": [
+                2,
+                3
+            ],
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "Manga 4",
+            "rank": 1.0,
+            "rank_order": "DESC",
+            "reading_direction": "RL",
+            "source": 2,
+            "status": "O",
+            "url": "http://source2.com/manga4"
+        },
+        "model": "core.manga",
+        "pk": 4
+    },
+
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "manga": 1,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "Manga One"
+        },
+        "model": "core.altname",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "manga": 2,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "Manga Two"
+        },
+        "model": "core.altname",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "manga": 3,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "Manga Three"
+        },
+        "model": "core.altname",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "manga": 4,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "Manga Four"
+        },
+        "model": "core.altname",
+        "pk": 4
+    },
+
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 1,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 1 issue 1",
+            "number": "1.0",
+            "release": "2014-01-01",
+            "url": "http://source1.com/manga1/issue1"
+        },
+        "model": "core.issue",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 1,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 1 issue 2",
+            "number": "2.0",
+            "release": "2014-01-02",
+            "url": "http://source1.com/manga1/issue2"
+        },
+        "model": "core.issue",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 1,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 1 issue 3",
+            "number": "3.0",
+            "release": "2014-01-03",
+            "url": "http://source1.com/manga1/issue3"
+        },
+        "model": "core.issue",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 1,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 1 issue 4",
+            "number": "4.0",
+            "release": "2014-01-04",
+            "url": "http://source1.com/manga1/issue4"
+        },
+        "model": "core.issue",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 1,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 1 issue 5",
+            "number": "5.0",
+            "release": "2014-01-05",
+            "url": "http://source1.com/manga1/issue5"
+        },
+        "model": "core.issue",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 2,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 2 issue 1",
+            "number": "1.0",
+            "release": "2014-01-01",
+            "url": "http://source1.com/manga2/issue1"
+        },
+        "model": "core.issue",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 2,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 2 issue 2",
+            "number": "2.0",
+            "release": "2014-01-02",
+            "url": "http://source1.com/manga2/issue2"
+        },
+        "model": "core.issue",
+        "pk": 7
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 2,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 2 issue 3",
+            "number": "3.0",
+            "release": "2014-01-03",
+            "url": "http://source1.com/manga2/issue3"
+        },
+        "model": "core.issue",
+        "pk": 8
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 2,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 2 issue 4",
+            "number": "4.0",
+            "release": "2014-01-04",
+            "url": "http://source1.com/manga2/issue4"
+        },
+        "model": "core.issue",
+        "pk": 9
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 2,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 2 issue 5",
+            "number": "5.0",
+            "release": "2014-01-05",
+            "url": "http://source1.com/manga2/issue5"
+        },
+        "model": "core.issue",
+        "pk": 10
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 3,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 3 issue 1",
+            "number": "1.0",
+            "release": "2014-01-01",
+            "url": "http://source2.com/manga3/issue1"
+        },
+        "model": "core.issue",
+        "pk": 11
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 3,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 3 issue 2",
+            "number": "2.0",
+            "release": "2014-01-02",
+            "url": "http://source2.com/manga3/issue2"
+        },
+        "model": "core.issue",
+        "pk": 12
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 3,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 3 issue 3",
+            "number": "3.0",
+            "release": "2014-01-03",
+            "url": "http://source2.com/manga3/issue3"
+        },
+        "model": "core.issue",
+        "pk": 13
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 3,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 3 issue 4",
+            "number": "4.0",
+            "release": "2014-01-04",
+            "url": "http://source2.com/manga3/issue4"
+        },
+        "model": "core.issue",
+        "pk": 14
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 3,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 3 issue 5",
+            "number": "5.0",
+            "release": "2014-01-05",
+            "url": "http://source2.com/manga3/issue5"
+        },
+        "model": "core.issue",
+        "pk": 15
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 4,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 4 issue 1",
+            "number": "1.0",
+            "release": "2014-01-01",
+            "url": "http://source2.com/manga4/issue1"
+        },
+        "model": "core.issue",
+        "pk": 16
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 4,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 4 issue 2",
+            "number": "2.0",
+            "release": "2014-01-02",
+            "url": "http://source2.com/manga4/issue2"
+        },
+        "model": "core.issue",
+        "pk": 17
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 4,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 4 issue 3",
+            "number": "3.0",
+            "release": "2014-01-03",
+            "url": "http://source2.com/manga4/issue3"
+        },
+        "model": "core.issue",
+        "pk": 18
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 4,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 4 issue 4",
+            "number": "4.0",
+            "release": "2014-01-04",
+            "url": "http://source2.com/manga4/issue4"
+        },
+        "model": "core.issue",
+        "pk": 19
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "language": "EN",
+            "manga": 4,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 4 issue 5",
+            "number": "5.0",
+            "release": "2014-01-05",
+            "url": "http://source2.com/manga4/issue5"
+        },
+        "model": "core.issue",
+        "pk": 20
+    },
+
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "deleted": false,
+            "issues_per_day": 4,
+            "language": "EN",
+            "manga": 1,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "paused": false,
+            "user": 1
+        },
+        "model": "core.subscription",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "deleted": false,
+            "issues_per_day": 4,
+            "language": "EN",
+            "manga": 2,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "paused": false,
+            "user": 1
+        },
+        "model": "core.subscription",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "deleted": true,
+            "issues_per_day": 4,
+            "language": "EN",
+            "manga": 3,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "paused": false,
+            "user": 1
+        },
+        "model": "core.subscription",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "deleted": false,
+            "issues_per_day": 4,
+            "language": "EN",
+            "manga": 4,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "paused": true,
+            "user": 1
+        },
+        "model": "core.subscription",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "deleted": false,
+            "issues_per_day": 4,
+            "language": "EN",
+            "manga": 1,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "paused": false,
+            "user": 2
+        },
+        "model": "core.subscription",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "deleted": false,
+            "issues_per_day": 4,
+            "language": "EN",
+            "manga": 2,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "paused": false,
+            "user": 2
+        },
+        "model": "core.subscription",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "deleted": true,
+            "issues_per_day": 4,
+            "language": "EN",
+            "manga": 3,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "paused": false,
+            "user": 2
+        },
+        "model": "core.subscription",
+        "pk": 7
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "deleted": false,
+            "issues_per_day": 4,
+            "language": "EN",
+            "manga": 4,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "paused": true,
+            "user": 2
+        },
+        "model": "core.subscription",
+        "pk": 8
+    },
+
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "issue": 1,
+            "missing_pages": 0,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "send_date": "2015-08-01T00:00:00.000Z",
+            "status": "SE",
+            "subscription": 1
+        },
+        "model": "core.history",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
+            "issue": 1,
+            "missing_pages": 0,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "send_date": "2015-08-01T00:00:00.000Z",
+            "status": "FA",
+            "subscription": 5
+        },
+        "model": "core.history",
+        "pk": 2
+    }
+]
