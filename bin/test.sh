@@ -88,6 +88,10 @@ if [ $? -ne 0 ]; then
 fi
 cd ..
 
+if [ $run_coverage -eq 0 ]; then
+    exit $error_code
+fi
+
 # Compare the max coverage
 coverage=`coverage report | awk '/TOTAL/ {print $NF}' | grep -o '[^%]*'`
 coverage_max=0
