@@ -60,7 +60,7 @@ class Mangafox(MangaSpider):
 
         @url http://mangafox.me/directory/
         @returns items 0 0
-        @returns request 30 40
+        @returns request 30 45
         """
 
         xp = '//ul[@class="list"]/li'
@@ -153,7 +153,7 @@ class Mangafox(MangaSpider):
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
-        @url http://bato.to
+        @url http://mangafox.me/releases/
         @returns items 1 100
         @returns request 0 1
         @scrapes url name issues
@@ -180,7 +180,7 @@ class Mangafox(MangaSpider):
             xp = './/dt'
             for line in update.xpath(xp):
                 # Check if is a new update
-                xp = './em/text()'
+                xp = './/em/text()'
                 update_date = update.xpath(xp).extract()
                 update_date = convert_to_date(update_date[0])
                 if update_date < until:
