@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+from core.models import Issue
 from core.models import Manga
 
 
@@ -82,3 +83,15 @@ class MangaTestCase(TestCase):
         _iter = iter(q)
         self.assertEqual(_iter.next(), m1)
         self.assertEqual(_iter.next(), m2)
+
+    def test_latests(self):
+        """Test the recovery of updated mangas."""
+        # Random order where we expect the mangas
+        names = ('Manga 2', 'Manga 4', 'Manga 1', 'Manga 3')
+        for name in reversed(names):
+            issue = Issue.objects.get(name='%s issue 1' % name.lower())
+            issue.name += ' - %s' % name
+            issue.save()
+
+        for manga, name in zip(Manga.objects.latests(), names):
+            self.assertEqual(manga.name, name)
