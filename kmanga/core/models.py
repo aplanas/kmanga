@@ -239,13 +239,14 @@ class Manga(TimeStampedModel):
     def subscribe(self, user, language=None, issues_per_day=4, paused=False):
         """Subscribe an User to the current manga."""
         language = language if language else user.userprofile.language
-        obj, created = Subscription.objects.update_or_create(
+        obj, created = Subscription.all_objects.update_or_create(
             manga=self,
             user=user,
             defaults={
                 'language': language,
                 'issues_per_day': issues_per_day,
                 'paused': paused,
+                'deleted': False,
             })
         return obj
 
