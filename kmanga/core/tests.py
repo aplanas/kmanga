@@ -9,9 +9,6 @@ from registration.models import UserProfile
 class MangaTestCase(TestCase):
     fixtures = ['registration.json', 'core.json']
 
-    def setUp(self):
-        pass
-
     def test_full_text_search_basic(self):
         """Test basic FTS operations."""
         # Initially the materialized view empty
@@ -126,6 +123,10 @@ class MangaTestCase(TestCase):
         self.assertEqual(manga.subscription_set.all()[0].user, user)
         self.assertEqual(
             Subscription.all_objects.filter(user=user).count(), 4)
+
+
+class IssueTestCase(TestCase):
+    fixtures = ['registration.json', 'core.json']
 
     def test_is_sent(self):
         """Test if an issue was sent to an user."""
