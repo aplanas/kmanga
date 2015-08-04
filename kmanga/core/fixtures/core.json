@@ -550,7 +550,7 @@
             "language": "EN",
             "manga": 2,
             "modified": "2015-08-01T00:00:00.000Z",
-            "paused": false,
+            "paused": true,
             "user": 1
         },
         "model": "core.subscription",
@@ -576,10 +576,10 @@
             "deleted": false,
             "issues_per_day": 4,
             "language": "EN",
-            "manga": 4,
+            "manga": 1,
             "modified": "2015-08-01T00:00:00.000Z",
-            "paused": true,
-            "user": 1
+            "paused": false,
+            "user": 2
         },
         "model": "core.subscription",
         "pk": 4
@@ -590,27 +590,13 @@
             "deleted": false,
             "issues_per_day": 4,
             "language": "EN",
-            "manga": 1,
+            "manga": 2,
             "modified": "2015-08-01T00:00:00.000Z",
-            "paused": false,
+            "paused": true,
             "user": 2
         },
         "model": "core.subscription",
         "pk": 5
-    },
-    {
-        "fields": {
-            "created": "2015-08-01T00:00:00.000Z",
-            "deleted": false,
-            "issues_per_day": 4,
-            "language": "EN",
-            "manga": 2,
-            "modified": "2015-08-01T00:00:00.000Z",
-            "paused": false,
-            "user": 2
-        },
-        "model": "core.subscription",
-        "pk": 6
     },
     {
         "fields": {
@@ -624,21 +610,7 @@
             "user": 2
         },
         "model": "core.subscription",
-        "pk": 7
-    },
-    {
-        "fields": {
-            "created": "2015-08-01T00:00:00.000Z",
-            "deleted": false,
-            "issues_per_day": 4,
-            "language": "EN",
-            "manga": 4,
-            "modified": "2015-08-01T00:00:00.000Z",
-            "paused": true,
-            "user": 2
-        },
-        "model": "core.subscription",
-        "pk": 8
+        "pk": 6
     },
 
     {

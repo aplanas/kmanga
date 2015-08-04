@@ -2,6 +2,8 @@ from django.test import TestCase
 
 from core.models import Issue
 from core.models import Manga
+from core.models import Subscription
+from registration.models import UserProfile
 
 
 class MangaTestCase(TestCase):
@@ -95,3 +97,32 @@ class MangaTestCase(TestCase):
 
         for manga, name in zip(Manga.objects.latests(), names):
             self.assertEqual(manga.name, name)
+
+    def test_subscribe(self):
+        """Test the method to subscrive an user to a manga."""
+        # The fixture have 4 mangas and two users.  The last manga
+        # have no subscrivers, and `Manga 3` is `deleted`
+        user = UserProfile.objects.get(pk=1).user
+
+        self.assertTrue(
+            Manga.objects.get(name='Manga 1').is_subscribed(user))
+        self.assertTrue(
+            Manga.objects.get(name='Manga 2').is_subscribed(user))
+        self.assertFalse(
+            Manga.objects.get(name='Manga 3').is_subscribed(user))
+        self.assertFalse(
+            Manga.objects.get(name='Manga 4').is_subscribed(user))
+
+        manga = Manga.objects.get(name='Manga 4')
+        manga.subscribe(user)
+        self.assertTrue(manga.is_subscribed(user))
+        self.assertEqual(manga.subscription_set.count(), 1)
+        self.assertEqual(manga.subscription_set.all()[0].user, user)
+
+        manga = Manga.objects.get(name='Manga 3')
+        manga.subscribe(user)
+        self.assertTrue(manga.is_subscribed(user))
+        self.assertEqual(manga.subscription_set.count(), 1)
+        self.assertEqual(manga.subscription_set.all()[0].user, user)
+        self.assertEqual(
+            Subscription.all_objects.filter(user=user).count(), 4)
