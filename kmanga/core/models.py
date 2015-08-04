@@ -311,6 +311,13 @@ ORDER BY history__modified__max DESC;
         return self.raw(raw_query)
 
 
+class SubscriptionManager(models.Manager):
+    def get_queryset(self):
+        """Exclude deleted subscriptions."""
+        return super(SubscriptionManager,
+                     self).get_queryset().exclude(deleted=True)
+
+
 @python_2_unicode_compatible
 class Subscription(TimeStampedModel):
     manga = models.ForeignKey(Manga)
@@ -321,7 +328,8 @@ class Subscription(TimeStampedModel):
     paused = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
 
-    objects = SubscriptionQuerySet.as_manager()
+    objects = SubscriptionManager.from_queryset(SubscriptionQuerySet)()
+    all_objects = models.Manager()
 
     class Meta:
         unique_together = ('manga', 'user')
