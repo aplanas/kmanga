@@ -126,3 +126,19 @@ class MangaTestCase(TestCase):
         self.assertEqual(manga.subscription_set.all()[0].user, user)
         self.assertEqual(
             Subscription.all_objects.filter(user=user).count(), 4)
+
+    def test_is_sent(self):
+        """Test if an issue was sent to an user."""
+        # The fixture have one issue sent to both users. For user 1
+        # was a success, but not for user 2.
+        user1 = UserProfile.objects.get(pk=1).user
+        user2 = UserProfile.objects.get(pk=2).user
+
+        issue_sent = Issue.objects.get(name='manga 1 issue 1')
+        for issue in Issue.objects.all():
+            if issue == issue_sent:
+                self.assertTrue(issue.is_sent(user1))
+                self.assertFalse(issue.is_sent(user2))
+            else:
+                self.assertFalse(issue.is_sent(user1))
+                self.assertFalse(issue.is_sent(user2))

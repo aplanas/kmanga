@@ -286,21 +286,24 @@ class Issue(TimeStampedModel):
 
     def is_sent(self, user):
         """Check if an user has received this issue."""
-        return self.history(user).exists()
+        return self.history(user, status=History.SENT).exists()
 
-    def history(self, user):
+    def history(self, user, status=None):
         """Return the History for an user for this issue."""
-        return self.history_set.filter(issue=self,
-                                       subscription__user=user)
+        # XXX TODO - Avoid filtering by subscription__deleted using
+        # the Subscription manager.
+        query = self.history_set.filter(
+            subscription__user=user,
+            subscription__deleted=False)
+        if status:
+            query = query.filter(status=status)
+        return query
 
 
 class SubscriptionQuerySet(models.QuerySet):
     def latests(self):
         """Return the latests subscriptions with history changes."""
         # See the notes from `MangaQuerySet.latests()`
-        return self.filter(pk__in=self.values('pk').annotate(
-            models.Max('history__modified')
-        ).order_by('-history__modified__max').values('pk'))
         raw_query = '''
 SELECT core_subscription.id,
        MAX(core_history.modified) AS history__modified__max

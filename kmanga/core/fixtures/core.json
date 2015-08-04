@@ -629,14 +629,27 @@
     {
         "fields": {
             "created": "2015-08-01T00:00:00.000Z",
+            "issue": 11,
+            "missing_pages": 0,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "send_date": "2015-08-01T00:00:00.000Z",
+            "status": "SE",
+            "subscription": 3
+        },
+        "model": "core.history",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
             "issue": 1,
             "missing_pages": 0,
             "modified": "2015-08-01T00:00:00.000Z",
             "send_date": "2015-08-01T00:00:00.000Z",
             "status": "FA",
-            "subscription": 5
+            "subscription": 4
         },
         "model": "core.history",
-        "pk": 2
+        "pk": 3
     }
 ]
