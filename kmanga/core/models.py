@@ -111,9 +111,27 @@ class MangaQuerySet(models.QuerySet):
         # return self.annotate(
         #     models.Max('issue__modified')
         # ).order_by('-issue__modified__max')
-        return self.filter(pk__in=self.values('pk').annotate(
-            models.Max('issue__modified')
-        ).order_by('-issue__modified__max').values('pk'))
+        #
+        # Alternative (without deferreds)
+        #
+        # extra_query = '''
+        # SELECT MAX(core_issue.modified)
+        # FROM core_issue
+        # WHERE core_issue.manga_id = core_manga.id
+        # '''
+        # Manga.objects.extra({
+        #     'issue__modified__max': extra_query
+        # }).order_by('-issue__modified__max')
+
+        raw_query = '''
+SELECT core_manga.id,
+       MAX(core_issue.modified) AS issue__modified__max
+FROM core_manga
+LEFT OUTER JOIN core_issue ON (core_manga.id = core_issue.manga_id)
+GROUP BY core_manga.id
+ORDER BY issue__modified__max DESC;
+'''
+        return self.raw(raw_query)
 
     def _to_tsquery(self, q):
         """Convert a query with the prefix syntax."""
@@ -282,6 +300,15 @@ class SubscriptionQuerySet(models.QuerySet):
         return self.filter(pk__in=self.values('pk').annotate(
             models.Max('history__modified')
         ).order_by('-history__modified__max').values('pk'))
+        raw_query = '''
+SELECT core_subscription.id,
+       MAX(core_history.modified) AS history__modified__max
+FROM core_subscription
+LEFT OUTER JOIN core_history ON (core_subscription.id = core_history.subscription_id)
+GROUP BY core_subscription.id
+ORDER BY history__modified__max DESC;
+'''
+        return self.raw(raw_query)
 
 
 @python_2_unicode_compatible
