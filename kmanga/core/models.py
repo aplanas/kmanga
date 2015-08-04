@@ -116,20 +116,21 @@ class MangaQuerySet(models.QuerySet):
         #
         # extra_query = '''
         # SELECT MAX(core_issue.modified)
-        # FROM core_issue
-        # WHERE core_issue.manga_id = core_manga.id
+        #   FROM core_issue
+        #  WHERE core_issue.manga_id = core_manga.id
         # '''
         # Manga.objects.extra({
         #     'issue__modified__max': extra_query
         # }).order_by('-issue__modified__max')
 
         raw_query = '''
-SELECT core_manga.id,
-       MAX(core_issue.modified) AS issue__modified__max
-FROM core_manga
-LEFT OUTER JOIN core_issue ON (core_manga.id = core_issue.manga_id)
-GROUP BY core_manga.id
-ORDER BY issue__modified__max DESC;
+         SELECT core_manga.id,
+                MAX(core_issue.modified) AS issue__modified__max
+           FROM core_manga
+LEFT OUTER JOIN core_issue
+                ON (core_manga.id = core_issue.manga_id)
+       GROUP BY core_manga.id
+       ORDER BY issue__modified__max DESC;
 '''
         return self.raw(raw_query)
 
@@ -140,37 +141,37 @@ ORDER BY issue__modified__max DESC;
     def search(self, q):
         q = self._to_tsquery(q)
         raw_query = '''
-SELECT core_manga.*
-FROM (
-  SELECT id
-  FROM core_manga_fts_view,
-       to_tsquery(%s) AS q
-  WHERE document @@ q
-  ORDER BY ts_rank(document, q) DESC,
-           name ASC,
-           url ASC
-) AS ids
+    SELECT core_manga.*
+      FROM (
+          SELECT id
+            FROM core_manga_fts_view,
+                 to_tsquery(%s) AS q
+           WHERE document @@ q
+        ORDER BY ts_rank(document, q) DESC,
+                 name ASC,
+                 url ASC
+      ) AS ids
 INNER JOIN core_manga ON core_manga.id = ids.id;
 '''
         paged_query = '''
-SELECT core_manga.*
-FROM (
-  SELECT id
-  FROM core_manga_fts_view,
-       to_tsquery(%s) AS q
-  WHERE document @@ q
-  ORDER BY ts_rank(document, q) DESC,
-           name ASC,
-           url ASC
-  LIMIT %s
-  OFFSET %s
-) AS ids
+    SELECT core_manga.*
+      FROM (
+        SELECT id
+          FROM core_manga_fts_view,
+               to_tsquery(%s) AS q
+         WHERE document @@ q
+      ORDER BY ts_rank(document, q) DESC,
+               name ASC,
+               url ASC
+         LIMIT %s
+        OFFSET %s
+      ) AS ids
 INNER JOIN core_manga ON core_manga.id = ids.id;
 '''
         count_query = '''
 SELECT COUNT(*)
-FROM core_manga_fts_view
-WHERE document @@ to_tsquery(%s);
+  FROM core_manga_fts_view
+ WHERE document @@ to_tsquery(%s);
 '''
         return FTSRawQuerySet(raw_query=raw_query,
                               paged_query=paged_query,
@@ -305,12 +306,13 @@ class SubscriptionQuerySet(models.QuerySet):
         """Return the latests subscriptions with history changes."""
         # See the notes from `MangaQuerySet.latests()`
         raw_query = '''
-SELECT core_subscription.id,
-       MAX(core_history.modified) AS history__modified__max
-FROM core_subscription
-LEFT OUTER JOIN core_history ON (core_subscription.id = core_history.subscription_id)
-GROUP BY core_subscription.id
-ORDER BY history__modified__max DESC;
+         SELECT core_subscription.id,
+                MAX(core_history.modified) AS history__modified__max
+           FROM core_subscription
+LEFT OUTER JOIN core_history
+                ON (core_subscription.id = core_history.subscription_id)
+       GROUP BY core_subscription.id
+       ORDER BY history__modified__max DESC;
 '''
         return self.raw(raw_query)
 
