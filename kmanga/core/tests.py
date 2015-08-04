@@ -146,3 +146,18 @@ class IssueTestCase(TestCase):
             else:
                 self.assertFalse(issue.is_sent(user1))
                 self.assertFalse(issue.is_sent(user2))
+
+    def test_history(self):
+        """Test the history of an issue."""
+        # Read `test_is_sent` for a description of the fixture.
+        user1 = UserProfile.objects.get(pk=1).user
+        user2 = UserProfile.objects.get(pk=2).user
+
+        issue_sent = Issue.objects.get(name='manga 1 issue 1')
+        for issue in Issue.objects.all():
+            if issue == issue_sent:
+                self.assertEqual(len(issue.history(user1)), 1)
+                self.assertEqual(len(issue.history(user2)), 1)
+            else:
+                self.assertEqual(len(issue.history(user1)), 0)
+                self.assertEqual(len(issue.history(user2)), 0)
