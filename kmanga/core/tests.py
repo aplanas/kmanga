@@ -131,6 +131,9 @@ class MangaTestCase(TestCase):
         """Test if an issue was sent to an user."""
         # The fixture have one issue sent to both users. For user 1
         # was a success, but not for user 2.
+        #
+        # There is also, for user 1, a issue send via the third
+        # subscription, that is deleted.
         user1 = UserProfile.objects.get(pk=1).user
         user2 = UserProfile.objects.get(pk=2).user
 
