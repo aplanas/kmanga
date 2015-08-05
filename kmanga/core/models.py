@@ -47,7 +47,7 @@ class SourceLanguage(TimeStampedModel):
     source = models.ForeignKey(Source)
 
     def __str__(self):
-        return self.language
+        return self.get_language_display()
 
 
 @python_2_unicode_compatible
