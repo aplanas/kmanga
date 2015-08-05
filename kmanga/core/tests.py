@@ -1,9 +1,40 @@
 from django.test import TestCase
 
+from core.models import AltName
+from core.models import Genre
 from core.models import Issue
 from core.models import Manga
+from core.models import Source
+from core.models import SourceLanguage
 from core.models import Subscription
 from registration.models import UserProfile
+
+
+class SourceTestCase(TestCase):
+    fixtures = ['registration.json', 'core.json']
+
+    def test_str(self):
+        """Test source representation."""
+        self.assertEqual(str(Source.objects.get(pk=1)),
+                         'Source 1 (http://source1.com)')
+
+
+class SourceLanguageTestCase(TestCase):
+    fixtures = ['registration.json', 'core.json']
+
+    def test_str(self):
+        """Test source language representation."""
+        self.assertEqual(str(SourceLanguage.objects.get(pk=1)),
+                         'English')
+
+
+class GenreTestCase(TestCase):
+    fixtures = ['registration.json', 'core.json']
+
+    def test_str(self):
+        """Test genre representation."""
+        self.assertEqual(str(Genre.objects.get(pk=1)),
+                         'source1_genre1')
 
 
 class MangaTestCase(TestCase):
@@ -83,6 +114,21 @@ class MangaTestCase(TestCase):
         self.assertEqual(_iter.next(), m1)
         self.assertEqual(_iter.next(), m2)
 
+    def test_full_text_search_index(self):
+        """Test indexing (__getitem__) FTS operations."""
+        # Initially the materialized view empty
+        Manga.objects.refresh()
+
+        ms1 = list(Manga.objects.search('Description'))
+        ms2 = list(Manga.objects.search('Description')[1])
+        ms3 = list(Manga.objects.search('Description')[1:3])
+        self.assertEqual(len(ms1), 4)
+        self.assertEqual(len(ms2), 1)
+        self.assertEqual(len(ms3), 2)
+        self.assertEqual(ms1.index(ms2[0]), 1)
+        self.assertEqual(ms1.index(ms3[0]), 1)
+        self.assertEqual(ms1.index(ms3[1]), 2)
+
     def test_latests(self):
         """Test the recovery of updated mangas."""
         # Random order where we expect the mangas
@@ -94,6 +140,11 @@ class MangaTestCase(TestCase):
 
         for manga, name in zip(Manga.objects.latests(), names):
             self.assertEqual(manga.name, name)
+
+    def test_str(self):
+        """Test manga representation."""
+        self.assertEqual(str(Manga.objects.get(pk=1)),
+                         'Manga 1')
 
     def test_subscribe(self):
         """Test the method to subscrive an user to a manga."""
@@ -123,6 +174,15 @@ class MangaTestCase(TestCase):
         self.assertEqual(manga.subscription_set.all()[0].user, user)
         self.assertEqual(
             Subscription.all_objects.filter(user=user).count(), 4)
+
+
+class AltNameTestCase(TestCase):
+    fixtures = ['registration.json', 'core.json']
+
+    def test_str(self):
+        """Test alt name representation."""
+        self.assertEqual(str(AltName.objects.get(pk=1)),
+                         'Manga One')
 
 
 class IssueTestCase(TestCase):
@@ -161,3 +221,40 @@ class IssueTestCase(TestCase):
             else:
                 self.assertEqual(len(issue.history(user1)), 0)
                 self.assertEqual(len(issue.history(user2)), 0)
+
+
+class SubscriptionTestCase(TestCase):
+    fixtures = ['registration.json', 'core.json']
+
+    def test_subscription_manager(self):
+        """Test the subscription manager."""
+        # There are six subscriptions, three for each user, and each
+        # with a different state (active, paused, deleted)
+        #
+        # The subsctription manager are expected to filter deleted
+        # instances.
+        self.assertEqual(Subscription.objects.count(), 4)
+        self.assertEqual(Subscription.all_objects.count(), 6)
+
+    def test_latests(self):
+        """Test the recovery of updated subscriptions."""
+        # There are six subscriptions, three for each user, and each
+        # with a different state (active, paused, deleted)
+        for subs in Subscription.all_objects.order_by('pk'):
+            issue = subs.manga.issue_set.first()
+            subs.add_sent(issue)
+
+        # Check that deleted subscriptions are not included
+        rqs = Subscription.objects.latests()
+        self.assertEqual(len(list(rqs)), 4)
+        self.assertEqual(Subscription.all_objects.count(), 6)
+
+        # Now the most up-to-dated subscription is the one with higher
+        # `pk`.
+        ids = [s.id for s in Subscription.objects.latests()]
+        self.assertEqual(ids, sorted(ids, reverse=True))
+
+    def test_str(self):
+        """Test subscription representation"""
+        self.assertEqual(str(Subscription.objects.get(pk=1)),
+                         'Manga 1 (4 per day)')
