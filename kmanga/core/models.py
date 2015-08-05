@@ -311,6 +311,7 @@ class SubscriptionQuerySet(models.QuerySet):
            FROM core_subscription
 LEFT OUTER JOIN core_history
                 ON (core_subscription.id = core_history.subscription_id)
+          WHERE core_subscription.deleted = false
        GROUP BY core_subscription.id
        ORDER BY history__modified__max DESC;
 '''
