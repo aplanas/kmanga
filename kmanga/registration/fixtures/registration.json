@@ -35,42 +35,6 @@
        "model": "auth.user",
        "pk": 2
     },
-    {
-       "fields": {
-           "date_joined": "2015-08-01T00:00:00.000Z",
-           "email": "user3@example.com",
-           "first_name": "",
-           "groups": [],
-           "is_active": true,
-           "is_staff": false,
-           "is_superuser": false,
-           "last_login": "2015-08-01T00:00:00.000Z",
-           "last_name": "",
-           "password": "",
-           "user_permissions": [],
-           "username": "user3"
-       },
-       "model": "auth.user",
-       "pk": 3
-    },
-    {
-       "fields": {
-           "date_joined": "2015-08-01T00:00:00.000Z",
-           "email": "user4@example.com",
-           "first_name": "",
-           "groups": [],
-           "is_active": true,
-           "is_staff": false,
-           "is_superuser": false,
-           "last_login": "2015-08-01T00:00:00.000Z",
-           "last_name": "",
-           "password": "",
-           "user_permissions": [],
-           "username": "user4"
-       },
-       "model": "auth.user",
-       "pk": 4
-    },
 
     {
         "fields": {
@@ -85,31 +49,11 @@
     {
         "fields": {
             "email_kindle": "user2@free.kindle.com",
-            "issues_per_day": 4,
+            "issues_per_day": 8,
             "language": "EN",
-            "mode": "F"
+            "mode": "P"
         },
         "model": "registration.userprofile",
         "pk": 2
-    },
-    {
-        "fields": {
-            "email_kindle": "user3@free.kindle.com",
-            "issues_per_day": 8,
-            "language": "EN",
-            "mode": "P"
-        },
-        "model": "registration.userprofile",
-        "pk": 3
-    },
-    {
-        "fields": {
-            "email_kindle": "user4@free.kindle.com",
-            "issues_per_day": 8,
-            "language": "EN",
-            "mode": "P"
-        },
-        "model": "registration.userprofile",
-        "pk": 4
     }
 ]
