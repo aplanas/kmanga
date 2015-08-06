@@ -188,6 +188,11 @@ class AltNameTestCase(TestCase):
 class IssueTestCase(TestCase):
     fixtures = ['registration.json', 'core.json']
 
+    def test_str(self):
+        """Test issue representation"""
+        self.assertEqual(str(Issue.objects.get(pk=1)),
+                         'manga 1 issue 1')
+
     def test_is_sent(self):
         """Test if an issue was sent to an user."""
         # The fixture have one issue sent to both users. For user 1
