@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import connection
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 
@@ -325,6 +326,14 @@ class SubscriptionManager(models.Manager):
                      self).get_queryset().exclude(deleted=True)
 
 
+class SubscriptionActiveManager(models.Manager):
+    def get_queryset(self):
+        """Exclude paused and deleted subscriptions."""
+        return super(SubscriptionActiveManager,
+                     self).get_queryset().exclude(
+                         Q(paused=True) | Q(deleted=True))
+
+
 @python_2_unicode_compatible
 class Subscription(TimeStampedModel):
     manga = models.ForeignKey(Manga)
@@ -336,6 +345,7 @@ class Subscription(TimeStampedModel):
     deleted = models.BooleanField(default=False)
 
     objects = SubscriptionManager.from_queryset(SubscriptionQuerySet)()
+    active = SubscriptionActiveManager.from_queryset(SubscriptionQuerySet)()
     all_objects = models.Manager()
 
     class Meta:
@@ -352,7 +362,11 @@ class Subscription(TimeStampedModel):
         return self.manga.issue_set.filter(
             language=self.language
         ).exclude(
-            pk__in=self.history_set.values('issue_id')
+            pk__in=self.history_set.filter(status__in=(
+                History.PROCESSING,
+                History.SENT,
+                History.FAILED,
+            )).values('issue__id')
         ).order_by('number')[:remains]
 
     def add_sent(self, issue):
@@ -452,6 +466,9 @@ class History(TimeStampedModel):
     send_date = models.DateTimeField(null=True, blank=True)
 
     objects = HistoryQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ('issue', 'subscription')
 
     def __str__(self):
         return '%s (%s)' % (self.issue, self.get_status_display())

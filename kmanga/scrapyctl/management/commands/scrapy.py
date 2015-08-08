@@ -378,7 +378,7 @@ class Command(BaseCommand):
             user = user_profile.user
             try:
                 for issue in issues:
-                    subscription = Subscription.objects.get(
+                    subscription = Subscription.active.get(
                         user=user, manga=issue.manga)
                     self.stdout.write("Marking '%s' as sent" % issue)
                     subscription.add_sent(issue)
