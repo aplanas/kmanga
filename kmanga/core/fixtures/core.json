@@ -264,6 +264,20 @@
     {
         "fields": {
             "created": "2015-08-01T00:00:00.000Z",
+            "language": "ES",
+            "manga": 1,
+            "modified": "2015-08-01T00:00:00.000Z",
+            "name": "manga 1 issue 1 - ES",
+            "number": "1.0",
+            "release": "2014-01-01",
+            "url": "http://source1.com/manga1/issue1"
+        },
+        "model": "core.issue",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created": "2015-08-01T00:00:00.000Z",
             "language": "EN",
             "manga": 1,
             "modified": "2015-08-01T00:00:00.000Z",
@@ -273,7 +287,7 @@
             "url": "http://source1.com/manga1/issue2"
         },
         "model": "core.issue",
-        "pk": 2
+        "pk": 3
     },
     {
         "fields": {
@@ -287,7 +301,7 @@
             "url": "http://source1.com/manga1/issue3"
         },
         "model": "core.issue",
-        "pk": 3
+        "pk": 4
     },
     {
         "fields": {
@@ -301,7 +315,7 @@
             "url": "http://source1.com/manga1/issue4"
         },
         "model": "core.issue",
-        "pk": 4
+        "pk": 5
     },
     {
         "fields": {
@@ -315,7 +329,7 @@
             "url": "http://source1.com/manga1/issue5"
         },
         "model": "core.issue",
-        "pk": 5
+        "pk": 6
     },
     {
         "fields": {
@@ -329,7 +343,7 @@
             "url": "http://source1.com/manga2/issue1"
         },
         "model": "core.issue",
-        "pk": 6
+        "pk": 7
     },
     {
         "fields": {
@@ -343,7 +357,7 @@
             "url": "http://source1.com/manga2/issue2"
         },
         "model": "core.issue",
-        "pk": 7
+        "pk": 8
     },
     {
         "fields": {
@@ -357,7 +371,7 @@
             "url": "http://source1.com/manga2/issue3"
         },
         "model": "core.issue",
-        "pk": 8
+        "pk": 9
     },
     {
         "fields": {
@@ -371,7 +385,7 @@
             "url": "http://source1.com/manga2/issue4"
         },
         "model": "core.issue",
-        "pk": 9
+        "pk": 10
     },
     {
         "fields": {
@@ -385,7 +399,7 @@
             "url": "http://source1.com/manga2/issue5"
         },
         "model": "core.issue",
-        "pk": 10
+        "pk": 11
     },
     {
         "fields": {
@@ -399,7 +413,7 @@
             "url": "http://source2.com/manga3/issue1"
         },
         "model": "core.issue",
-        "pk": 11
+        "pk": 12
     },
     {
         "fields": {
@@ -413,7 +427,7 @@
             "url": "http://source2.com/manga3/issue2"
         },
         "model": "core.issue",
-        "pk": 12
+        "pk": 13
     },
     {
         "fields": {
@@ -427,7 +441,7 @@
             "url": "http://source2.com/manga3/issue3"
         },
         "model": "core.issue",
-        "pk": 13
+        "pk": 14
     },
     {
         "fields": {
@@ -441,7 +455,7 @@
             "url": "http://source2.com/manga3/issue4"
         },
         "model": "core.issue",
-        "pk": 14
+        "pk": 15
     },
     {
         "fields": {
@@ -455,7 +469,7 @@
             "url": "http://source2.com/manga3/issue5"
         },
         "model": "core.issue",
-        "pk": 15
+        "pk": 16
     },
     {
         "fields": {
@@ -469,7 +483,7 @@
             "url": "http://source2.com/manga4/issue1"
         },
         "model": "core.issue",
-        "pk": 16
+        "pk": 17
     },
     {
         "fields": {
@@ -483,7 +497,7 @@
             "url": "http://source2.com/manga4/issue2"
         },
         "model": "core.issue",
-        "pk": 17
+        "pk": 18
     },
     {
         "fields": {
@@ -497,7 +511,7 @@
             "url": "http://source2.com/manga4/issue3"
         },
         "model": "core.issue",
-        "pk": 18
+        "pk": 19
     },
     {
         "fields": {
@@ -511,7 +525,7 @@
             "url": "http://source2.com/manga4/issue4"
         },
         "model": "core.issue",
-        "pk": 19
+        "pk": 20
     },
     {
         "fields": {
@@ -525,7 +539,7 @@
             "url": "http://source2.com/manga4/issue5"
         },
         "model": "core.issue",
-        "pk": 20
+        "pk": 21
     },
 
     {
@@ -629,11 +643,11 @@
     {
         "fields": {
             "created": "2015-08-01T00:00:00.000Z",
-            "issue": 11,
+            "issue": 12,
             "missing_pages": 0,
             "modified": "2015-08-01T00:00:00.000Z",
             "send_date": "2015-08-01T00:00:00.000Z",
-            "status": "SE",
+            "status": "FA",
             "subscription": 3
         },
         "model": "core.history",
@@ -646,7 +660,7 @@
             "missing_pages": 0,
             "modified": "2015-08-01T00:00:00.000Z",
             "send_date": "2015-08-01T00:00:00.000Z",
-            "status": "FA",
+            "status": "PE",
             "subscription": 4
         },
         "model": "core.history",

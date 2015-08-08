@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from core.models import AltName
 from core.models import Genre
+from core.models import History
 from core.models import Issue
 from core.models import Manga
 from core.models import Source
@@ -263,3 +264,60 @@ class SubscriptionTestCase(TestCase):
         """Test subscription representation"""
         self.assertEqual(str(Subscription.objects.get(pk=1)),
                          'Manga 1 (4 per day)')
+
+    def test_issues_to_send(self):
+        """Test the issues_to_send method"""
+        # There are two users with daily limits of 4 and 8.  There are
+        # six subscriptions, three for each user, and each with a
+        # different state (active, paused, deleted).  Also there are
+        # four mangas (in two sources), and each manga have five
+        # issues, except Manga 1, that have six (issue 1 in a
+        # different language)
+
+        def _test_issues_to_send(subs, issues):
+            # Check that is active
+            self.assertFalse(subs.paused)
+            self.assertFalse(subs.deleted)
+            # ... no more than the limit for the subscription
+            self.assertTrue(len(issues) <= subs.issues_per_day)
+            # ... that all issues are from the same manga
+            self.assertTrue(all(i.manga == subs.manga for i in issues))
+            # ... no manga previously sent, in processing or failed
+            self.assertFalse(
+                any(i.history_set.filter(
+                    subscription=subs,
+                    status__in=(
+                        History.PROCESSING,
+                        History.SENT,
+                        History.FAILED,
+                    )).exists()
+                    for i in issues))
+            # ... all same language than the subscription
+            self.assertTrue(all(i.language == subs.language for i in issues))
+
+        for subs in Subscription.active.all():
+            issues = subs.issues_to_send()
+            _test_issues_to_send(subs, issues)
+
+        History.objects.all().delete()
+        for subs in Subscription.active.all():
+            issues = subs.issues_to_send()
+            _test_issues_to_send(subs, issues)
+
+            # Add as sent one, so is recent
+            subs.add_sent(issues[0])
+            issues = subs.issues_to_send()
+            _test_issues_to_send(subs, issues)
+
+    def test_add_sent(self):
+        """Test that a subscription can register a sent."""
+        History.objects.all().delete()
+        subs = Subscription.active.all()[0]
+        issue = subs.manga.issue_set.all()[0]
+        subs.add_sent(issue)
+
+        self.assertEqual(History.objects.count(), 1)
+        h = History.objects.first()
+        self.assertEqual(h.subscription, subs)
+        self.assertEqual(h.issue, issue)
+        self.assertEqual(h.status, History.SENT)
