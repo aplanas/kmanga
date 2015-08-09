@@ -1,3 +1,4 @@
+from django.test import mock
 from django.test import TestCase
 
 from core.models import AltName
@@ -321,3 +322,24 @@ class SubscriptionTestCase(TestCase):
         self.assertEqual(h.subscription, subs)
         self.assertEqual(h.issue, issue)
         self.assertEqual(h.status, History.SENT)
+
+
+class HistoryTestCase(TestCase):
+    fixtures = ['registration.json', 'core.json']
+
+    def test_latests(self):
+        """Test the recovery of updated history instances."""
+        # There are three history items
+        for hist in History.objects.order_by('pk'):
+            hist.status = History.PROCESSING
+            hist.save()
+
+        self.assertEqual(History.objects.count(), 3)
+        ids = [h.id for h in History.objects.latests()]
+        self.assertEqual(ids, sorted(ids, reverse=True))
+
+        self.assertFalse(History.objects.latests(status=History.SENT).exists())
+
+    def test_modified_last_24hs(self):
+        """Test the method to detect last modified instances."""
+        pass
