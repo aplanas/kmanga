@@ -385,9 +385,7 @@ class HistoryQuerySet(models.QuerySet):
         latests = self
         if status:
             latests = latests.filter(status=status)
-        return latests.annotate(
-            models.Max('modified')
-        ).order_by('-modified__max')
+        return latests.order_by('-modified')
 
     def _modified_last_24hs(self, user, subscription=None, status=None):
         """Return the list of `History` modified during the last 24 hours."""
