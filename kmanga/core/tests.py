@@ -26,7 +26,7 @@ class SourceLanguageTestCase(TestCase):
     def test_str(self):
         """Test source language representation."""
         self.assertEqual(str(SourceLanguage.objects.get(pk=1)),
-                         'English')
+                         'English (EN)')
 
 
 class GenreTestCase(TestCase):
