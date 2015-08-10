@@ -17,13 +17,14 @@ class CommandTestCase(TestCase):
         self.scrapy = ScrapyCtl('ERROR')
         self.command = Command()
         self.command.stdout = mock.MagicMock()
+        self.all_spiders = ['batoto', 'mangareader',
+                            'submanga', 'mangafox']
 
     def test_get_spiders(self):
         """Test recovering the list of scrapy spiders."""
         # This asks directly to Scrapy, not the database
         spiders = self.command._get_spiders(self.scrapy, 'all')
-        self.assertEqual(spiders, ['batoto', 'mangareader',
-                                   'submanga', 'mangafox'])
+        self.assertEqual(spiders, self.all_spiders)
         spiders = self.command._get_spiders(self.scrapy, 'batoto')
         self.assertEqual(spiders, ['batoto'])
 
@@ -100,3 +101,19 @@ class CommandTestCase(TestCase):
                          self.command._get_issues(manga1,
                                                   url=url,
                                                   lang='EN').count())
+
+    def test_handle(self):
+        """Test the handle method."""
+        with self.assertRaises(CommandError):
+            self.command.handle()
+
+        options = {
+            'spiders': 'all',
+            'loglevel': 'ERROR',
+            'dry-run': False,
+        }
+
+        with mock.patch.object(Command, 'list_spiders') as list_spiders:
+            c = Command()
+            c.handle('list', **options)
+        list_spiders.assert_called_once_with(self.all_spiders)
