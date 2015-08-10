@@ -400,10 +400,10 @@ class HistoryQuerySet(models.QuerySet):
             modified__range=[yesterday, today],
         )
         if subscription:
-            query.filter(subscription=subscription)
+            query = query.filter(subscription=subscription)
         if status:
-            query.filter(status=status)
-        return query.count()
+            query = query.filter(status=status)
+        return query
 
     def modified_last_24hs(self, user, subscription=None, status=None):
         """Return the number of `History` modified during the last 24 hours."""
@@ -423,7 +423,7 @@ class HistoryQuerySet(models.QuerySet):
             status=History.SENT,
         )
         if subscription:
-            query.filter(subscription=subscription)
+            query = query.filter(subscription=subscription)
         return query
 
     def sent_last_24hs(self, user, subscription=None):
