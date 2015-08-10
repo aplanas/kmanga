@@ -4,6 +4,7 @@ from django.core.management.base import CommandError
 from django.test import mock
 from django.test import TestCase
 
+from core.models import Manga
 from core.models import Source
 from scrapyctl.management.commands.scrapy import Command
 from scrapyctl.scrapyctl import ScrapyCtl
@@ -21,7 +22,8 @@ class CommandTestCase(TestCase):
         """Test recovering the list of scrapy spiders."""
         # This asks directly to Scrapy, not the database
         spiders = self.command._get_spiders(self.scrapy, 'all')
-        self.assertEqual(spiders, ['batoto', 'mangareader', 'submanga', 'mangafox'])
+        self.assertEqual(spiders, ['batoto', 'mangareader',
+                                   'submanga', 'mangafox'])
         spiders = self.command._get_spiders(self.scrapy, 'batoto')
         self.assertEqual(spiders, ['batoto'])
 
@@ -29,7 +31,7 @@ class CommandTestCase(TestCase):
             self.command._get_spiders(self.scrapy, 'missing')
 
     def test_get_manga(self):
-        """Test the manga instance from a spider."""
+        """Test recovering the manga instance from a spider."""
         with self.assertRaises(CommandError):
             self.command._get_manga(['Source 1', 'Source 2'])
 
@@ -52,3 +54,49 @@ class CommandTestCase(TestCase):
         manga2 = self.command._get_manga(['Source 1'],
                                          url='http://source1.com/manga1')
         self.assertEqual(manga1, manga2)
+
+    def test_get_issues(self):
+        """Test recovering issues list from a manga."""
+        manga1 = Manga.objects.get(name='Manga 1')
+        manga3 = Manga.objects.get(name='Manga 3')
+
+        with self.assertRaises(CommandError):
+            self.command._get_issues(manga1, issues='all')
+
+        with self.assertRaises(CommandError):
+            self.command._get_issues(manga1, lang='EN')
+
+        with self.assertRaises(CommandError):
+            self.command._get_issues(manga1, issues='all', lang='DE')
+
+        self.assertEqual(self.command._get_issues(manga3,
+                                                  issues='all').count(), 5)
+        self.assertEqual(
+            self.command._get_issues(manga1,
+                                     issues='all',
+                                     lang='ES').count(), 1)
+        self.assertEqual(self.command._get_issues(manga1,
+                                                  issues='all',
+                                                  lang='EN').count(), 5)
+
+        self.assertEqual(self.command._get_issues(manga1,
+                                                  issues='1-5',
+                                                  lang='EN').count(), 5)
+
+        self.assertEqual(self.command._get_issues(manga1,
+                                                  issues='1,2,3-5',
+                                                  lang='EN').count(), 5)
+
+        self.assertEqual(self.command._get_issues(manga1,
+                                                  issues='2,1,3',
+                                                  lang='EN').count(), 3)
+        with self.assertRaises(CommandError):
+            self.command._get_issues(manga1, issues='5-1', lang='EN')
+
+        url = 'http://source1.com/manga1/issue1'
+        self.assertEqual(self.command._get_issues(manga1,
+                                                  issues='1',
+                                                  lang='EN').count(),
+                         self.command._get_issues(manga1,
+                                                  url=url,
+                                                  lang='EN').count())

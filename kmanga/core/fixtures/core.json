@@ -34,9 +34,9 @@
     {
         "fields": {
             "created": "2015-08-01T00:00:00.000Z",
-            "language": "EN",
+            "language": "ES",
             "modified": "2015-08-01T00:00:00.000Z",
-            "source": 2
+            "source": 1
         },
         "model": "core.sourcelanguage",
         "pk": 2
@@ -44,7 +44,7 @@
     {
         "fields": {
             "created": "2015-08-01T00:00:00.000Z",
-            "language": "ES",
+            "language": "EN",
             "modified": "2015-08-01T00:00:00.000Z",
             "source": 2
         },
