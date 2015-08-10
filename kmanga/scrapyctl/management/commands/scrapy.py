@@ -132,7 +132,7 @@ class Command(BaseCommand):
         """Give a list of issues from a manga."""
         lang = lang.upper() if lang else None
         source = manga.source
-        source_langs = [str(l) for l in source.sourcelanguage_set.all()]
+        source_langs = [l.language for l in source.sourcelanguage_set.all()]
         if lang not in source_langs:
             if len(source_langs) == 1 and not lang:
                 lang = source_langs[0]
@@ -152,6 +152,9 @@ class Command(BaseCommand):
             for number in issues.split(','):
                 if '-' in number:
                     a, b = number.split('-')
+                    if a >= b:
+                        raise CommandError(
+                            'Provide issue range in increasin order.')
                     numbers.extend(range(int(a), int(b)+1))
                 else:
                     numbers.append(float(number))
