@@ -102,7 +102,7 @@ class Command(BaseCommand):
         if len(spiders) > 1:
             raise CommandError('Please, specify a single source')
         spider = spiders[0]
-        source = Source.objects.get(spider=spider)
+        source = Source.objects.get(name=spider)
 
         if not manga and not url:
             raise CommandError("Provide parameters 'manga' or 'url'")
@@ -121,12 +121,10 @@ class Command(BaseCommand):
                 self.stdout.write('- %s' % manga)
             self.stdout.write('Please, choose one and try again')
             raise CommandError('Manga not found')
-
-        if not mangas:
+        elif not mangas:
             raise CommandError('Manga not found')
 
-        if len(mangas) == 1:
-            manga = mangas[0]
+        manga = mangas[0]
 
         return manga
 
