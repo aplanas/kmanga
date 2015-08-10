@@ -1,4 +1,3 @@
-from django.test import mock
 from django.test import TestCase
 
 from core.models import AltName
@@ -342,4 +341,64 @@ class HistoryTestCase(TestCase):
 
     def test_modified_last_24hs(self):
         """Test the method to detect last modified instances."""
-        pass
+        user1 = UserProfile.objects.get(pk=1).user
+        self.assertEqual(History.objects.modified_last_24hs(user1), 0)
+
+        History.objects.all().delete()
+        self.assertEqual(History.objects.modified_last_24hs(user1), 0)
+
+        for i, subs in enumerate(Subscription.active.filter(user=user1)):
+            issue = subs.manga.issue_set.all()[0]
+            subs.add_sent(issue)
+            self.assertEqual(History.objects.modified_last_24hs(user1), i+1)
+            self.assertEqual(
+                History.objects.modified_last_24hs(user1, subscription=subs), 1)
+            self.assertEqual(
+                History.objects.modified_last_24hs(
+                    user1,
+                    subscription=subs,
+                    status=History.SENT), 1)
+            self.assertEqual(
+                History.objects.modified_last_24hs(
+                    user1,
+                    subscription=subs,
+                    status=History.FAILED), 0)
+
+    def test_sent_last_24hs(self):
+        """Test the method to detect last sent instances."""
+        user1 = UserProfile.objects.get(pk=1).user
+        self.assertEqual(History.objects.sent_last_24hs(user1), 0)
+
+        History.objects.all().delete()
+        self.assertEqual(History.objects.sent_last_24hs(user1), 0)
+
+        for i, subs in enumerate(Subscription.active.filter(user=user1)):
+            issue = subs.manga.issue_set.all()[0]
+            subs.add_sent(issue)
+            self.assertEqual(History.objects.sent_last_24hs(user1), i+1)
+            self.assertEqual(
+                History.objects.sent_last_24hs(user1, subscription=subs), 1)
+
+    def test_status(self):
+        """Test recovery lasts history instances with some status."""
+        History.objects.all().delete()
+        user1 = UserProfile.objects.get(pk=1).user
+        subs = Subscription.active.filter(user=user1).first()
+
+        table = ((History.PENDING, 'pending', 'is_pending'),
+                 (History.PROCESSING, 'processing', 'is_processing'),
+                 (History.SENT, 'sent', 'is_sent'),
+                 (History.FAILED, 'failed', 'is_failed'))
+        for status, latest, is_ in table:
+            history = History.objects.create(
+                issue=subs.manga.issue_set.first(),
+                subscription=subs,
+                status=status,
+            )
+            self.assertEqual(getattr(History.objects, latest)().count(), 1)
+            self.assertTrue(getattr(history, is_)())
+
+    def test_str(self):
+        """Test history representation"""
+        self.assertEqual(str(History.objects.get(pk=1)),
+                         'manga 1 issue 1 (Sent)')
