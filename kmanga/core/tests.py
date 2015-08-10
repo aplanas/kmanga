@@ -352,7 +352,8 @@ class HistoryTestCase(TestCase):
             subs.add_sent(issue)
             self.assertEqual(History.objects.modified_last_24hs(user1), i+1)
             self.assertEqual(
-                History.objects.modified_last_24hs(user1, subscription=subs), 1)
+                History.objects.modified_last_24hs(user1,
+                                                   subscription=subs), 1)
             self.assertEqual(
                 History.objects.modified_last_24hs(
                     user1,
@@ -381,7 +382,6 @@ class HistoryTestCase(TestCase):
 
     def test_status(self):
         """Test recovery lasts history instances with some status."""
-        History.objects.all().delete()
         user1 = UserProfile.objects.get(pk=1).user
         subs = Subscription.active.filter(user=user1).first()
 
@@ -390,6 +390,7 @@ class HistoryTestCase(TestCase):
                  (History.SENT, 'sent', 'is_sent'),
                  (History.FAILED, 'failed', 'is_failed'))
         for status, latest, is_ in table:
+            History.objects.all().delete()
             history = History.objects.create(
                 issue=subs.manga.issue_set.first(),
                 subscription=subs,
