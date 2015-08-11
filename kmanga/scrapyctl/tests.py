@@ -117,3 +117,31 @@ class CommandTestCase(TestCase):
             c = Command()
             c.handle('list', **options)
         list_spiders.assert_called_once_with(self.all_spiders)
+
+        _scrapyctl = 'scrapyctl.management.commands.scrapy.ScrapyCtl'
+        with mock.patch(_scrapyctl) as scrapyctl:
+            scrapyctl.return_value = scrapyctl
+            scrapyctl.spider_list.return_value = self.all_spiders
+            c = Command()
+            c.handle('update-genres', **options)
+        scrapyctl.update_genres.assert_called_once_with(self.all_spiders, False)
+
+        with mock.patch(_scrapyctl) as scrapyctl:
+            scrapyctl.return_value = scrapyctl
+            scrapyctl.spider_list.return_value = self.all_spiders
+            c = Command()
+            c.handle('update-catalog', **options)
+        scrapyctl.update_catalog.assert_called_once_with(self.all_spiders,
+                                                         False)
+
+        with mock.patch(_scrapyctl) as scrapyctl:
+            scrapyctl.return_value = scrapyctl
+            scrapyctl.spider_list.return_value = self.all_spiders
+            c = Command()
+            _options = options.copy()
+            _options['spiders'] = 'source 1'
+            _options['manga'] = 'Manga 1'
+            _options['url'] = None
+            c.handle('update-collection', **_options)
+        scrapyctl.update_collection.assert_called_once_with(
+            'source 1', 'Manga 1', 'http://source1/manga1', False)
