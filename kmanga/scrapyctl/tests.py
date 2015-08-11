@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from datetime import date
 
 from django.core.management.base import CommandError
 from django.test import mock
@@ -173,3 +174,77 @@ class CommandTestCase(TestCase):
                 c.handle('update-collection', **options)
         scrapyctl.update_collection.assert_called_once_with(
             ['Source 1'], 'Manga 1', 'http://source1.com/manga1', False)
+
+    def test_handle_update_latest(self):
+        """Test the `update-latest` handle method."""
+
+        options = {
+            'spiders': 'all',
+            'loglevel': 'ERROR',
+            'dry-run': False,
+            'until': '01-01-2015',
+        }
+        until = date(year=2015, month=1, day=1)
+
+        _scrapyctl = 'scrapyctl.management.commands.scrapy.ScrapyCtl'
+        with mock.patch(_scrapyctl) as scrapyctl:
+            scrapyctl.return_value = scrapyctl
+            scrapyctl.spider_list.return_value = self.all_spiders
+            c = Command()
+            c.handle('update-latest', **options)
+        scrapyctl.update_latest.assert_called_once_with(
+            self.all_spiders, until, False)
+
+        options['until'] = until
+        with mock.patch(_scrapyctl) as scrapyctl:
+            scrapyctl.return_value = scrapyctl
+            scrapyctl.spider_list.return_value = self.all_spiders
+            c = Command()
+            c.handle('update-latest', **options)
+        scrapyctl.update_latest.assert_called_once_with(
+            self.all_spiders, until, False)
+
+    def test_handle_search(self):
+        """Test the `search` handle method."""
+
+        options = {
+            'spiders': 'all',
+            'loglevel': 'ERROR',
+            'dry-run': False,
+            'manga': 'Manga 1',
+            'lang': 'EN',
+            'details': False,
+        }
+
+        with mock.patch.object(Command, 'search') as search:
+            c = Command()
+            c.handle('search', **options)
+        search.assert_called_once_with(self.all_spiders, 'Manga 1',
+                                       'EN', False)
+
+    def test_handle_subscribe(self):
+        """Test the `subscribe` handle method."""
+
+        options = {
+            'spiders': 'all',
+            'loglevel': 'ERROR',
+            'dry-run': False,
+            'user': 'user1',
+            'manga': 'Manga 1',
+            'url': None,
+            'lang': 'EN',
+            'issues-per-day': 4,
+        }
+
+        manga = Manga.objects.get(name='Manga 1')
+
+        _scrapyctl = 'scrapyctl.management.commands.scrapy.ScrapyCtl'
+        with mock.patch(_scrapyctl) as scrapyctl:
+            scrapyctl.return_value = scrapyctl
+            with mock.patch.object(Command,
+                                   '_get_spiders',
+                                   return_value=['Source 1']):
+                with mock.patch.object(Command, 'subscribe') as subscribe:
+                    c = Command()
+                    c.handle('subscribe', **options)
+                subscribe.assert_called_once_with('user1', manga, 'EN', 4)
