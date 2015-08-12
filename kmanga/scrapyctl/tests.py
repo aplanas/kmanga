@@ -7,6 +7,7 @@ from django.test import TestCase
 
 from core.models import Manga
 from core.models import Source
+from registration.models import UserProfile
 from scrapyctl.management.commands.scrapy import Command
 from scrapyctl.scrapyctl import ScrapyCtl
 
@@ -107,6 +108,17 @@ class CommandTestCase(TestCase):
         """Test handle when there are not parameters."""
         with self.assertRaises(CommandError):
             self.command.handle()
+
+    def test_handle_wrong_param(self):
+        """Test handle when the parameter is wrong."""
+        options = {
+            'spiders': 'all',
+            'loglevel': 'ERROR',
+            'dry-run': False,
+        }
+
+        with self.assertRaises(CommandError):
+            self.command.handle('bad-parameter', **options)
 
     @mock.patch.object(Command, 'list_spiders')
     def test_handle_list(self, list_spiders):
@@ -279,3 +291,32 @@ class CommandTestCase(TestCase):
         send.assert_called_once_with(scrapyctl, ['Source 1'], manga,
                                      ['issues'], 'from@example.com',
                                      'to@example.com', False)
+
+    @mock.patch.object(Command, 'sendsub')
+    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    def test_handle_sendsub(self, scrapyctl, sendsub):
+        """Test the `sendsub` handle method."""
+
+        options = {
+            'spiders': 'all',
+            'loglevel': 'ERROR',
+            'dry-run': False,
+            'user': 'user1',
+            'do-not-send': False,
+        }
+
+        user_profile = UserProfile.objects.get(user__username='user1')
+
+        scrapyctl.return_value = scrapyctl
+        c = Command()
+        c.handle('sendsub', **options)
+        sendsub.assert_called_once_with(scrapyctl, user_profile, False)
+
+        sendsub.reset_mock()
+        user_profiles = UserProfile.objects.all()
+
+        options['user'] = None
+        c = Command()
+        c.handle('sendsub', **options)
+        for user_profile in user_profiles:
+            sendsub.assert_any_call(scrapyctl, user_profile, False)
