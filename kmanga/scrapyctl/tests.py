@@ -103,10 +103,14 @@ class CommandTestCase(TestCase):
                                                   url=url,
                                                   lang='EN').count())
 
-    def test_handle_list(self):
-        """Test the `list` handle method."""
+    def test_handle_no_params(self):
+        """Test handle when there are not parameters."""
         with self.assertRaises(CommandError):
             self.command.handle()
+
+    @mock.patch.object(Command, 'list_spiders')
+    def test_handle_list(self, list_spiders):
+        """Test the `list` handle method."""
 
         options = {
             'spiders': 'all',
@@ -114,12 +118,12 @@ class CommandTestCase(TestCase):
             'dry-run': False,
         }
 
-        with mock.patch.object(Command, 'list_spiders') as list_spiders:
-            c = Command()
-            c.handle('list', **options)
+        c = Command()
+        c.handle('list', **options)
         list_spiders.assert_called_once_with(self.all_spiders)
 
-    def test_handle_update_genres(self):
+    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    def test_handle_update_genres(self, scrapyctl):
         """Test the `update-genres` handle method."""
 
         options = {
@@ -127,16 +131,16 @@ class CommandTestCase(TestCase):
             'loglevel': 'ERROR',
             'dry-run': False,
         }
-        _scrapyctl = 'scrapyctl.management.commands.scrapy.ScrapyCtl'
-        with mock.patch(_scrapyctl) as scrapyctl:
-            scrapyctl.return_value = scrapyctl
-            scrapyctl.spider_list.return_value = self.all_spiders
-            c = Command()
-            c.handle('update-genres', **options)
+
+        scrapyctl.return_value = scrapyctl
+        scrapyctl.spider_list.return_value = self.all_spiders
+        c = Command()
+        c.handle('update-genres', **options)
         scrapyctl.update_genres.assert_called_once_with(self.all_spiders,
                                                         False)
 
-    def test_handle_update_catalog(self):
+    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    def test_handle_update_catalog(self, scrapyctl):
         """Test the `update-catalog` handle method."""
 
         options = {
@@ -144,16 +148,17 @@ class CommandTestCase(TestCase):
             'loglevel': 'ERROR',
             'dry-run': False,
         }
-        _scrapyctl = 'scrapyctl.management.commands.scrapy.ScrapyCtl'
-        with mock.patch(_scrapyctl) as scrapyctl:
-            scrapyctl.return_value = scrapyctl
-            scrapyctl.spider_list.return_value = self.all_spiders
-            c = Command()
-            c.handle('update-catalog', **options)
+
+        scrapyctl.return_value = scrapyctl
+        scrapyctl.spider_list.return_value = self.all_spiders
+        c = Command()
+        c.handle('update-catalog', **options)
         scrapyctl.update_catalog.assert_called_once_with(self.all_spiders,
                                                          False)
 
-    def test_handle_update_collection(self):
+    @mock.patch.object(Command, '_get_spiders')
+    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    def test_handle_update_collection(self, scrapyctl, get_spiders):
         """Test the `update-collection` handle method."""
 
         options = {
@@ -164,18 +169,15 @@ class CommandTestCase(TestCase):
             'url': None,
         }
 
-        _scrapyctl = 'scrapyctl.management.commands.scrapy.ScrapyCtl'
-        with mock.patch(_scrapyctl) as scrapyctl:
-            scrapyctl.return_value = scrapyctl
-            with mock.patch.object(Command,
-                                   '_get_spiders',
-                                   return_value=['Source 1']):
-                c = Command()
-                c.handle('update-collection', **options)
+        scrapyctl.return_value = scrapyctl
+        get_spiders.return_value = ['Source 1']
+        c = Command()
+        c.handle('update-collection', **options)
         scrapyctl.update_collection.assert_called_once_with(
             ['Source 1'], 'Manga 1', 'http://source1.com/manga1', False)
 
-    def test_handle_update_latest(self):
+    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    def test_handle_update_latest(self, scrapyctl):
         """Test the `update-latest` handle method."""
 
         options = {
@@ -186,25 +188,23 @@ class CommandTestCase(TestCase):
         }
         until = date(year=2015, month=1, day=1)
 
-        _scrapyctl = 'scrapyctl.management.commands.scrapy.ScrapyCtl'
-        with mock.patch(_scrapyctl) as scrapyctl:
-            scrapyctl.return_value = scrapyctl
-            scrapyctl.spider_list.return_value = self.all_spiders
-            c = Command()
-            c.handle('update-latest', **options)
+        scrapyctl.return_value = scrapyctl
+        scrapyctl.spider_list.return_value = self.all_spiders
+        c = Command()
+        c.handle('update-latest', **options)
         scrapyctl.update_latest.assert_called_once_with(
             self.all_spiders, until, False)
+
+        scrapyctl.reset_mock()
 
         options['until'] = until
-        with mock.patch(_scrapyctl) as scrapyctl:
-            scrapyctl.return_value = scrapyctl
-            scrapyctl.spider_list.return_value = self.all_spiders
-            c = Command()
-            c.handle('update-latest', **options)
+        c = Command()
+        c.handle('update-latest', **options)
         scrapyctl.update_latest.assert_called_once_with(
             self.all_spiders, until, False)
 
-    def test_handle_search(self):
+    @mock.patch.object(Command, 'search')
+    def test_handle_search(self, search):
         """Test the `search` handle method."""
 
         options = {
@@ -216,13 +216,15 @@ class CommandTestCase(TestCase):
             'details': False,
         }
 
-        with mock.patch.object(Command, 'search') as search:
-            c = Command()
-            c.handle('search', **options)
+        c = Command()
+        c.handle('search', **options)
         search.assert_called_once_with(self.all_spiders, 'Manga 1',
                                        'EN', False)
 
-    def test_handle_subscribe(self):
+    @mock.patch.object(Command, 'subscribe')
+    @mock.patch.object(Command, '_get_spiders')
+    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    def test_handle_subscribe(self, scrapyctl, get_spiders, subscribe):
         """Test the `subscribe` handle method."""
 
         options = {
@@ -238,13 +240,42 @@ class CommandTestCase(TestCase):
 
         manga = Manga.objects.get(name='Manga 1')
 
-        _scrapyctl = 'scrapyctl.management.commands.scrapy.ScrapyCtl'
-        with mock.patch(_scrapyctl) as scrapyctl:
-            scrapyctl.return_value = scrapyctl
-            with mock.patch.object(Command,
-                                   '_get_spiders',
-                                   return_value=['Source 1']):
-                with mock.patch.object(Command, 'subscribe') as subscribe:
-                    c = Command()
-                    c.handle('subscribe', **options)
-                subscribe.assert_called_once_with('user1', manga, 'EN', 4)
+        scrapyctl.return_value = scrapyctl
+        get_spiders.return_value = ['Source 1']
+        c = Command()
+        c.handle('subscribe', **options)
+        subscribe.assert_called_once_with('user1', manga, 'EN', 4)
+
+    @mock.patch.object(Command, 'send')
+    @mock.patch.object(Command, 'subscribe')
+    @mock.patch.object(Command, '_get_issues')
+    @mock.patch.object(Command, '_get_spiders')
+    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    def test_handle_send(self, scrapyctl, get_spiders, get_issues,
+                         get_manga, send):
+        """Test the `send` handle method."""
+
+        options = {
+            'spiders': 'all',
+            'loglevel': 'ERROR',
+            'dry-run': False,
+            'issues': [1, 2, 3],
+            'manga': 'Manga 1',
+            'url': None,
+            'lang': 'EN',
+            'from': 'from@example.com',
+            'to': 'to@example.com',
+            'do-not-send': False,
+        }
+
+        manga = Manga.objects.get(name='Manga 1')
+
+        scrapyctl.return_value = scrapyctl
+        get_spiders.return_value = ['Source 1']
+        get_issues.return_value = ['issues']
+        get_manga.return_value = ['manga']
+        c = Command()
+        c.handle('send', **options)
+        send.assert_called_once_with(scrapyctl, ['Source 1'], manga,
+                                     ['issues'], 'from@example.com',
+                                     'to@example.com', False)
