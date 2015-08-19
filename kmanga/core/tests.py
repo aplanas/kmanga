@@ -133,7 +133,7 @@ class MangaTestCase(TestCase):
     def test_latests(self):
         """Test the recovery of updated mangas."""
         # Random order where we expect the mangas
-        names = ('Manga 2', 'Manga 4', 'Manga 1', 'Manga 3')
+        names = ['Manga 2', 'Manga 4', 'Manga 1', 'Manga 3']
         for name in reversed(names):
             issue = Issue.objects.get(name='%s issue 1' % name.lower())
             issue.name += ' - %s' % name
@@ -141,6 +141,19 @@ class MangaTestCase(TestCase):
 
         for manga, name in zip(Manga.objects.latests(), names):
             self.assertEqual(manga.name, name)
+
+        ml1 = Manga.objects.latests()
+        ml2 = Manga.objects.latests()[1]
+        ml3 = Manga.objects.latests()[1:3]
+        self.assertEqual(len(ml1), 4)
+        self.assertEqual(len(list(ml2)), 1)
+        self.assertEqual(len(list(ml3)), 2)
+        ml1 = [m.name for m in ml1]
+        ml2 = [m.name for m in ml2]
+        ml3 = [m.name for m in ml3]
+        self.assertEqual(ml1, names)
+        self.assertEqual(ml2, names[1:2])
+        self.assertEqual(ml3, names[1:3])
 
     def test_str(self):
         """Test manga representation."""
@@ -254,6 +267,13 @@ class SubscriptionTestCase(TestCase):
         rqs = Subscription.objects.latests()
         self.assertEqual(len(list(rqs)), 4)
         self.assertEqual(Subscription.all_objects.count(), 6)
+
+        # Check that subscription can be indexed
+        self.assertEqual(len(list(rqs[1])), 1)
+        self.assertEqual(len(list(rqs[1:3])), 2)
+
+        # Check that subscription can be counted
+        self.assertEqual(len(rqs), 4)
 
         # Now the most up-to-dated subscription is the one with higher
         # `pk`.

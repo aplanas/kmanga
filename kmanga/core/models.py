@@ -69,12 +69,12 @@ class Genre(TimeStampedModel):
         return self.name
 
 
-class FTSRawQuerySet(models.query.RawQuerySet):
+class AdvRawQuerySet(models.query.RawQuerySet):
     """RawQuerySet subclass with advanced options."""
     def __init__(self, raw_query, paged_query, count_query,
                  model=None, query=None, params=None,
                  translations=None, using=None, hints=None):
-        super(FTSRawQuerySet, self).__init__(raw_query, model=model,
+        super(AdvRawQuerySet, self).__init__(raw_query, model=model,
                                              query=query,
                                              params=params,
                                              translations=translations,
@@ -88,7 +88,10 @@ class FTSRawQuerySet(models.query.RawQuerySet):
             start, stop = key.start, key.stop
         else:
             start, stop = key, key + 1
-        params = self.params + [stop-start, start]
+        if self.params:
+            params = self.params + [stop-start, start]
+        else:
+            params = (stop-start, start)
         return models.query.RawQuerySet(self.paged_query,
                                         model=self.model,
                                         params=params,
@@ -133,7 +136,26 @@ LEFT OUTER JOIN core_issue
        GROUP BY core_manga.id
        ORDER BY issue__modified__max DESC;
 '''
-        return self.raw(raw_query)
+        paged_query = '''
+         SELECT core_manga.id,
+                MAX(core_issue.modified) AS issue__modified__max
+           FROM core_manga
+LEFT OUTER JOIN core_issue
+                ON (core_manga.id = core_issue.manga_id)
+       GROUP BY core_manga.id
+       ORDER BY issue__modified__max DESC
+          LIMIT %s
+         OFFSET %s;
+'''
+        count_query = '''
+         SELECT COUNT(*)
+           FROM core_manga;
+'''
+        return AdvRawQuerySet(raw_query=raw_query,
+                              paged_query=paged_query,
+                              count_query=count_query,
+                              model=self.model,
+                              using=self.db)
 
     def _to_tsquery(self, q):
         """Convert a query with the prefix syntax."""
@@ -174,7 +196,7 @@ SELECT COUNT(*)
   FROM core_manga_fts_view
  WHERE document @@ to_tsquery(%s);
 '''
-        return FTSRawQuerySet(raw_query=raw_query,
+        return AdvRawQuerySet(raw_query=raw_query,
                               paged_query=paged_query,
                               count_query=count_query,
                               model=self.model, params=[q],
@@ -316,7 +338,28 @@ LEFT OUTER JOIN core_history
        GROUP BY core_subscription.id
        ORDER BY history__modified__max DESC;
 '''
-        return self.raw(raw_query)
+        paged_query = '''
+         SELECT core_subscription.id,
+                MAX(core_history.modified) AS history__modified__max
+           FROM core_subscription
+LEFT OUTER JOIN core_history
+                ON (core_subscription.id = core_history.subscription_id)
+          WHERE core_subscription.deleted = false
+       GROUP BY core_subscription.id
+       ORDER BY history__modified__max DESC
+          LIMIT %s
+         OFFSET %s;
+'''
+        count_query = '''
+         SELECT COUNT(*)
+           FROM core_subscription
+          WHERE core_subscription.deleted = false;
+'''
+        return AdvRawQuerySet(raw_query=raw_query,
+                              paged_query=paged_query,
+                              count_query=count_query,
+                              model=self.model,
+                              using=self.db)
 
 
 class SubscriptionManager(models.Manager):
