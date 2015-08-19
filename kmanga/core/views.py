@@ -37,9 +37,10 @@ class MangaListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
 
     def get_queryset(self):
         q = self.request.GET.get('q', None)
-        mangas = Manga.objects.latests()
         if q:
-            mangas = mangas.search(q)
+            mangas = Manga.objects.search(q)
+        else:
+            mangas = Manga.objects.latests()
         return mangas
 
 
