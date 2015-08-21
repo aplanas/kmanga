@@ -88,7 +88,7 @@ class SubscriptionListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
 
     def get_queryset(self):
         user = self.request.user
-        return user.subscription_set.latests()
+        return Subscription.objects.latests(user=user)
 
 
 class SubscriptionDetailView(LoginRequiredMixin, DetailView):

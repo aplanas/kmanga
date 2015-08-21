@@ -132,7 +132,7 @@ class MangaQuerySet(models.QuerySet):
                 MAX(core_issue.modified) AS issue__modified__max
            FROM core_manga
 LEFT OUTER JOIN core_issue
-                ON (core_manga.id = core_issue.manga_id)
+             ON (core_manga.id = core_issue.manga_id)
        GROUP BY core_manga.id
        ORDER BY issue__modified__max DESC;
 '''
@@ -141,7 +141,7 @@ LEFT OUTER JOIN core_issue
                 MAX(core_issue.modified) AS issue__modified__max
            FROM core_manga
 LEFT OUTER JOIN core_issue
-                ON (core_manga.id = core_issue.manga_id)
+             ON (core_manga.id = core_issue.manga_id)
        GROUP BY core_manga.id
        ORDER BY issue__modified__max DESC
           LIMIT %s
@@ -199,7 +199,8 @@ SELECT COUNT(*)
         return AdvRawQuerySet(raw_query=raw_query,
                               paged_query=paged_query,
                               count_query=count_query,
-                              model=self.model, params=[q],
+                              model=self.model,
+                              params=[q],
                               using=self.db)
 
     def refresh(self):
@@ -325,7 +326,7 @@ class Issue(TimeStampedModel):
 
 
 class SubscriptionQuerySet(models.QuerySet):
-    def latests(self):
+    def latests(self, user):
         """Return the latests subscriptions with history changes."""
         # See the notes from `MangaQuerySet.latests()`
         raw_query = '''
@@ -333,8 +334,9 @@ class SubscriptionQuerySet(models.QuerySet):
                 MAX(core_history.modified) AS history__modified__max
            FROM core_subscription
 LEFT OUTER JOIN core_history
-                ON (core_subscription.id = core_history.subscription_id)
+             ON (core_subscription.id = core_history.subscription_id)
           WHERE core_subscription.deleted = false
+            AND core_subscription.user_id = %s
        GROUP BY core_subscription.id
        ORDER BY history__modified__max DESC;
 '''
@@ -343,8 +345,9 @@ LEFT OUTER JOIN core_history
                 MAX(core_history.modified) AS history__modified__max
            FROM core_subscription
 LEFT OUTER JOIN core_history
-                ON (core_subscription.id = core_history.subscription_id)
+            ON (core_subscription.id = core_history.subscription_id)
           WHERE core_subscription.deleted = false
+            AND core_subscription.user_id = %s
        GROUP BY core_subscription.id
        ORDER BY history__modified__max DESC
           LIMIT %s
@@ -353,12 +356,14 @@ LEFT OUTER JOIN core_history
         count_query = '''
          SELECT COUNT(*)
            FROM core_subscription
-          WHERE core_subscription.deleted = false;
+          WHERE core_subscription.deleted = false
+            AND core_subscription.user_id = %s;
 '''
         return AdvRawQuerySet(raw_query=raw_query,
                               paged_query=paged_query,
                               count_query=count_query,
                               model=self.model,
+                              params=[user.id],
                               using=self.db)
 
 

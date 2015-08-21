@@ -1,3 +1,5 @@
+from django.core.urlresolvers import reverse
+from django.test import Client
 from django.test import TestCase
 
 from core.models import AltName
@@ -57,26 +59,18 @@ class MangaTestCase(TestCase):
         m.save()
         Manga.objects.refresh()
         q = Manga.objects.search('keyword')
-        self.assertEqual(len(q), 1)
-        self.assertEqual(iter(q).next(), m)
+        self.assertQuerysetEqual(q, ['<Manga: keyword>'])
         m.name = old_value
         m.save()
         Manga.objects.refresh()
-        self.assertEqual(
-            len(Manga.objects.search('keyword')), 0)
+        self.assertQuerysetEqual(Manga.objects.search('keyword'), [])
 
         # Search for specific keyword in alt_name
         q = Manga.objects.search('One')
-        self.assertEqual(len(q), 1)
-        self.assertEqual(
-            iter(q).next(),
-            Manga.objects.get(name='Manga 1'))
+        self.assertQuerysetEqual(q, ['<Manga: Manga 1>'])
 
         q = Manga.objects.search('Two')
-        self.assertEqual(len(q), 1)
-        self.assertEqual(
-            iter(q).next(),
-            Manga.objects.get(name='Manga 2'))
+        self.assertQuerysetEqual(q, ['<Manga: Manga 2>'])
 
         # Search for specific keyword in description
         m = Manga.objects.get(name='Manga 3')
@@ -85,13 +79,11 @@ class MangaTestCase(TestCase):
         m.save()
         Manga.objects.refresh()
         q = Manga.objects.search('keyword')
-        self.assertEqual(len(q), 1)
-        self.assertEqual(iter(q).next(), m)
+        self.assertQuerysetEqual(q, ['<Manga: Manga 3>'])
         m.description = old_value
         m.save()
         Manga.objects.refresh()
-        self.assertEqual(
-            len(Manga.objects.search('keyword')), 0)
+        self.assertQuerysetEqual(Manga.objects.search('keyword'), [])
 
     def test_full_text_search_rank(self):
         """Test FTS ranking."""
@@ -110,10 +102,7 @@ class MangaTestCase(TestCase):
         Manga.objects.refresh()
 
         q = Manga.objects.search('keyword')
-        self.assertEqual(len(q), 2)
-        _iter = iter(q)
-        self.assertEqual(_iter.next(), m1)
-        self.assertEqual(_iter.next(), m2)
+        self.assertQuerysetEqual(q, ['<Manga: keyword>', '<Manga: Manga 4>'])
 
     def test_full_text_search_index(self):
         """Test indexing (__getitem__) FTS operations."""
@@ -263,22 +252,21 @@ class SubscriptionTestCase(TestCase):
             issue = subs.manga.issue_set.first()
             subs.add_sent(issue)
 
-        # Check that deleted subscriptions are not included
-        rqs = Subscription.objects.latests()
-        self.assertEqual(len(list(rqs)), 4)
-        self.assertEqual(Subscription.all_objects.count(), 6)
+        for user_profile in UserProfile.objects.all():
+            user = user_profile.user
+            # Check that deleted subscriptions are not included
+            rqs = Subscription.objects.latests(user)
+            self.assertEqual(len(rqs), 2)
 
-        # Check that subscription can be indexed
-        self.assertEqual(len(list(rqs[1])), 1)
-        self.assertEqual(len(list(rqs[1:3])), 2)
+            # Check that subscription can be indexed
+            self.assertEqual(len(list(rqs[1])), 1)
+            self.assertEqual(len(list(rqs[0:2])), 2)
+            self.assertEqual(len(list(rqs[0:3])), 2)
 
-        # Check that subscription can be counted
-        self.assertEqual(len(rqs), 4)
-
-        # Now the most up-to-dated subscription is the one with higher
-        # `pk`.
-        ids = [s.id for s in Subscription.objects.latests()]
-        self.assertEqual(ids, sorted(ids, reverse=True))
+            # Now the most up-to-dated subscription is the one with
+            # higher `pk`.
+            ids = [s.id for s in Subscription.objects.latests(user)]
+            self.assertEqual(ids, sorted(ids, reverse=True))
 
     def test_str(self):
         """Test subscription representation"""
