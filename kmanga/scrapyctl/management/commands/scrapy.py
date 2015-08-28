@@ -237,7 +237,12 @@ class Command(BaseCommand):
                     user__subscription__id__gt=0).distinct()
             do_not_send = options['do-not-send']
             for user_profile in user_profiles:
-                self.sendsub(scrapy, user_profile, do_not_send)
+                try:
+                    self.sendsub(scrapy, user_profile, do_not_send)
+                except Exception as e:
+                    msg = 'Error sending subscription for %s' % user_profile
+                    logger.error(msg)
+                    logger.error(e)
         else:
             raise CommandError('Not valid command value. '
                                'Please, provide a command: %s' % Command.args)
@@ -320,22 +325,23 @@ class Command(BaseCommand):
         if not user_profile:
             raise CommandError('User not found for %s' % to)
 
-        if not do_not_send:
-            scrapy._send(spiders[0], manga.name, numbers, urls, _from,
-                         user_profile.email_kindle)
-        else:
+        if do_not_send:
             # If the user have a subscription, mark the issues as sent
             user = user_profile.user
             try:
                 subscription = user.subscription_set.get(manga=manga)
+            except:
+                msg = 'The user %s do not have a subscription to %s' % (user,
+                                                                        manga)
+            else:
+                self.stdout.write(msg)
                 for issue in issues:
                     # TODO XXX - Remove `unicode` in Python 3
                     self.stdout.write("Marked '%s' as sent" % unicode(issue))
                     subscription.add_sent(issue)
-            except:
-                msg = 'The user %s do not have a subscription to %s' % (user,
-                                                                        manga)
-                self.stdout.write(msg)
+        else:
+            scrapy._send(spiders[0], manga.name, numbers, urls, _from,
+                         user_profile.email_kindle)
 
     def sendsub(self, scrapy, user_profile, do_not_send):
         """Send the daily subscriptions to an user."""
@@ -371,9 +377,7 @@ class Command(BaseCommand):
         # MOBI arrives to the Kindle for ordering.
         issues.reverse()
 
-        if not do_not_send and issues:
-            scrapy.send(issues, user)
-        else:
+        if do_not_send:
             # If the user have a subscription but we are not sending
             # issues, mark them as sent
             user = user_profile.user
@@ -387,3 +391,5 @@ class Command(BaseCommand):
                 msg = 'The user %s do not have a '\
                       'subscription to %s' % (user, issue.manga)
                 self.stdout.write(msg)
+        elif issues:
+            scrapy.send(issues, user)
