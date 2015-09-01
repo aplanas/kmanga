@@ -102,7 +102,7 @@ class Command(BaseCommand):
         if len(spiders) > 1:
             raise CommandError('Please, specify a single source')
         spider = spiders[0]
-        source = Source.objects.get(name=spider)
+        source = Source.objects.get(spider=spider)
 
         if not manga and not url:
             raise CommandError("Provide parameters 'manga' or 'url'")

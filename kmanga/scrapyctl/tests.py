@@ -36,13 +36,13 @@ class CommandTestCase(TestCase):
     def test_get_manga(self):
         """Test recovering the manga instance from a spider."""
         with self.assertRaises(CommandError):
-            self.command._get_manga(['Source 1', 'Source 2'])
+            self.command._get_manga(['source1', 'source2'])
 
         with self.assertRaises(CommandError):
-            self.command._get_manga(['Source 1'])
+            self.command._get_manga(['source1'])
 
         with self.assertRaises(CommandError):
-            self.command._get_manga(['Source 1'], manga='missing')
+            self.command._get_manga(['source1'], manga='missing')
 
         # Duplicate a Manga
         source = Source.objects.get(name='Source 1')
@@ -50,11 +50,11 @@ class CommandTestCase(TestCase):
         manga.id = None
         manga.save()
         with self.assertRaises(CommandError):
-            self.command._get_manga(['Source 1'], manga='Manga 1')
+            self.command._get_manga(['source1'], manga='Manga 1')
         manga.delete()
 
-        manga1 = self.command._get_manga(['Source 1'], manga='Manga 1')
-        manga2 = self.command._get_manga(['Source 1'],
+        manga1 = self.command._get_manga(['source1'], manga='Manga 1')
+        manga2 = self.command._get_manga(['source1'],
                                          url='http://source1.com/manga1')
         self.assertEqual(manga1, manga2)
 
@@ -182,11 +182,11 @@ class CommandTestCase(TestCase):
         }
 
         scrapyctl.return_value = scrapyctl
-        get_spiders.return_value = ['Source 1']
+        get_spiders.return_value = ['source1']
         c = Command()
         c.handle('update-collection', **options)
         scrapyctl.update_collection.assert_called_once_with(
-            ['Source 1'], 'Manga 1', 'http://source1.com/manga1', False)
+            ['source1'], 'Manga 1', 'http://source1.com/manga1', False)
 
     @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
     def test_handle_update_latest(self, scrapyctl):
@@ -253,7 +253,7 @@ class CommandTestCase(TestCase):
         manga = Manga.objects.get(name='Manga 1')
 
         scrapyctl.return_value = scrapyctl
-        get_spiders.return_value = ['Source 1']
+        get_spiders.return_value = ['source1']
         c = Command()
         c.handle('subscribe', **options)
         subscribe.assert_called_once_with('user1', manga, 'EN', 4)
@@ -283,12 +283,12 @@ class CommandTestCase(TestCase):
         manga = Manga.objects.get(name='Manga 1')
 
         scrapyctl.return_value = scrapyctl
-        get_spiders.return_value = ['Source 1']
+        get_spiders.return_value = ['source1']
         get_issues.return_value = ['issues']
         get_manga.return_value = ['manga']
         c = Command()
         c.handle('send', **options)
-        send.assert_called_once_with(scrapyctl, ['Source 1'], manga,
+        send.assert_called_once_with(scrapyctl, ['source1'], manga,
                                      ['issues'], 'from@example.com',
                                      'to@example.com', False)
 
