@@ -21,7 +21,7 @@ class TimeStampedModel(models.Model):
 class Source(TimeStampedModel):
     name = models.CharField(max_length=200)
     spider = models.CharField(max_length=80)
-    url = models.URLField()
+    url = models.URLField(unique=True)
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.url)
@@ -253,7 +253,7 @@ class Manga(TimeStampedModel):
                                   default=ASC)
     description = models.TextField()
     cover = models.ImageField(upload_to=_cover_path)
-    url = models.URLField()
+    url = models.URLField(unique=True)
     source = models.ForeignKey(Source)
 
     objects = MangaQuerySet.as_manager()
@@ -300,7 +300,7 @@ class Issue(TimeStampedModel):
     language = models.CharField(max_length=2,
                                 choices=SourceLanguage.LANGUAGE_CHOICES)
     release = models.DateField()
-    url = models.URLField()
+    url = models.URLField(unique=True)
     manga = models.ForeignKey(Manga)
 
     class Meta:
