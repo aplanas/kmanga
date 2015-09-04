@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import datetime
 import logging
 from optparse import make_option
+import traceback
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -239,10 +240,10 @@ class Command(BaseCommand):
             for user_profile in user_profiles:
                 try:
                     self.sendsub(scrapy, user_profile, do_not_send)
-                except Exception as e:
+                except Exception:
                     msg = 'Error sending subscription for %s' % user_profile
                     logger.error(msg)
-                    logger.error(e)
+                    logger.error(traceback.format_exc())
         else:
             raise CommandError('Not valid command value. '
                                'Please, provide a command: %s' % Command.args)
