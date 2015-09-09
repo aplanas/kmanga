@@ -44,6 +44,10 @@ class ScrapyCtl(object):
         self.settings.set('LOG_LEVEL', loglevel)
         self.process = CrawlerProcess(self.settings)
 
+        # Store the crawlers that are going to be spinning with the
+        # `send` command.
+        self.crawlers = []
+
     def _get_settings(self):
         """Return the current scrapy settings."""
         if 'SCRAPY_SETTINGS_MODULE' not in os.environ:
@@ -121,11 +125,10 @@ class ScrapyCtl(object):
         process_control = ProcessControl(crawlers, self.process)
         process_control.run()
 
-    def send(self, issues, user, dry_run=False):
-        """High level function to send issues to an user."""
-        crawlers = []
+    def prepare_send(self, issues, user, dry_run=False):
+        """Create crawlers of issues for an user."""
         for issue in issues:
-            crawlers.append(self._create_crawler(
+            self.crawlers.append(self._create_crawler(
                 issue.manga.source.name.lower(),
                 issue.manga.name,
                 issue.number,
@@ -134,5 +137,8 @@ class ScrapyCtl(object):
                 user.userprofile.email_kindle,
                 dry_run
             ))
-        process_control = ProcessControl(crawlers, self.process)
+
+    def send(self):
+        """Send the issues prepared in `prepare_send`."""
+        process_control = ProcessControl(self.crawlers, self.process)
         process_control.run()

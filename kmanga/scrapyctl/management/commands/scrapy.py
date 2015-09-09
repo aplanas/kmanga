@@ -238,12 +238,8 @@ class Command(BaseCommand):
                     user__subscription__id__gt=0).distinct()
             do_not_send = options['do-not-send']
             for user_profile in user_profiles:
-                try:
-                    self.sendsub(scrapy, user_profile, do_not_send)
-                except Exception:
-                    msg = 'Error sending subscription for %s' % user_profile
-                    logger.error(msg)
-                    logger.error(traceback.format_exc())
+                self.prepare_sendsub(scrapy, user_profile, do_not_send)
+            self.sendsub(scrapy)
         else:
             raise CommandError('Not valid command value. '
                                'Please, provide a command: %s' % Command.args)
@@ -344,8 +340,8 @@ class Command(BaseCommand):
             scrapy._send(spiders[0], manga.name, numbers, urls, _from,
                          user_profile.email_kindle)
 
-    def sendsub(self, scrapy, user_profile, do_not_send):
-        """Send the daily subscriptions to an user."""
+    def prepare_sendsub(self, scrapy, user_profile, do_not_send):
+        """Prepare the daily subscriptions to an user."""
         user = user_profile.user
 
         # Basic algorithm:
@@ -393,4 +389,8 @@ class Command(BaseCommand):
                       'subscription to %s' % (user, issue.manga)
                 self.stdout.write(msg)
         elif issues:
-            scrapy.send(issues, user)
+            scrapy.prepare_send(issues, user)
+
+    def sendsub(self, scrapy):
+        """Send daily subscriptions prepared in `prepare_sendsub`."""
+        scrapy.send()
