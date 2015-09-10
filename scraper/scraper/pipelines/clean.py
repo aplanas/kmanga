@@ -412,8 +412,10 @@ class CleanPipeline(CleanBasePipeline):
 
     # -- Mangafox fields
     def clean_field_mangafox_manga_name(self, field):
-        # Remove the prefix Manga | Manhwa | Manhua
-        values = field[0].split()[:-1]
+        # Remove the postfix Manga | Manhwa | Manhua
+        values = field
+        if any(i in field[0] for i in ('Manga', 'Manhwa', 'Manhua')):
+            values = field[0].split()[:-1]
         return self._clean_field_str(values)
 
     def clean_field_mangafox_manga_alt_name(self, field):
