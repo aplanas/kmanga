@@ -245,9 +245,10 @@ class UpdateDBPipeline(object):
             return
 
         for item_issue in item['issues']:
-            issue = Issue()
-            self._update_issue(issue, item_issue)
-            manga.issue_set.add(issue)
+            if not manga.issue_set.filter(url=item_issue['url']).exists():
+                issue = Issue()
+                self._update_issue(issue, item_issue)
+                manga.issue_set.add(issue)
 
     @transaction.atomic
     def update_manga(self, item, spider):
