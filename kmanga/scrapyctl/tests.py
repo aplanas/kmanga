@@ -293,8 +293,9 @@ class CommandTestCase(TestCase):
                                      'to@example.com', False)
 
     @mock.patch.object(Command, 'sendsub')
+    @mock.patch.object(Command, 'prepare_sendsub')
     @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
-    def test_handle_sendsub(self, scrapyctl, sendsub):
+    def test_handle_sendsub(self, scrapyctl, prepare_sendsub, sendsub):
         """Test the `sendsub` handle method."""
 
         options = {
@@ -310,7 +311,9 @@ class CommandTestCase(TestCase):
         scrapyctl.return_value = scrapyctl
         c = Command()
         c.handle('sendsub', **options)
-        sendsub.assert_called_once_with(scrapyctl, user_profile, False)
+        prepare_sendsub.assert_called_once_with(scrapyctl, user_profile,
+                                                False)
+        sendsub.assert_called_once_with(scrapyctl)
 
         sendsub.reset_mock()
         user_profiles = UserProfile.objects.all()
@@ -319,4 +322,5 @@ class CommandTestCase(TestCase):
         c = Command()
         c.handle('sendsub', **options)
         for user_profile in user_profiles:
-            sendsub.assert_any_call(scrapyctl, user_profile, False)
+            prepare_sendsub.assert_any_call(scrapyctl, user_profile, False)
+        sendsub.assert_called_once_with(scrapyctl)
