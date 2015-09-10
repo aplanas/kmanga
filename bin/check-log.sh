@@ -19,5 +19,5 @@ if grep -q -E "$ERROR" $1; then
     RECEIVER=$EMAIL
     TEXT="Please, check '$1' in the server to find the cause."
     MAIL_TXT="Subject: $SUBJECT\nFrom: $SENDER\nTo: $RECEIVER\n\n$TEXT"
-    echo -e $MAIL_TXT | sendmail -t
+    echo -e $MAIL_TXT | /usr/sbin/sendmail -t
 fi
