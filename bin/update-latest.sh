@@ -11,5 +11,8 @@ fi
 
 spiders=$(kmanga/manage.py scrapy list --loglevel=WARNING | grep "^- " | cut -d" " -f2)
 for spider in $spiders ; do
-    kmanga/manage.py scrapy update-latest --spider=$spider &> $LOG_PATH/latest-$spider-$(date "+%Y-%m-%d-%T").log
+    LOG=$LOG_PATH/latest-$spider-$(date "+%Y-%m-%d-%T").log
+    (kmanga/manage.py scrapy update-latest --spider=$spider &> $LOG ; bin/check-log.sh $LOG) &
 done
+
+wait

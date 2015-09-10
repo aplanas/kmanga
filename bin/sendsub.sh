@@ -8,4 +8,7 @@ fi
 . bin/kmanga.conf
 
 . $VENV/bin/activate
-kmanga/manage.py scrapy sendsub &> $LOG_PATH/sendsub-$(date "+%Y-%m-%d-%T").log
+
+LOG=$LOG_PATH/sendsub-$(date "+%Y-%m-%d-%T").log
+kmanga/manage.py scrapy sendsub &> $LOG
+bin/check-log.sh $LOG
