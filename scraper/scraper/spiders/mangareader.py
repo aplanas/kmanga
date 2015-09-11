@@ -141,7 +141,7 @@ class MangaReader(MangaSpider):
             issue['name'] = name_1 + name_2
             # Number
             xp = './/a/text()'
-            issue['number'] = line.xpath(xp).re(r'(\d+)$')
+            issue['number'] = line.xpath(xp).re(r'([.\d]+)$')
             # Release
             xp = './td[2]/text()'
             issue['release'] = line.xpath(xp).extract()
