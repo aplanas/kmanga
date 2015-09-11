@@ -29,9 +29,9 @@ logger = logging.getLogger(__name__)
 
 def convert_to_date(str_, dmy=False):
     """Parse humanized dates."""
-    if str_ == 'Today':
+    if str_.startswith('Today'):
         return date.today()
-    elif str_ == 'Yesterday':
+    elif str_.startswith('Yesterday'):
         return date.today() - timedelta(days=1)
     elif str_.endswith('now'):
         return date.today()
