@@ -218,7 +218,8 @@ class Mangafox(MangaSpider):
                 'issue': issue,
                 'number': number + 1,
             }
-            yield scrapy.Request(url, self._parse_page, meta=meta)
+            yield scrapy.Request(response.urljoin(url),
+                                 self._parse_page, meta=meta)
 
     def _parse_page(self, response):
         manga = response.meta['manga']
