@@ -264,6 +264,9 @@ class Command(BaseCommand):
 
     def search(self, spiders, manga, lang, details):
         """Search a manga in the database."""
+        if not manga:
+            raise CommandError("Parameter 'manga' is not optional")
+
         q = manga
         for name in spiders:
             header = 'Results from %s:' % name
