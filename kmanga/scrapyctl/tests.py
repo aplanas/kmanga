@@ -48,6 +48,7 @@ class CommandTestCase(TestCase):
         source = Source.objects.get(name='Source 1')
         manga = source.manga_set.get(name='Manga 1')
         manga.id = None
+        manga.url += '/different-url'
         manga.save()
         with self.assertRaises(CommandError):
             self.command._get_manga(['source1'], manga='Manga 1')
