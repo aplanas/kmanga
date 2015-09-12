@@ -7,4 +7,4 @@ if [ ! -f "bin/kmanga.conf" ]; then
 fi
 . bin/kmanga.conf
 
-find $LOG_PATH/*.log -type f -mtime +15 -exec rm {} \;
+find $LOG_PATH/*.log -type f -mtime +15 -exec rm {} \; &> /dev/null || true
