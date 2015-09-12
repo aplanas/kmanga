@@ -27,8 +27,8 @@ from scraper.items import Genres, Manga, Issue, IssuePage
 from .mangaspider import MangaSpider
 
 
-class SubManga(MangaSpider):
-    name = 'submanga'
+class SubMangaCom(MangaSpider):
+    name = 'submangacom'
     allowed_domains = ['submanga.com']
 
     def get_genres_url(self):

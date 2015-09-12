@@ -25,8 +25,8 @@
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
             "modified": "2014-10-25T00:00:00.000Z",
-            "name": "Submanga",
-            "spider": "submanga",
+            "name": "SubmangaCom",
+            "spider": "submangacom",
             "url": "http://submanga.com/"
         },
         "model": "core.source",
@@ -82,5 +82,15 @@
         },
         "model": "core.sourcelanguage",
         "pk": 4
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "EN",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 4
+        },
+        "model": "core.sourcelanguage",
+        "pk": 5
     }
 ]
