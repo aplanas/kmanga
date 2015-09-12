@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
+from django.http import HttpResponseForbidden
 # from django.shortcuts import render
 from django.views.generic import DetailView
 from django.views.generic import ListView
@@ -21,6 +22,14 @@ class LoginRequiredMixin(object):
     def as_view(cls, **initkwargs):
         view = super(LoginRequiredMixin, cls).as_view(**initkwargs)
         return login_required(view)
+
+
+class SubscriptionOwnerMixin(object):
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_object().user != self.request.user:
+            return HttpResponseForbidden()
+        return super(SubscriptionOwnerMixin, self).dispatch(request, *args,
+                                                            **kwargs)
 
 
 class MangaListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
@@ -91,7 +100,8 @@ class SubscriptionListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
         return Subscription.objects.latests(user=user)
 
 
-class SubscriptionDetailView(LoginRequiredMixin, DetailView):
+class SubscriptionDetailView(LoginRequiredMixin, SubscriptionOwnerMixin,
+                             DetailView):
     model = Subscription
 
 
@@ -104,11 +114,13 @@ class SubscriptionCreateView(LoginRequiredMixin, CreateView):
                             args=[self.object.pk])
 
 
-class SubscriptionUpdateView(LoginRequiredMixin, UpdateView):
+class SubscriptionUpdateView(LoginRequiredMixin, SubscriptionOwnerMixin,
+                             UpdateView):
     model = Subscription
 
 
-class SubscriptionDeleteView(LoginRequiredMixin, DeleteView):
+class SubscriptionDeleteView(LoginRequiredMixin, SubscriptionOwnerMixin,
+                             DeleteView):
     model = Subscription
     success_url = reverse_lazy('subscription-list')
 
