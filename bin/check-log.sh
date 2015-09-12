@@ -14,7 +14,8 @@ fi
 
 ERROR="(ERROR|Traceback \(most recent call last\))"
 if grep -q -E "$ERROR" $1; then
-    SUBJECT="Error found in '$1'"
+    FILE=`basename $1`
+    SUBJECT="Error found in '$FILE'"
     SENDER="admin@kmanga.net"
     RECEIVER=$EMAIL
     TEXT="Please, check '$1' in the server to find the cause."
