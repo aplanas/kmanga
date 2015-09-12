@@ -47,7 +47,7 @@ class CommandTestCase(TestCase):
         # Duplicate a Manga
         source = Source.objects.get(name='Source 1')
         manga = source.manga_set.get(name='Manga 1')
-        manga.id = None
+        manga.pk = None
         manga.url += '/different-url'
         manga.save()
         with self.assertRaises(CommandError):
