@@ -206,7 +206,8 @@ class UpdateDBPipeline(object):
                 setattr(manga, key, value)
 
         # Save the object to have a PK (creation of relations)
-        manga.save()
+        if not manga.pk:
+            manga.save()
 
         # alt_name
         alt_names = [{'name': i} for i in item['alt_name']]
@@ -220,13 +221,16 @@ class UpdateDBPipeline(object):
                               m2m=source.genre_set.all())
 
         # cover
-        manga.cover.delete()
         if item['images']:
             path = urlparse.urlparse(item['image_urls'][0]).path
             name = os.path.basename(path)
             image_path = os.path.join(self.images_store,
                                       item['images'][0]['path'])
-            manga.cover.save(name, File(open(image_path, 'rb')))
+            if not manga.cover or os.path.basename(manga.cover.name) != name:
+                manga.cover.delete(save=False)
+                manga.cover.save(name, File(open(image_path, 'rb')))
+        elif manga.cover:
+            manga.cover.delete()
 
         # issues
         self._update_relation(manga, 'issue_set', 'url', item['issues'],
