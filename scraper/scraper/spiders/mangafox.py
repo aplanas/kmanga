@@ -101,8 +101,8 @@ class Mangafox(MangaSpider):
             manga = Manga(url=response.url)
 
         # Name
-        xp = '//div[@id="title"]/h2/a/text()'
-        manga['name'] = response.xpath(xp).extract()
+        xp = '//title/text()'
+        manga['name'] = response.xpath(xp).re(r'(.*) - Read')
         # Alternate name
         xp = '//div[@id="title"]/h3//text()'
         manga['alt_name'] = response.xpath(xp).extract()
