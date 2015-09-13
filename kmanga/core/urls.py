@@ -25,9 +25,9 @@ urlpatterns = [
         name='manga-read'),
     url(r'^manga/new/$', MangaCreateView.as_view(),
         name='manga-create'),
-    url(r'^manga/edit/(?P<pk>\d+)$', MangaUpdateView.as_view(),
+    url(r'^manga/(?P<pk>\d+)/edit$', MangaUpdateView.as_view(),
         name='manga-update'),
-    url(r'^manga/delete/(?P<pk>\d+)$', MangaDeleteView.as_view(),
+    url(r'^manga/(?P<pk>\d+)/delete$', MangaDeleteView.as_view(),
         name='manga-delete'),
 
     # Subscription
@@ -37,9 +37,9 @@ urlpatterns = [
         name='subscription-read'),
     url(r'^subscription/new/$', SubscriptionCreateView.as_view(),
         name='subscription-create'),
-    url(r'^subscription/edit/(?P<pk>\d+)$', SubscriptionUpdateView.as_view(),
+    url(r'^subscription/(?P<pk>\d+)/edit$', SubscriptionUpdateView.as_view(),
         name='subscription-update'),
-    url(r'^subscription/delete/(?P<pk>\d+)$', SubscriptionDeleteView.as_view(),
+    url(r'^subscription/(?P<pk>\d+)/delete$', SubscriptionDeleteView.as_view(),
         name='subscription-delete'),
 
     # History
@@ -47,8 +47,8 @@ urlpatterns = [
     url(r'^history/(?P<pk>\d+)$', HistoryDetailView.as_view(),
         name='history-read'),
     url(r'^history/new/$', HistoryCreateView.as_view(), name='history-create'),
-    url(r'^history/edit/(?P<pk>\d+)$', HistoryUpdateView.as_view(),
+    url(r'^history/(?P<pk>\d+)/edit$', HistoryUpdateView.as_view(),
         name='history-update'),
-    url(r'^history/delete/(?P<pk>\d+)$', HistoryDeleteView.as_view(),
+    url(r'^history/(?P<pk>\d+)/delete$', HistoryDeleteView.as_view(),
         name='history-delete'),
 ]
