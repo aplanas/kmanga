@@ -420,4 +420,4 @@ class CleanPipeline(CleanBasePipeline):
 
     def clean_field_mangafox_manga_alt_name(self, field):
         values = [i.split(';') for i in field]
-        return self._clean_field_list(values, exclude=('',))
+        return self._clean_field_list(values, exclude=('',), max_length=200)
