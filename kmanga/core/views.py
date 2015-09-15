@@ -130,6 +130,11 @@ class SubscriptionCreateView(LoginRequiredMixin, CreateView):
 class SubscriptionUpdateView(LoginRequiredMixin, SubscriptionOwnerMixin,
                              UpdateView):
     model = Subscription
+    fields = ['issues_per_day', 'paused']
+
+    def get_success_url(self):
+        return reverse_lazy('subscription-read',
+                            args=[self.object.pk])
 
 
 class SubscriptionDeleteView(LoginRequiredMixin, SubscriptionOwnerMixin,

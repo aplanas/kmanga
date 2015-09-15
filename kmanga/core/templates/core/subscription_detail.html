@@ -41,11 +41,20 @@
     </table>
   </div>
   <div class="col-xs-4">
-    {% if object.manga|is_subscribed:view.request.user %}
-    <p><a href="{% url 'subscription-delete' object.pk %}" class="btn btn-default" role="button">Unsubscribe <span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></p>
-    {% else %}
-    <p><a href="#" class="btn btn-info" role="button">Subscribe <span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a></p>
-    {% endif %}
+    <form method="post" action="{% url 'subscription-update' object.pk %}">{% csrf_token %}
+      <div class="form-group">
+	<label for="issues_per_day">Issues per day</label>
+	<input id="issues_per_day" name="issues_per_day" class="form-control" value="{{ object.issues_per_day }}">
+      </div>
+      <div class="checkbox">
+	<label>
+	  <input name="paused" type="checkbox" {% if object.paused %}checked="checked"{% endif %}> Pause
+	</label>
+      </div>
+      <button type="submit" class="btn btn-default">Update</button>
+    </form>
+    <hr>
+    <a href="{% url 'subscription-delete' object.pk %}" class="btn btn-default" role="button">Unsubscribe <span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
   </div>
 </div>
 {% endblock content %}
