@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseForbidden
+from django.http import HttpResponseRedirect
 # from django.shortcuts import render
 from django.views.generic import DetailView
 from django.views.generic import ListView
@@ -30,6 +31,18 @@ class SubscriptionOwnerMixin(object):
             return HttpResponseForbidden()
         return super(SubscriptionOwnerMixin, self).dispatch(request, *args,
                                                             **kwargs)
+
+
+class SafeDeleteView(DeleteView):
+    """View that provide the ability to safe delete objects."""
+
+    def delete(self, request, *args, **kwargs):
+        """Replace delete method with a safe version."""
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        self.object.deleted = True
+        self.object.save()
+        return HttpResponseRedirect(success_url)
 
 
 class MangaListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
@@ -120,7 +133,7 @@ class SubscriptionUpdateView(LoginRequiredMixin, SubscriptionOwnerMixin,
 
 
 class SubscriptionDeleteView(LoginRequiredMixin, SubscriptionOwnerMixin,
-                             DeleteView):
+                             SafeDeleteView):
     model = Subscription
     success_url = reverse_lazy('subscription-list')
 

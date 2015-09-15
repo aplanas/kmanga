@@ -42,7 +42,7 @@
   </div>
   <div class="col-xs-4">
     {% if object.manga|is_subscribed:view.request.user %}
-    <p><a href="#" class="btn btn-default" role="button">Unsubscribe <span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></p>
+    <p><a href="{% url 'subscription-delete' object.pk %}" class="btn btn-default" role="button">Unsubscribe <span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></p>
     {% else %}
     <p><a href="#" class="btn btn-info" role="button">Subscribe <span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a></p>
     {% endif %}
