@@ -24,6 +24,15 @@
 	{# else #}
 	<!-- <p><a href="#" class="btn btn-default" role="button">Subscribe <span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a></p> -->
 	{% endif %}
+	<ul class="nav nav-pills" role="tablist">
+	  {% for lang in manga.languages %}
+	  <li class="pill" role="presentation">
+	    <div data-toggle="tooltip" data-placement="top" title="Issues per language">
+	      {{ lang.language }} <span class="badge">{{ lang.language__count }}</span>
+	    </div>
+	  </li>
+	  {% endfor %}
+	</ul>
       </div>
     </div>
   </div>

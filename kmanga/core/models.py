@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import connection
 from django.db import models
+from django.db.models import Count
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
@@ -282,6 +283,13 @@ class Manga(TimeStampedModel):
     def subscription(self, user):
         """Return the users' subscription of this manga."""
         return self.subscription_set.filter(user=user)
+
+    def languages(self):
+        """Return the number of issues per language."""
+        return self.issue_set\
+                   .values('language')\
+                   .order_by('language')\
+                   .annotate(Count('language'))
 
 
 @python_2_unicode_compatible
