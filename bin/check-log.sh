@@ -12,8 +12,10 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-ERROR="(ERROR|Traceback \(most recent call last\))"
-if grep -q -E "$ERROR" $1; then
+ERROR="^[-: [:digit:]]+ \[\w+\] ERROR:"
+TRACE="^Traceback \(most recent call last\)"
+RE="($ERROR)|($TRACE)"
+if grep -q -E "$RE" $1; then
     FILE=`basename $1`
     SUBJECT="Error found in '$FILE'"
     SENDER="admin@kmanga.net"
