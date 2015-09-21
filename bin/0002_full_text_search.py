@@ -19,9 +19,10 @@ SELECT core_manga.id,
        core_manga.url,
        setweight(to_tsvector(core_manga.name), 'A') ||
        to_tsvector(core_manga.description) ||
-       to_tsvector(coalesce(string_agg(core_altname.name, ' '))) as document
+       to_tsvector(coalesce(string_agg(core_altname.name, ' '),
+                            '')) AS document
 FROM core_manga
-JOIN core_altname ON core_manga.id = core_altname.manga_id
+LEFT JOIN core_altname ON core_manga.id = core_altname.manga_id
 GROUP BY core_manga.id;
 
 CREATE INDEX core_manga_fts_idx ON core_manga_fts_view USING gin(document);
