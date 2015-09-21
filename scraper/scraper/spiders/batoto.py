@@ -66,6 +66,9 @@ class Batoto(MangaSpider):
         @returns request 30 40
         """
 
+        def mb(x, default=0.0):
+            return x[0] if x else default
+
         xp = '//tr[not(@class) and not(@id)]'
         for item in response.xpath(xp):
             manga = Manga()
@@ -75,7 +78,7 @@ class Batoto(MangaSpider):
             # In Batoto there is not rank, but a combination of
             # rating, viewers and followers.
             xp = './td[3]/div/@title'
-            rating = float(item.xpath(xp).re(r'([.\d]+)/5')[0])
+            rating = float(mb(item.xpath(xp).re(r'([.\d]+)/5')))
             xp = './td[4]/text()'
             viewers = convert_to_number(item.xpath(xp).extract()[0])
             xp = './td[5]/text()'
