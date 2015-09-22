@@ -25,7 +25,7 @@ class Source(TimeStampedModel):
     url = models.URLField(unique=True)
 
     def __str__(self):
-        return '%s (%s)' % (self.name, self.url)
+        return u'%s (%s)' % (self.name, self.url)
 
 
 @python_2_unicode_compatible
@@ -49,7 +49,7 @@ class SourceLanguage(TimeStampedModel):
     source = models.ForeignKey(Source)
 
     def __str__(self):
-        return '%s (%s)' % (self.get_language_display(), self.language)
+        return u'%s (%s)' % (self.get_language_display(), self.language)
 
 
 @python_2_unicode_compatible
@@ -408,7 +408,7 @@ class Subscription(TimeStampedModel):
         unique_together = ('manga', 'user')
 
     def __str__(self):
-        return '%s (%d per day)' % (self.manga, self.issues_per_day)
+        return u'%s (%d per day)' % (self.manga, self.issues_per_day)
 
     def issues_to_send(self):
         """Return the list of issues to send, ordered by number."""
@@ -525,7 +525,7 @@ class History(TimeStampedModel):
         unique_together = ('issue', 'subscription')
 
     def __str__(self):
-        return '%s (%s)' % (self.issue, self.get_status_display())
+        return u'%s (%s)' % (self.issue, self.get_status_display())
 
     def get_absolute_url(self):
         return reverse('history-detail', kwargs={'pk': self.pk})
