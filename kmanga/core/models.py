@@ -135,7 +135,9 @@ class MangaQuerySet(models.QuerySet):
 LEFT OUTER JOIN core_issue
              ON (core_manga.id = core_issue.manga_id)
        GROUP BY core_manga.id
-       ORDER BY issue__modified__max DESC;
+       ORDER BY issue__modified__max DESC,
+                name ASC,
+                url ASC;
 '''
         paged_query = '''
          SELECT core_manga.id,
@@ -144,7 +146,9 @@ LEFT OUTER JOIN core_issue
 LEFT OUTER JOIN core_issue
              ON (core_manga.id = core_issue.manga_id)
        GROUP BY core_manga.id
-       ORDER BY issue__modified__max DESC
+       ORDER BY issue__modified__max DESC,
+                name ASC,
+                url ASC
           LIMIT %s
          OFFSET %s;
 '''
@@ -346,7 +350,8 @@ LEFT OUTER JOIN core_history
           WHERE core_subscription.deleted = false
             AND core_subscription.user_id = %s
        GROUP BY core_subscription.id
-       ORDER BY history__modified__max DESC;
+       ORDER BY history__modified__max DESC,
+                id ASC;
 '''
         paged_query = '''
          SELECT core_subscription.id,
@@ -357,7 +362,8 @@ LEFT OUTER JOIN core_history
           WHERE core_subscription.deleted = false
             AND core_subscription.user_id = %s
        GROUP BY core_subscription.id
-       ORDER BY history__modified__max DESC
+       ORDER BY history__modified__max DESC,
+                id ASC
           LIMIT %s
          OFFSET %s;
 '''
