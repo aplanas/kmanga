@@ -211,15 +211,16 @@ class Mangafox(MangaSpider):
             yield scrapy.Request(next_url, self.parse_latest, meta=meta)
 
     def parse_manga(self, response, manga, issue):
-        xp = '//select[@class="m"]/option/@value'
-        for number, url in enumerate(response.xpath(xp).extract()):
-            meta = {
-                'manga': manga,
-                'issue': issue,
-                'number': number + 1,
-            }
-            yield scrapy.Request(response.urljoin(url),
-                                 self._parse_page, meta=meta)
+        xp = '//form[@id="top_bar"]//select[@class="m"]/option/@value'
+        for number in response.xpath(xp).extract():
+            if number != '0':
+                meta = {
+                    'manga': manga,
+                    'issue': issue,
+                    'number': int(number),
+                }
+                url = response.urljoin('%s.html' % number)
+                yield scrapy.Request(url, self._parse_page, meta=meta)
 
     def _parse_page(self, response):
         manga = response.meta['manga']
