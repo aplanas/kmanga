@@ -19,6 +19,7 @@
 
 import collections
 import hashlib
+import logging
 import os
 
 try:
@@ -44,6 +45,8 @@ django.setup()
 
 # Empty page.  Used when the original one can't be downloaded.
 EMPTY = 'empty.png'
+
+logger = logging.getLogger(__name__)
 
 
 class MobiCache(collections.MutableMapping):
@@ -218,6 +221,11 @@ class MobiContainer(object):
     @inthread
     def create_mobi(self, spider):
         cache = MobiCache(self.mobi_store)
+
+        # Signalize as an error the missing self.items, probably there
+        # is a hidden bug in the spider.
+        if not self.items:
+            logger.error('Items are empty, please check [%s]' % spider)
 
         for key, value in self.items.items():
             # First element is the spider name
