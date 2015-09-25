@@ -32,7 +32,11 @@
 	  </li>
 	  <li class="pill" role="presentation">
 	    <div data-toggle="tooltip" data-placement="top" title="Issues per day">
+	      {% if subscription.paused %}
+	      <span class="glyphicon glyphicon-pause text-default" aria-hidden="true"></span><span class="badge">{{ subscription.issues_per_day }}</span>
+	      {% else %}
 	      <span class="glyphicon glyphicon-play text-default" aria-hidden="true"></span><span class="badge">{{ subscription.issues_per_day }}</span>
+	      {% endif %}
 	    </div>
 	  </li>
 	</ul>
