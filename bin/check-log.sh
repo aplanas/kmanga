@@ -12,7 +12,7 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-ERROR="^[-: [:digit:]]+ \[\w+\] ERROR:"
+ERROR="^[-: [:digit:]]+ \[[._a-zA-Z]+\] ERROR:"
 TRACE="^Traceback \(most recent call last\)"
 RE="($ERROR)|($TRACE)"
 if grep -q -E "$RE" $1; then
