@@ -43,12 +43,10 @@ if [ -n "$LIBFFI" ]; then
 fi
 
 # Install Python packages
-# pip install pyOpenSSL==0.13.1
 pip install Pillow
 pip install Scrapy service-identity
 pip install easy-thumbnails django-rq psycopg2
-pip install mock
 
 if [ -n "$DEVEL" ]; then
-    pip install coverage django-debug-toolbar
+    pip install mock coverage django-debug-toolbar
 fi
