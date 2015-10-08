@@ -109,6 +109,7 @@ INSTALLED_APPS += (
     'easy_thumbnails',
     # Project applications
     'core',
+    'proxy',
     'registration',
     'scrapyctl',
 )
