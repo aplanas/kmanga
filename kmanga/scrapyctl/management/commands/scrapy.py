@@ -64,7 +64,7 @@ class Command(BaseCommand):
             '--spiders', action='store', dest='spiders', default='all',
             help='List of spiders (<list_of_spiders|all>).'),
         make_option(
-            '--loglevel', action='store', dest='loglevel', default='INFO',
+            '--loglevel', action='store', dest='loglevel', default='WARNING',
             help='Scrapy log level (<CRITICAL|ERROR|WARNING|INFO|DEBUG>).'),
         make_option(
             '--dry-run', action='store_true', dest='dry-run', default=False,
