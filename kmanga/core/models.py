@@ -163,8 +163,56 @@ LEFT OUTER JOIN core_issue
                               using=self.db)
 
     def _to_tsquery(self, q):
-        """Convert a query with the prefix syntax."""
-        return ' & '.join(u + ':*' for u in q.split())
+        """Convert a query to a PostgreSQL tsquery."""
+        # Separate parentesis from words
+        for token in ('(', ')'):
+            q = q.replace(token, ' %s ' % token)
+        # Parse the query
+        op = {
+            'and': '&',
+            'or': '|',
+            'not': '-',
+            '(': '(',
+            ')': ')',
+        }
+        # Join operators
+        j = '&|'
+        # Operators that expect and join before
+        ops_j = '-('
+        tsquery = []
+        for token in q.split():
+            if token in op:
+                if tsquery and op[token] in ops_j and tsquery[-1] not in j:
+                    tsquery.append(op['and'])
+                tsquery.append(op[token])
+            else:
+                if tsquery and tsquery[-1] not in (j + ops_j):
+                    tsquery.append(op['and'])
+                tsquery.append('%s:*' % token)
+
+        # Add spaces between join operators
+        tsquery = [(t if t not in j else ' %s ' % t) for t in tsquery]
+        return ''.join(tsquery)
+
+    def is_valid(self, q):
+        """Check is the query is a valid query."""
+        q = self._to_tsquery(q)
+        # Separate parentesis from words
+        for token in ('(', ')'):
+            q = q.replace(token, ' %s ' % token)
+
+        s = []
+        for token in q.split():
+            if token == '(':
+                s.append(token)
+            elif token == ')':
+                try:
+                    t = s.pop()
+                except IndexError:
+                    return False
+                if t != '(':
+                    return False
+        return not len(s)
 
     def search(self, q):
         q = self._to_tsquery(q)
@@ -240,7 +288,7 @@ class Manga(TimeStampedModel):
         (DESC, 'Descending'),
     )
 
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, db_index=True)
     # slug = models.SlugField(max_length=200)
     # release = models.DateField()
     author = models.CharField(max_length=200)
@@ -258,7 +306,7 @@ class Manga(TimeStampedModel):
                                   default=ASC)
     description = models.TextField()
     cover = models.ImageField(upload_to=_cover_path)
-    url = models.URLField(unique=True)
+    url = models.URLField(unique=True, db_index=True)
     source = models.ForeignKey(Source)
 
     objects = MangaQuerySet.as_manager()

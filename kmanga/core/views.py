@@ -53,13 +53,13 @@ class MangaListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
         """Extend the context data with the search query value."""
         context = super(MangaListView, self).get_context_data(**kwargs)
         q = self.request.GET.get('q', None)
-        if q:
+        if q and Manga.objects.is_valid(q):
             context['q'] = q
         return context
 
     def get_queryset(self):
         q = self.request.GET.get('q', None)
-        if q:
+        if q and Manga.objects.is_valid(q):
             mangas = Manga.objects.search(q)
         else:
             mangas = Manga.objects.latests()
