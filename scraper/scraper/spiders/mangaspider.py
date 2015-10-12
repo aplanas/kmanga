@@ -75,16 +75,20 @@ class MangaSpider(scrapy.Spider):
         _url = 'url' in kwargs and kwargs['url']
         if 'genres' in kwargs:
             self.start_urls = [self.url] if _url else [self.get_genres_url()]
+            self._operation = 'genres'
         elif 'catalog' in kwargs:
             self.start_urls = [self.url] if _url else [self.get_catalog_url()]
+            self._operation = 'catalog'
         elif 'collection' in kwargs and _manga:
             self.start_urls = [self.url] if _url \
                 else [self.get_collection_url(self.manga)]
+            self._operation = 'collection'
         elif 'latest' in kwargs:
             day, month, year = [int(x) for x in self.latest.split('-')]
             self.until = date(year=year, month=month, day=day)
             self.start_urls = [self.url] if _url \
                 else [self.get_latest_url(self.until)]
+            self._operation = 'latest'
         elif _manga and _issue:
             self.start_urls = [self.url] if _url \
                 else [self.get_manga_url(self.manga, self.issue)]
@@ -93,6 +97,7 @@ class MangaSpider(scrapy.Spider):
                 self.to_email = kwargs['to']
             except:
                 error_msg = True
+            self._operation = 'manga'
         else:
             # To allow the check of the spider using scrapy, we need
             # to commend this line.
@@ -112,24 +117,19 @@ class MangaSpider(scrapy.Spider):
             exit(1)
 
     def parse(self, response):
-        if hasattr(self, 'genres'):
-            self._operation = 'genres'
+        if self._operation == 'genres':
             return self.parse_genres(response)
 
-        if hasattr(self, 'catalog'):
-            self._operation = 'catalog'
+        if self._operation == 'catalog':
             return self.parse_catalog(response)
 
-        if all(hasattr(self, attr) for attr in ('collection', 'manga')):
-            self._operation = 'collection'
+        if self._operation == 'collection':
             return self.parse_collection(response, self.manga)
 
-        if hasattr(self, 'latest'):
-            self._operation = 'latest'
+        if self._operation == 'latest':
             return self.parse_latest(response, self.until)
 
-        if all(hasattr(self, attr) for attr in ('manga', 'issue', 'url')):
-            self._operation = 'manga'
+        if self._operation == 'manga':
             return self.parse_manga(response, self.manga, self.issue)
 
     def get_genres_url(self):
