@@ -30,6 +30,12 @@ django.setup()
 class SmartProxy(object):
 
     def process_request(self, request, spider):
+        print dir(spider)
+        # The proxy only works if the operation is fetch an issue
+        if spider._operation != 'manga':
+            return
+
+        # If the proxy is already set, we are done
         if 'proxy' in request.meta:
             return
 
@@ -43,6 +49,9 @@ class SmartProxy(object):
                 logging.error('No proxy found for %s' % spider.name)
 
     def process_exception(self, request, exception, spider):
+        if 'proxy' not in request.meta:
+            return
+
         proxy = request.meta['proxy'].lstrip('htp:/')
         del request.meta['proxy']
         try:
