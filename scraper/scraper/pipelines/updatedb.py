@@ -134,7 +134,7 @@ class UpdateDBPipeline(object):
     def _sic(self, obj, item, field):
         """SetIfChange utility method."""
         updated = False
-        if getattr(obj, field) != item[field]:
+        if unicode(getattr(obj, field)) != unicode(item[field]):
             setattr(obj, field, item[field])
             updated = True
         return updated
