@@ -66,8 +66,11 @@ def _collect_proxies():
     proxies = []
     for url in PROXY_SOURCE:
         logger.info('Collecting proxies from %s' % url)
-        body = urllib2.urlopen(url).read()
-        proxies.extend(proxy_re.findall(body))
+        try:
+            body = urllib2.urlopen(url).read()
+            proxies.extend(proxy_re.findall(body))
+        except urllib2.URLError:
+            logger.info('Fail URL %s' % url)
     return list(set(proxies))
 
 
