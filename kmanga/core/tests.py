@@ -303,12 +303,12 @@ class SubscriptionTestCase(TestCase):
             # ... all same language than the subscription
             self.assertTrue(all(i.language == subs.language for i in issues))
 
-        for subs in Subscription.active.all():
+        for subs in Subscription.actives.all():
             issues = subs.issues_to_send()
             _test_issues_to_send(subs, issues)
 
         History.objects.all().delete()
-        for subs in Subscription.active.all():
+        for subs in Subscription.actives.all():
             issues = subs.issues_to_send()
             _test_issues_to_send(subs, issues)
 
@@ -320,7 +320,7 @@ class SubscriptionTestCase(TestCase):
     def test_add_sent(self):
         """Test that a subscription can register a sent."""
         History.objects.all().delete()
-        subs = Subscription.active.all()[0]
+        subs = Subscription.actives.all()[0]
         issue = subs.manga.issue_set.all()[0]
         subs.add_sent(issue)
 
@@ -355,7 +355,7 @@ class HistoryTestCase(TestCase):
         History.objects.all().delete()
         self.assertEqual(History.objects.modified_last_24hs(user1), 0)
 
-        for i, subs in enumerate(Subscription.active.filter(user=user1)):
+        for i, subs in enumerate(Subscription.actives.filter(user=user1)):
             issue = subs.manga.issue_set.all()[0]
             subs.add_sent(issue)
             self.assertEqual(History.objects.modified_last_24hs(user1), i+1)
@@ -381,7 +381,7 @@ class HistoryTestCase(TestCase):
         History.objects.all().delete()
         self.assertEqual(History.objects.sent_last_24hs(user1), 0)
 
-        for i, subs in enumerate(Subscription.active.filter(user=user1)):
+        for i, subs in enumerate(Subscription.actives.filter(user=user1)):
             issue = subs.manga.issue_set.all()[0]
             subs.add_sent(issue)
             self.assertEqual(History.objects.sent_last_24hs(user1), i+1)
@@ -391,7 +391,7 @@ class HistoryTestCase(TestCase):
     def test_status(self):
         """Test recovery lasts history instances with some status."""
         user1 = UserProfile.objects.get(pk=1).user
-        subs = Subscription.active.filter(user=user1).first()
+        subs = Subscription.actives.filter(user=user1).first()
 
         table = ((History.PENDING, 'pending', 'is_pending'),
                  (History.PROCESSING, 'processing', 'is_processing'),

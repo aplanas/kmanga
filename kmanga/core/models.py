@@ -455,7 +455,7 @@ class Subscription(TimeStampedModel):
     deleted = models.BooleanField(default=False)
 
     objects = SubscriptionManager.from_queryset(SubscriptionQuerySet)()
-    active = SubscriptionActiveManager.from_queryset(SubscriptionQuerySet)()
+    actives = SubscriptionActiveManager.from_queryset(SubscriptionQuerySet)()
     all_objects = models.Manager()
 
     class Meta:
