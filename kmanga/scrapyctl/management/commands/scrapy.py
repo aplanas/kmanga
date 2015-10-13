@@ -364,7 +364,8 @@ class Command(BaseCommand):
         remains = max(0, user_profile.issues_per_day-already_sent)
 
         issues = []
-        for subscription in user.subscription_set.order_by('?'):
+        subscriptions = user.subscription_set(manager='actives').order_by('?')
+        for subscription in subscriptions:
             for issue in subscription.issues_to_send():
                 # Exit if we reach the limit for today
                 if remains <= 0:
@@ -382,7 +383,7 @@ class Command(BaseCommand):
             user = user_profile.user
             try:
                 for issue in issues:
-                    subscription = Subscription.active.get(
+                    subscription = Subscription.actives.get(
                         user=user, manga=issue.manga)
                     self.stdout.write("Marking '%s' as sent" % issue)
                     subscription.add_sent(issue)
