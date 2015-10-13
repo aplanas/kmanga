@@ -17,7 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date, datetime, timedelta
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
+from decimal import Decimal
 import logging
 import re
 
@@ -80,14 +83,14 @@ def convert_to_date(str_, dmy=False):
 
 def convert_to_number(str_, as_int=False, default=0):
     """Parse issues / viewers numbers."""
-    result = default
+    result = Decimal(default)
     try:
         if str_.endswith('k'):
-            result = 1000 * float(str_[:-1])
+            result = 1000 * Decimal(str_[:-1])
         elif str_.endswith('m'):
-            result = 1000 * 1000 * float(str_[:-1])
+            result = 1000 * 1000 * Decimal(str_[:-1])
         else:
-            result = float(str_)
+            result = Decimal(str_)
     except ValueError:
         logger.warning("Can't convert '%s' to a number. "
                        'Using default value %s' % (str_, default))
@@ -173,7 +176,7 @@ class CleanBasePipeline(object):
                                  " or can't be converted to an integer")
         return value
 
-    def _clean_field_float(self, field, optional=False, default=0):
+    def _clean_field_float(self, field, optional=False, default=0.0):
         """Generic clean method for float field."""
         value = default
         try:
