@@ -201,12 +201,12 @@ class UpdateDBPipeline(object):
 
         ignore_fields = ('rank', 'rank_order')
         exceptions = ('alt_name', 'genres', 'image_urls', 'images', 'issues')
-        for key, value in item.items():
-            if key not in exceptions and key not in ignore_fields:
-                setattr(manga, key, value)
+        fields = [f for f in item if f not in (ignore_fields + exceptions)]
+        # Update the fields of the manga object
+        changed = [self._sic(manga, item, f) for f in fields]
 
         # Save the object to have a PK (creation of relations)
-        if not manga.pk:
+        if not manga.pk or any(changed):
             manga.save()
 
         # alt_name
