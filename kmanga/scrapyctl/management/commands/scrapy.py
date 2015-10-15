@@ -27,7 +27,7 @@ class Command(BaseCommand):
             help='Name of the manga. Partial match for search (<manga>).'),
         make_option(
             '--issues', action='store', dest='issues', default=None,
-            help='List of issues numbers (<list_of_numbers|all>).'),
+            help='List of issues numbers (order) (<list_of_numbers|all>).'),
         make_option(
             '--url', action='store', dest='url', default=None,
             help='Manga or issue URL (<url>).'),
@@ -144,23 +144,23 @@ class Command(BaseCommand):
 
         _issues = manga.issue_set.filter(language=lang)
         if issues == 'all':
-            _issues = _issues.order_by('number')
+            _issues = _issues.order_by('order')
         elif not issues and url:
             _issues = _issues.filter(url=url)
         elif issues:
-            numbers = []
-            for number in issues.split(','):
-                if '-' in number:
-                    a, b = number.split('-')
+            orders = []
+            for order in issues.split(','):
+                if '-' in order:
+                    a, b = order.split('-')
                     if a >= b:
                         raise CommandError(
-                            'Provide issue range in increasin order.')
-                    numbers.extend(range(int(a), int(b)+1))
+                            'Provide issue range in increasing order.')
+                    orders.extend(range(int(a), int(b)+1))
                 else:
-                    numbers.append(float(number))
-            _issues = _issues.filter(number__in=numbers).order_by('number')
+                    orders.append(int(order))
+            _issues = _issues.filter(order__in=orders).order_by('order')
         else:
-            raise CommandError('Please, provide some issue numbers.')
+            raise CommandError('Please, provide some issue numbers (order).')
 
         return _issues
 
@@ -280,18 +280,18 @@ class Command(BaseCommand):
                 if lang:
                     lang = lang.upper()
                     issues = issues.filter(language=lang)
-                for issue in issues.order_by('number'):
+                for issue in issues.order_by('order'):
                     if details:
                         self.stdout.write(u' [%s] [%s] [%s] [%s] %s' %
                                           (issue.language,
-                                           issue.number,
+                                           issue.order,
                                            issue.release,
                                            issue.url,
                                            issue.name))
                     else:
                         self.stdout.write(u' [%s] [%s] %s' %
                                           (issue.language,
-                                           issue.number,
+                                           issue.order,
                                            issue.name))
                 self.stdout.write('')
 

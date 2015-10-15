@@ -478,7 +478,7 @@ class Subscription(TimeStampedModel):
                 History.SENT,
                 History.FAILED,
             )).values('issue__id')
-        ).order_by('number')[:remains]
+        ).order_by('order')[:remains]
 
     def add_sent(self, issue):
         """Add or update an History to a Subscription."""
