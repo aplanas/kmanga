@@ -356,7 +356,8 @@ class AltName(TimeStampedModel):
 @python_2_unicode_compatible
 class Issue(TimeStampedModel):
     name = models.CharField(max_length=200)
-    number = models.DecimalField(max_digits=5, decimal_places=1)
+    number = models.CharField(max_length=10)
+    order = models.IntegerField()
     language = models.CharField(max_length=2,
                                 choices=SourceLanguage.LANGUAGE_CHOICES)
     release = models.DateField()
@@ -364,7 +365,7 @@ class Issue(TimeStampedModel):
     manga = models.ForeignKey(Manga)
 
     class Meta:
-        ordering = ('number', 'name')
+        ordering = ('order', 'name')
 
     def __str__(self):
         return self.name

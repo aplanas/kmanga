@@ -255,6 +255,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 1 issue 1",
             "number": "1.0",
+            "order": 1,
             "release": "2014-01-01",
             "url": "http://source1.com/manga1/issue1"
         },
@@ -269,6 +270,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 1 issue 1 - ES",
             "number": "1.0",
+            "order": 1,
             "release": "2014-01-01",
             "url": "http://source1.com/manga1/issue1-es"
         },
@@ -283,6 +285,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 1 issue 2",
             "number": "2.0",
+            "order": 2,
             "release": "2014-01-02",
             "url": "http://source1.com/manga1/issue2"
         },
@@ -297,6 +300,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 1 issue 3",
             "number": "3.0",
+            "order": 3,
             "release": "2014-01-03",
             "url": "http://source1.com/manga1/issue3"
         },
@@ -311,6 +315,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 1 issue 4",
             "number": "4.0",
+            "order": 4,
             "release": "2014-01-04",
             "url": "http://source1.com/manga1/issue4"
         },
@@ -325,6 +330,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 1 issue 5",
             "number": "5.0",
+            "order": 5,
             "release": "2014-01-05",
             "url": "http://source1.com/manga1/issue5"
         },
@@ -339,6 +345,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 2 issue 1",
             "number": "1.0",
+            "order": 1,
             "release": "2014-01-01",
             "url": "http://source1.com/manga2/issue1"
         },
@@ -353,6 +360,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 2 issue 2",
             "number": "2.0",
+            "order": 2,
             "release": "2014-01-02",
             "url": "http://source1.com/manga2/issue2"
         },
@@ -367,6 +375,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 2 issue 3",
             "number": "3.0",
+            "order": 3,
             "release": "2014-01-03",
             "url": "http://source1.com/manga2/issue3"
         },
@@ -381,6 +390,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 2 issue 4",
             "number": "4.0",
+            "order": 4,
             "release": "2014-01-04",
             "url": "http://source1.com/manga2/issue4"
         },
@@ -395,6 +405,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 2 issue 5",
             "number": "5.0",
+            "order": 5,
             "release": "2014-01-05",
             "url": "http://source1.com/manga2/issue5"
         },
@@ -409,6 +420,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 3 issue 1",
             "number": "1.0",
+            "order": 1,
             "release": "2014-01-01",
             "url": "http://source2.com/manga3/issue1"
         },
@@ -423,6 +435,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 3 issue 2",
             "number": "2.0",
+            "order": 2,
             "release": "2014-01-02",
             "url": "http://source2.com/manga3/issue2"
         },
@@ -437,6 +450,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 3 issue 3",
             "number": "3.0",
+            "order": 3,
             "release": "2014-01-03",
             "url": "http://source2.com/manga3/issue3"
         },
@@ -451,6 +465,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 3 issue 4",
             "number": "4.0",
+            "order": 4,
             "release": "2014-01-04",
             "url": "http://source2.com/manga3/issue4"
         },
@@ -465,6 +480,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 3 issue 5",
             "number": "5.0",
+            "order": 5,
             "release": "2014-01-05",
             "url": "http://source2.com/manga3/issue5"
         },
@@ -479,6 +495,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 4 issue 1",
             "number": "1.0",
+            "order": 1,
             "release": "2014-01-01",
             "url": "http://source2.com/manga4/issue1"
         },
@@ -493,6 +510,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 4 issue 2",
             "number": "2.0",
+            "order": 2,
             "release": "2014-01-02",
             "url": "http://source2.com/manga4/issue2"
         },
@@ -507,6 +525,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 4 issue 3",
             "number": "3.0",
+            "order": 3,
             "release": "2014-01-03",
             "url": "http://source2.com/manga4/issue3"
         },
@@ -521,6 +540,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 4 issue 4",
             "number": "4.0",
+            "order": 4,
             "release": "2014-01-04",
             "url": "http://source2.com/manga4/issue4"
         },
@@ -535,6 +555,7 @@
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "manga 4 issue 5",
             "number": "5.0",
+            "order": 5,
             "release": "2014-01-05",
             "url": "http://source2.com/manga4/issue5"
         },

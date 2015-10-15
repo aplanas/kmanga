@@ -22,6 +22,7 @@
       <caption>List of issues</caption>
       <thead>
 	<tr>
+	  <th>order</th>
 	  <th>number</th>
 	  <th>name</th>
 	  <th>language</th>
@@ -31,7 +32,8 @@
       <tbody>
 	{% for issue in object.manga.issue_set.all %}
 	<tr>
-	  <th scope="row">{{ issue.number }}</th>
+	  <th scope="row">{{ issue.order }}</th>
+	  <td>{{ issue.number }}</td>
 	  <td><a href="{{ issue.url }}">{{ issue.name }}</a></td>
 	  <td>{{ issue.language }}</td>
 	  <td>.</td>
