@@ -55,6 +55,7 @@ class Manga(scrapy.Item):
 class Issue(scrapy.Item):
     name = scrapy.Field()
     number = scrapy.Field()
+    order = scrapy.Field()
     language = scrapy.Field()
     release = scrapy.Field()
     url = scrapy.Field()

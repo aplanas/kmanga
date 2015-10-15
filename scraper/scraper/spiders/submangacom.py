@@ -166,7 +166,8 @@ class SubMangaCom(MangaSpider):
         manga['issues'] = []
         xp = '//table[@class="table table-striped table-hover"]/' \
              'tbody/tr[td[not(@colspan)]]'
-        for line in response.xpath(xp):
+        lines = response.xpath(xp)
+        for line in lines:
             issue = Issue(language='ES')
             # Name
             xp = 'td[1]/a/text()'
@@ -176,6 +177,8 @@ class SubMangaCom(MangaSpider):
             issue['name'] = name_1 + name_2
             # Number
             issue['number'] = name_2
+            # Order
+            issue['order'] = len(lines) - len(manga['issues'])
             # URL
             xp = 'td[1]/a/@href'
             issue['url'] = line.xpath(xp).extract()
@@ -292,6 +295,9 @@ class SubMangaCom(MangaSpider):
             issue['name'] = name_1 + name_2
             # Number
             issue['number'] = name_2
+            # Order
+            # This is only an estimation for now
+            issue['order'] = issue['number']
             # URL
             xp = 't[1]/a/@href'
             issue['url'] = line.xpath(xp).extract()

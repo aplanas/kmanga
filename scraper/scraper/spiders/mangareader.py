@@ -142,6 +142,8 @@ class MangaReader(MangaSpider):
             # Number
             xp = './/a/text()'
             issue['number'] = line.xpath(xp).re(r'([.\d]+)$')
+            # Order
+            issue['order'] = len(manga['issues'])
             # Release
             xp = './td[2]/text()'
             issue['release'] = line.xpath(xp).extract()
@@ -196,6 +198,9 @@ class MangaReader(MangaSpider):
                 # Number
                 xp = 'text()'
                 issue['number'] = line.xpath(xp).re(r'(\d+)$')
+                # Order
+                # This is only an estimation for now
+                issue['order'] = issue['number']
                 # Release
                 issue['release'] = update_date
                 # URL

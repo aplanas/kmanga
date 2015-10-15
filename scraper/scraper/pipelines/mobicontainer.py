@@ -75,8 +75,8 @@ class MobiCache(collections.MutableMapping):
     def __file(self, key):
         """Return the MD5 hash for the key."""
         # Generate an unique hash from the key components.
-        spider, name, issue, url = key
-        name = '%s_%s_%03d_%s' % (spider, name, int(issue), url)
+        spider, name, number, url = key
+        name = '%s_%s_%s_%s' % (spider, name, number, url)
         name = hashlib.md5(name).hexdigest()
         return name
 
@@ -171,9 +171,14 @@ class MobiContainer(object):
             if spider._operation == 'manga':
                 return self.create_mobi(spider)
 
+    def _normalize(self, number):
+        """Normalize the string tha represent a `number`."""
+        number = [i if i.isalnum() else '_' for i in number.lower()]
+        return ''.join(number)
+
     def _create_mobi(self, name, number, images, issue):
         """Create the MOBI file and return a list of values and containers."""
-        dir_name = '%s_%03d' % (name, int(number))
+        dir_name = '%s_%s' % (name, self._normalize(number))
         container = Container(os.path.join(self.mobi_store, dir_name))
         container.create(clean=True)
         images = sorted(images, key=lambda x: x['number'])
@@ -197,11 +202,11 @@ class MobiContainer(object):
         class Info(object):
             def __init__(self, issue, multi_vol=False, vol=None):
                 if multi_vol:
-                    self.title = '%s %03d V%02d' % (issue.manga.name,
-                                                    issue.number, vol)
+                    self.title = '%s %s/%02d' % (issue.manga.name,
+                                                 issue.number, vol)
                 else:
-                    self.title = '%s %03d' % (issue.manga.name,
-                                              issue.number)
+                    self.title = '%s %s' % (issue.manga.name,
+                                            issue.number)
                 self.language = issue.language.lower()
                 self.author = issue.manga.author
                 self.publisher = issue.manga.source.name
@@ -268,12 +273,12 @@ class MobiContainer(object):
                 # XXX TODO - Send email when errors
 
     def mail_ok(self, result, from_mail, to_mail, manga_name,
-                manga_issue, history):
+                manga_number, history):
         history.send_date = timezone.now()
         history.status = History.SENT
         history.save()
 
     def mail_err(self, result, from_mail, to_mail, manga_name,
-                 manga_issue, history):
+                 manga_number, history):
         history.status = History.FAILED
         history.save()

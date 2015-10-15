@@ -268,6 +268,7 @@ class UpdateDBPipeline(object):
         changed = [self._sic(obj, item, field) for field in (
             'name',
             'number',
+            'order',
             'language',
             'release',
             'url'

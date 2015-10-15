@@ -367,7 +367,8 @@ class CleanPipeline(CleanBasePipeline):
     def clean_issue(self, item, spider):
         cleaning_plan = {
             'name': (self._clean_field_str, {'max_length': 200}),
-            'number': (self._clean_field_float, {'optional': True}),
+            'number': (self._clean_field_str, {'optional': True}),
+            'order': self._clean_field_int,
             'language': (self._clean_field_set,
                          {'values': ('EN', 'ES')}),
             'release': self._clean_field_date,

@@ -22,6 +22,7 @@ from urlparse import urljoin
 
 import scrapy
 
+import re
 from scraper.pipelines import convert_to_date
 from scraper.items import Genres, Manga, Issue, IssuePage
 
@@ -130,7 +131,8 @@ class Mangafox(MangaSpider):
         # Parse the manga issues list
         manga['issues'] = []
         xp = '//ul[@class="chlist"]/li'
-        for line in response.xpath(xp):
+        lines = response.xpath(xp)
+        for line in lines:
             issue = Issue(language='EN')
             # Name
             xp = '(.//h3|.//h4)/a/text()'
@@ -141,6 +143,8 @@ class Mangafox(MangaSpider):
             # Number
             xp = '(.//h3|.//h4)/a/text()'
             issue['number'] = line.xpath(xp).re(r'.*?([.\d]+)$')
+            # Order
+            issue['order'] = len(lines) - len(manga['issues'])
             # Release
             xp = './/span[@class="date"]/text()'
             issue['release'] = line.xpath(xp).extract()
@@ -193,6 +197,9 @@ class Mangafox(MangaSpider):
                 # Number
                 xp = './/span/a/text()'
                 issue['number'] = line.xpath(xp).re(r'(\d+)$')
+                # Order
+                # This is only an estimation for now
+                issue['order'] = issue['number']
                 # Release
                 issue['release'] = update_date
                 # URL

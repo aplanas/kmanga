@@ -124,13 +124,15 @@ class TestUpdateDBPipeline(unittest.TestCase):
             issues=[
                 scraper.items.Issue(
                     name='issue1',
-                    number=1,
+                    number='1',
+                    order=1,
                     language='EN',
                     release=datetime.date(year=2014, month=1, day=1),
                     url='http://manga1.org/issue1'),
                 scraper.items.Issue(
                     name='issue2',
-                    number=2,
+                    number='2',
+                    order=2,
                     language='EN',
                     release=datetime.date(year=2014, month=1, day=2),
                     url='http://manga1.org/issue2'),
@@ -158,14 +160,16 @@ class TestUpdateDBPipeline(unittest.TestCase):
 
         i = m.issue_set.get(name='issue1')
         self.assertEqual(i.name, 'issue1')
-        self.assertEqual(i.number, 1)
+        self.assertEqual(i.number, '1')
+        self.assertEqual(i.order, 1)
         self.assertEqual(i.language, 'EN')
         self.assertEqual(i.release, datetime.date(year=2014, month=1, day=1))
         self.assertEqual(i.url, 'http://manga1.org/issue1')
 
         i = m.issue_set.get(name='issue2')
         self.assertEqual(i.name, 'issue2')
-        self.assertEqual(i.number, 2)
+        self.assertEqual(i.number, '2')
+        self.assertEqual(i.order, 2)
         self.assertEqual(i.language, 'EN')
         self.assertEqual(i.release, datetime.date(year=2014, month=1, day=2))
         self.assertEqual(i.url, 'http://manga1.org/issue2')
@@ -200,13 +204,15 @@ class TestUpdateDBPipeline(unittest.TestCase):
             issues=[
                 scraper.items.Issue(
                     name='issue1',
-                    number=1,
+                    number='1',
+                    order=1,
                     language='EN',
                     release=datetime.date(year=2014, month=1, day=1),
                     url='http://manga1.org/issue1'),
                 scraper.items.Issue(
                     name='issue2',
-                    number=2,
+                    number='2',
+                    order=2,
                     language='EN',
                     release=datetime.date(year=2014, month=1, day=2),
                     url='http://manga1.org/issue2'),
@@ -258,7 +264,8 @@ class TestUpdateDBPipeline(unittest.TestCase):
         manga['issues'].append(
             scraper.items.Issue(
                 name='issue3',
-                number=3,
+                number='3',
+                order=3,
                 language='EN',
                 release=datetime.date(year=2014, month=1, day=3),
                 url='http://manga1.org/issue3')
@@ -295,14 +302,16 @@ class TestUpdateDBPipeline(unittest.TestCase):
 
         i = m.issue_set.get(name='issue2')
         self.assertEqual(i.name, 'issue2')
-        self.assertEqual(i.number, 2)
+        self.assertEqual(i.number, '2')
+        self.assertEqual(i.order, 2)
         self.assertEqual(i.language, 'EN')
         self.assertEqual(i.release, datetime.date(year=2014, month=1, day=2))
         self.assertEqual(i.url, 'http://manga1.org/issue2')
 
         i = m.issue_set.get(name='issue3')
         self.assertEqual(i.name, 'issue3')
-        self.assertEqual(i.number, 3)
+        self.assertEqual(i.number, '3')
+        self.assertEqual(i.order, 3)
         self.assertEqual(i.language, 'EN')
         self.assertEqual(i.release, datetime.date(year=2014, month=1, day=3))
         self.assertEqual(i.url, 'http://manga1.org/issue3')
@@ -337,13 +346,15 @@ class TestUpdateDBPipeline(unittest.TestCase):
             issues=[
                 scraper.items.Issue(
                     name='issue1',
-                    number=1,
+                    number='1',
+                    order=1,
                     language='EN',
                     release=datetime.date(year=2014, month=1, day=1),
                     url='http://manga1.org/issue1'),
                 scraper.items.Issue(
                     name='issue2',
-                    number=2,
+                    number='2',
+                    order=2,
                     language='EN',
                     release=datetime.date(year=2014, month=1, day=2),
                     url='http://manga1.org/issue2'),
@@ -356,13 +367,15 @@ class TestUpdateDBPipeline(unittest.TestCase):
             issues=[
                 scraper.items.Issue(
                     name='issue3',
-                    number=3,
+                    number='3',
+                    order=3,
                     language='EN',
                     release=datetime.date(year=2014, month=1, day=3),
                     url='http://manga1.org/issue3'),
                 scraper.items.Issue(
                     name='issue4',
-                    number=4,
+                    number='4',
+                    order=4,
                     language='EN',
                     release=datetime.date(year=2014, month=1, day=4),
                     url='http://manga1.org/issue4'),
@@ -390,28 +403,32 @@ class TestUpdateDBPipeline(unittest.TestCase):
 
         i = m.issue_set.get(name='issue1')
         self.assertEqual(i.name, 'issue1')
-        self.assertEqual(i.number, 1)
+        self.assertEqual(i.number, '1')
+        self.assertEqual(i.order, 1)
         self.assertEqual(i.language, 'EN')
         self.assertEqual(i.release, datetime.date(year=2014, month=1, day=1))
         self.assertEqual(i.url, 'http://manga1.org/issue1')
 
         i = m.issue_set.get(name='issue2')
         self.assertEqual(i.name, 'issue2')
-        self.assertEqual(i.number, 2)
+        self.assertEqual(i.number, '2')
+        self.assertEqual(i.order, 2)
         self.assertEqual(i.language, 'EN')
         self.assertEqual(i.release, datetime.date(year=2014, month=1, day=2))
         self.assertEqual(i.url, 'http://manga1.org/issue2')
 
         i = m.issue_set.get(name='issue3')
         self.assertEqual(i.name, 'issue3')
-        self.assertEqual(i.number, 3)
+        self.assertEqual(i.number, '3')
+        self.assertEqual(i.order, 3)
         self.assertEqual(i.language, 'EN')
         self.assertEqual(i.release, datetime.date(year=2014, month=1, day=3))
         self.assertEqual(i.url, 'http://manga1.org/issue3')
 
         i = m.issue_set.get(name='issue4')
         self.assertEqual(i.name, 'issue4')
-        self.assertEqual(i.number, 4)
+        self.assertEqual(i.number, '4')
+        self.assertEqual(i.order, 4)
         self.assertEqual(i.language, 'EN')
         self.assertEqual(i.release, datetime.date(year=2014, month=1, day=4))
         self.assertEqual(i.url, 'http://manga1.org/issue4')

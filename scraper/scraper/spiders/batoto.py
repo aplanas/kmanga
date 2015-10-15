@@ -146,7 +146,8 @@ class Batoto(MangaSpider):
         manga['issues'] = []
         xp = '//tr[contains(@class,"chapter_row")' \
              ' and not(contains(@class,"chapter_row_expand"))]'
-        for line in response.xpath(xp):
+        lines = response.xpath(xp)
+        for line in lines:
             issue = Issue()
             # Name
             xp = './td[1]/a/text()'
@@ -154,6 +155,8 @@ class Batoto(MangaSpider):
             # Number
             issue['number'] = line.xpath(xp).re(
                 r'Ch.(?:Story )?([.\d]+)')
+            # Order
+            issue['order'] = len(lines) - len(manga['issues'])
             # Language
             xp = './td[2]/div/@title'
             issue['language'] = line.xpath(xp).extract()
@@ -203,6 +206,9 @@ class Batoto(MangaSpider):
                 # Number
                 issue['number'] = update.xpath(xp).re(
                     r'Ch.(?:Story )?([.\d]+)')
+                # Order
+                # This is only an estimation for now
+                issue['order'] = issue['number']
                 # Language
                 xp = './/td/div/@title'
                 issue['language'] = update.xpath(xp).extract()
