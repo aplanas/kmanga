@@ -55,7 +55,7 @@ fi
 
 # Scrapy tests
 cd scraper
-spiders="batoto mangafox mangareader submanga"
+spiders="batoto mangafox mangareader submangacom"
 for spider in $spiders; do
     if [ $run_coverage -eq 0 ]; then
 	DJANGO_SETTINGS_MODULE=kmanga.settings scrapy check $spider
