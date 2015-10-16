@@ -20,7 +20,6 @@
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
-from decimal import Decimal
 import logging
 import re
 
@@ -83,14 +82,14 @@ def convert_to_date(str_, dmy=False):
 
 def convert_to_number(str_, as_int=False, default=0):
     """Parse issues / viewers numbers."""
-    result = Decimal(default)
+    result = default
     try:
         if str_.endswith('k'):
-            result = 1000 * Decimal(str_[:-1])
+            result = 1000 * float(str_[:-1])
         elif str_.endswith('m'):
-            result = 1000 * 1000 * Decimal(str_[:-1])
+            result = 1000 * 1000 * float(str_[:-1])
         else:
-            result = Decimal(str_)
+            result = float(str_)
     except ValueError:
         logger.warning("Can't convert '%s' to a number. "
                        'Using default value %s' % (str_, default))
