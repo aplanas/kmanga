@@ -30,7 +30,6 @@ django.setup()
 class SmartProxy(object):
 
     def process_request(self, request, spider):
-        print dir(spider)
         # The proxy only works if the operation is fetch an issue
         if spider._operation != 'manga':
             return
