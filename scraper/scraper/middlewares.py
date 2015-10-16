@@ -31,7 +31,7 @@ class SmartProxy(object):
 
     def process_request(self, request, spider):
         # The proxy only works if the operation is fetch an issue
-        if spider._operation != 'manga':
+        if not hasattr(spider, '_operation') or spider._operation != 'manga':
             return
 
         # If the proxy is already set, we are done
