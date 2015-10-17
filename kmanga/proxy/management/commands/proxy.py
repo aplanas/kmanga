@@ -7,6 +7,7 @@ from django.core.management.base import CommandError
 
 from core.models import Source
 from proxy.models import Proxy
+from proxy.utils import check_proxy
 from proxy.utils import logger
 from proxy.utils import needs_proxy
 from proxy.utils import update_proxy
@@ -15,6 +16,9 @@ from scrapyctl.scrapyctl import ScrapyCtl
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
+        make_option(
+            '-c', '--clean', action='store_true', dest='clean', default=False,
+            help='Remove broken proxies from the database.'),
         # General parameters
         make_option(
             '--loglevel', action='store', dest='loglevel', default='WARNING',
@@ -40,7 +44,8 @@ class Command(BaseCommand):
             scrapy = ScrapyCtl(loglevel)
             self._list_spiders(scrapy)
         elif command == 'update-proxy':
-            self._update_proxy()
+            clean = options['clean']
+            self._update_proxy(clean)
         else:
             raise CommandError('Not valid command value. '
                                'Please, provide a command: %s' % Command.args)
@@ -59,8 +64,16 @@ class Command(BaseCommand):
             else:
                 self.stdout.write('- %s' % spider)
 
-    def _update_proxy(self):
+    def _update_proxy(self, clean):
         """Get the list of valid proxies and update the model."""
+        if clean:
+            proxies = Proxy.objects.values_list('proxy', flat=True)
+            proxies = set(check_proxy(proxies))
+            for proxy in Proxy.objects.all():
+                if (proxy.proxy, proxy.source.spider) not in proxies:
+                    proxy.delete()
+
+        # Recover new proxies
         proxies = update_proxy()
         self.stdout.write('Found %s valid proxies' % len(proxies))
         for proxy, spider in proxies:

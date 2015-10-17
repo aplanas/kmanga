@@ -10,4 +10,4 @@ fi
 . $VENV/bin/activate
 
 LOG=$LOG_PATH/update-proxy-$(date "+%Y-%m-%d-%T").log
-kmanga/manage.py proxy update-proxy > $LOG ; bin/check-log.sh $LOG
+kmanga/manage.py proxy update-proxy --clean > $LOG ; bin/check-log.sh $LOG

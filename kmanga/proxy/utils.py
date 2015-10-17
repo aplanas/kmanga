@@ -49,8 +49,13 @@ PROXY_SOURCE = [
 
 
 def update_proxy():
-    """Update the Proxy model with current information."""
+    """Collect new proxies and return validation array."""
     proxies = _collect_proxies()
+    return check_proxy(proxies)
+
+
+def check_proxy(proxies):
+    """Return validation array for a list of proxies."""
     pool = ThreadPool(processes=512)
     return [p for p in pool.imap(_is_valid_proxy, proxies) if p]
 
