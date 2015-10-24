@@ -43,7 +43,7 @@ class UpdateDBPipeline(object):
 
     def process_item(self, item, spider):
         # Bypass the pipeline if called with dry-run parameter.
-        if hasattr(spider, 'dry-run'):
+        if hasattr(spider, 'dry_run'):
             return item
 
         # _operation store where the item comes from.

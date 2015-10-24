@@ -67,7 +67,7 @@ class Command(BaseCommand):
             '--loglevel', action='store', dest='loglevel', default='WARNING',
             help='Scrapy log level (<CRITICAL|ERROR|WARNING|INFO|DEBUG>).'),
         make_option(
-            '--dry-run', action='store_true', dest='dry-run', default=False,
+            '--dry-run', action='store_true', dest='dry_run', default=False,
             help='Bypass all the pipelines.'),
         )
     help = 'Launch scrapy spiders from command line.'
@@ -171,7 +171,7 @@ class Command(BaseCommand):
         command = args[0]
 
         loglevel = options['loglevel']
-        dry_run = options['dry-run']
+        dry_run = options['dry_run']
 
         # Create the ScrapyCtl object to store the CrawlerProcess.
         scrapy = ScrapyCtl(loglevel)

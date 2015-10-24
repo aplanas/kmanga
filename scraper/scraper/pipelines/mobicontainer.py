@@ -150,7 +150,7 @@ class MobiContainer(object):
 
     def process_item(self, item, spider):
         # Bypass the pipeline if called with dry-run parameter.
-        if hasattr(spider, 'dry-run'):
+        if hasattr(spider, 'dry_run'):
             return item
 
         # Recover the `stats` from the crawler

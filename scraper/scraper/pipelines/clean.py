@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# (c) 2014 Alberto Planas <aplanas@gmail.com>
+# (c) 2015 Alberto Planas <aplanas@gmail.com>
 #
 # This file is part of KManga.
 #
@@ -113,7 +113,7 @@ class CleanBasePipeline(object):
         """
 
         # Bypass the pipeline if called with dry-run parameter.
-        if hasattr(spider, 'dry-run'):
+        if hasattr(spider, 'dry_run'):
             return item
 
         # Deduce the name of the method that can take care of the

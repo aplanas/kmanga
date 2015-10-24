@@ -64,7 +64,7 @@ class MangaSpider(scrapy.Spider):
         #
         # - to:         (OPTIONAL) Email address set in the TO field.
         #
-        # - dry-run:    (OPTIONAL) If True, the pipelines will ignore
+        # - dry_run:    (OPTIONAL) If True, the pipelines will ignore
         #               the items that comes from this spider.
         #
 
@@ -112,7 +112,7 @@ class MangaSpider(scrapy.Spider):
                             '[-a latest=DD-MM-YYYY -a url=URL]',
                             '[-a manga=name -a issue=number -a url=URL'
                             ' -a from=email -a to=email]',
-                            '[-a dry-run=1]'))
+                            '[-a dry_run=1]'))
             print 'scrapy crawl %s SPIDER' % msg
             exit(1)
 

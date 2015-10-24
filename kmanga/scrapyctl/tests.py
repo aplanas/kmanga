@@ -115,7 +115,7 @@ class CommandTestCase(TestCase):
         options = {
             'spiders': 'all',
             'loglevel': 'ERROR',
-            'dry-run': False,
+            'dry_run': False,
         }
 
         with self.assertRaises(CommandError):
@@ -128,7 +128,7 @@ class CommandTestCase(TestCase):
         options = {
             'spiders': 'all',
             'loglevel': 'ERROR',
-            'dry-run': False,
+            'dry_run': False,
         }
 
         c = Command()
@@ -142,7 +142,7 @@ class CommandTestCase(TestCase):
         options = {
             'spiders': 'all',
             'loglevel': 'ERROR',
-            'dry-run': False,
+            'dry_run': False,
         }
 
         scrapyctl.return_value = scrapyctl
@@ -159,7 +159,7 @@ class CommandTestCase(TestCase):
         options = {
             'spiders': 'all',
             'loglevel': 'ERROR',
-            'dry-run': False,
+            'dry_run': False,
         }
 
         scrapyctl.return_value = scrapyctl
@@ -177,7 +177,7 @@ class CommandTestCase(TestCase):
         options = {
             'spiders': 'all',
             'loglevel': 'ERROR',
-            'dry-run': False,
+            'dry_run': False,
             'manga': 'Manga 1',
             'url': None,
         }
@@ -196,7 +196,7 @@ class CommandTestCase(TestCase):
         options = {
             'spiders': 'all',
             'loglevel': 'ERROR',
-            'dry-run': False,
+            'dry_run': False,
             'until': '01-01-2015',
         }
         until = date(year=2015, month=1, day=1)
@@ -223,7 +223,7 @@ class CommandTestCase(TestCase):
         options = {
             'spiders': 'all',
             'loglevel': 'ERROR',
-            'dry-run': False,
+            'dry_run': False,
             'manga': 'Manga 1',
             'lang': 'EN',
             'details': False,
@@ -243,7 +243,7 @@ class CommandTestCase(TestCase):
         options = {
             'spiders': 'all',
             'loglevel': 'ERROR',
-            'dry-run': False,
+            'dry_run': False,
             'user': 'user1',
             'manga': 'Manga 1',
             'url': None,
@@ -271,7 +271,7 @@ class CommandTestCase(TestCase):
         options = {
             'spiders': 'all',
             'loglevel': 'ERROR',
-            'dry-run': False,
+            'dry_run': False,
             'issues': [1, 2, 3],
             'manga': 'Manga 1',
             'url': None,
@@ -302,7 +302,7 @@ class CommandTestCase(TestCase):
         options = {
             'spiders': 'all',
             'loglevel': 'ERROR',
-            'dry-run': False,
+            'dry_run': False,
             'user': 'user1',
             'do-not-send': False,
         }

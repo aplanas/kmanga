@@ -71,7 +71,7 @@ class ScrapyCtl(object):
                 'url': url,
             }
             if dry_run:
-                kwargs['dry-run'] = dry_run
+                kwargs['dry_run'] = dry_run
             self.process.crawl(name, **kwargs)
         self.process.start()
 
@@ -95,7 +95,7 @@ class ScrapyCtl(object):
                 'latest': until.strftime('%d-%m-%Y'),
             }
             if dry_run:
-                kwargs['dry-run'] = dry_run
+                kwargs['dry_run'] = dry_run
             self.process.crawl(name, **kwargs)
         self.process.start()
 
@@ -110,7 +110,7 @@ class ScrapyCtl(object):
             'to': to_email,
         }
         if dry_run:
-            kwargs['dry-run'] = dry_run
+            kwargs['dry_run'] = dry_run
         crawler = self.process._create_crawler(spider)
         return (crawler, kwargs)
 
