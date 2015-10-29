@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# (c) 2014 Alberto Planas <aplanas@gmail.com>
+# (c) 2015 Alberto Planas <aplanas@gmail.com>
 #
 # This file is part of KManga.
 #
@@ -18,17 +18,27 @@
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date
+import logging
 
 import scrapy
 
+logger = logging.getLogger(__name__)
+
 
 class MangaSpider(scrapy.Spider):
+
+    LOGIN_OK = 'login_ok'
+    LOGIN_ERR = 'login_err'
 
     def __init__(self, *args, **kwargs):
         super(MangaSpider, self).__init__(*args, **kwargs)
 
         #
         # Parameters for MangaSpider childrens:
+        #
+        # - username:   (OPTIONAL) Username for login form.
+        #
+        # - password:   (OPTIONAL) Password for login form.
         #
         # - genres:     (OPTIONAL) If True, indicate that the spider
         #               needs to download the catalog of genres.  The
@@ -104,19 +114,43 @@ class MangaSpider(scrapy.Spider):
             # error_msg = True
             error_msg = False
 
+        # Store user and password for login form
+        self.username = 'username' in kwargs and kwargs['username']
+        self.password = 'password' in kwargs and kwargs['password']
+
+        # If this spider have login_url, this will become the first
+        # URL, and `start_urls` will be `next_urls`.
+        self._login = False
+        try:
+            login_url = self.get_login_url()
+            if login_url:
+                self.next_urls = self.start_urls
+                self.start_urls = [login_url]
+                self._login = True
+        except NotImplementedError:
+            pass
+
         _help = 'h' in kwargs or 'help' in kwargs
         if error_msg or _help:
-            msg = ' '.join(('[-a genres=1 -a url=URL]',
-                            '[-a catalog=1 -a url=URL]',
-                            '[-a collection=1 -a manga=name -a url=URL]',
-                            '[-a latest=DD-MM-YYYY -a url=URL]',
-                            '[-a manga=name -a issue=number -a url=URL'
+            msg = ' '.join(('[-a user=USER -a password=PASSWD'
+                            ' -a genres=1 -a url=URL]',
+                            '[-a user=USER -a password=PASSWD'
+                            ' -a catalog=1 -a url=URL]',
+                            '[-a user=USER -a password=PASSWD'
+                            ' -a collection=1 -a manga=name -a url=URL]',
+                            '[-a user=USER -a password=PASSWD'
+                            ' -a latest=DD-MM-YYYY -a url=URL]',
+                            '[-a user=USER -a password=PASSWD'
+                            ' -a manga=name -a issue=number -a url=URL'
                             ' -a from=email -a to=email]',
                             '[-a dry_run=1]'))
             print 'scrapy crawl %s SPIDER' % msg
             exit(1)
 
     def parse(self, response):
+        if self._login:
+            return self.parse_login(response)
+
         if self._operation == 'genres':
             return self.parse_genres(response)
 
@@ -132,6 +166,9 @@ class MangaSpider(scrapy.Spider):
         if self._operation == 'manga':
             return self.parse_manga(response, self.manga, self.issue)
 
+    def get_login_url(self):
+        raise NotImplementedError
+
     def get_genres_url(self):
         raise NotImplementedError
 
@@ -146,6 +183,54 @@ class MangaSpider(scrapy.Spider):
 
     def get_manga_url(self, manga, issue):
         raise NotImplementedError
+
+    def _check_login_params(self):
+        errors = {
+            'form_xpath': 'Provide a formxpath in the spider declaration.',
+            'username_field': 'Provide an username_field in the spider '
+                              'declaration.',
+            'password_field': 'Provide a password_field in the spider '
+                              'declaration.',
+            'username': 'Provide an username as a spider parameter.',
+            'password': 'Provide a password as a spider parameter.',
+            'login_check': 'Provide a login_check dict as a spider parameter.',
+        }
+        for attr, msg in errors.items():
+            if not hasattr(self, attr) or not getattr(self, attr):
+                raise AttributeError(msg)
+
+    def parse_login(self, response):
+        self._check_login_params()
+        self._login = False
+        return scrapy.FormRequest.from_response(
+            response,
+            formxpath=self.form_xpath,
+            formdata={
+                self.username_field: self.username,
+                self.password_field: self.password
+            },
+            callback=self.parse_after_login
+        )
+
+    def parse_after_login(self, response):
+        login_ok = self.login_check.get(MangaSpider.LOGIN_OK, None)
+        login_err = self.login_check.get(MangaSpider.LOGIN_ERR, None)
+        body = response.body
+        if login_ok and login_err:
+            is_logged = login_ok in body and login_err not in body
+        elif login_ok:
+            is_logged = login_ok in body
+        elif login_err:
+            is_logged = login_err not in body
+        else:
+            is_logged = False
+
+        if is_logged:
+            for url in self.next_urls:
+                request = scrapy.Request(url, self.parse)
+                yield request
+        else:
+            logging.error('Error during login in [%s]' % self.name)
 
     def parse_genres(self, response):
         raise NotImplementedError
