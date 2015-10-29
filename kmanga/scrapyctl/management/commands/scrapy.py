@@ -64,6 +64,9 @@ class Command(BaseCommand):
             '--spiders', action='store', dest='spiders', default='all',
             help='List of spiders (<list_of_spiders|all>).'),
         make_option(
+            '--accounts', action='append', dest='accounts', default=[],
+            nargs=3, help='Spider login (<spider> <username> <password>).'),
+        make_option(
             '--loglevel', action='store', dest='loglevel', default='WARNING',
             help='Scrapy log level (<CRITICAL|ERROR|WARNING|INFO|DEBUG>).'),
         make_option(
@@ -83,6 +86,12 @@ class Command(BaseCommand):
         'sendsub',
     ]
     args = '|'.join(commands)
+
+    def _get_accounts(self, accounts):
+        """Parse the `accounts` lists and convert it to dictionary."""
+        return {
+            spider: (uname, passwd) for (spider, uname, passwd) in accounts
+        }
 
     def _get_spiders(self, scrapy, spiders):
         """Parse the `spiders` option and return a valid list of spider names.
@@ -170,11 +179,12 @@ class Command(BaseCommand):
             raise CommandError(msg)
         command = args[0]
 
+        accounts = self._get_accounts(options['accounts'])
         loglevel = options['loglevel']
         dry_run = options['dry_run']
 
         # Create the ScrapyCtl object to store the CrawlerProcess.
-        scrapy = ScrapyCtl(loglevel)
+        scrapy = ScrapyCtl(accounts, loglevel)
 
         # Get the list of spiders names that we are going to work with
         spiders = self._get_spiders(scrapy, options['spiders'])

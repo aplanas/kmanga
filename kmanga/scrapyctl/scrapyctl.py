@@ -37,7 +37,10 @@ class ProcessControl(object):
 class ScrapyCtl(object):
     """Class to store and manage the CrawlerProcess single instance."""
 
-    def __init__(self, loglevel):
+    def __init__(self, accounts, loglevel):
+        self.accounts = settings.SCRAPY_ACCOUNTS
+        if accounts:
+            self.accounts.update(accounts)
         self.loglevel = loglevel
         self.settings = self._get_settings()
         # Values for `loglevel`: CRITICAL, ERROR, WARNING, INFO, DEBUG.
@@ -63,16 +66,23 @@ class ScrapyCtl(object):
     def _update(self, spiders, command, manga=None, issue=None,
                 url=None, dry_run=False):
         """Launch the scraper to update the database."""
-        for name in spiders:
+        for spider in spiders:
+            if spider in self.accounts:
+                username, password = self.accounts[spider]
+            else:
+                username, password = None, None
+
             kwargs = {
                 command: True,
+                'username': username,
+                'password': password,
                 'manga': manga,
                 'issue': issue,
                 'url': url,
             }
             if dry_run:
                 kwargs['dry_run'] = dry_run
-            self.process.crawl(name, **kwargs)
+            self.process.crawl(spider, **kwargs)
         self.process.start()
 
     def update_genres(self, spiders, dry_run=False):
@@ -90,13 +100,13 @@ class ScrapyCtl(object):
 
     def update_latest(self, spiders, until, dry_run=False):
         """Launch the scraper to update the latest issues."""
-        for name in spiders:
+        for spider in spiders:
             kwargs = {
                 'latest': until.strftime('%d-%m-%Y'),
             }
             if dry_run:
                 kwargs['dry_run'] = dry_run
-            self.process.crawl(name, **kwargs)
+            self.process.crawl(spider, **kwargs)
         self.process.start()
 
     def _create_crawler(self, spider, manga, issue, url, from_email,

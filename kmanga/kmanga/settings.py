@@ -148,6 +148,7 @@ RQ_QUEUES = {
 }
 
 SCRAPY_SETTINGS_MODULE = 'scraper.settings'
+SCRAPY_ACCOUNTS = {}
 
 KMANGA_EMAIL = 'kindle@kmanga.net'
 
