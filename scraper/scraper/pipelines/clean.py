@@ -43,14 +43,14 @@ def convert_to_date(str_, dmy=False):
             minutes = int(re.search(r'(\d+) minutes? ago', str_).group(1))
         except AttributeError:
             pass
-        return date.today() - timedelta(minutes=minutes)
+        return (datetime.now() - timedelta(minutes=minutes)).date()
     elif str_.endswith(('hours ago', 'hour ago')):
         hours = 1
         try:
             hours = int(re.search(r'(\d+) hours? ago', str_).group(1))
         except AttributeError:
             pass
-        return date.today() - timedelta(hours=hours)
+        return (datetime.now() - timedelta(hours=hours)).date()
     elif str_.endswith(('days ago', 'day ago')):
         days = 1
         try:
