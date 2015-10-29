@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# (c) 2014 Alberto Planas <aplanas@gmail.com>
+# (c) 2015 Alberto Planas <aplanas@gmail.com>
 #
 # This file is part of KManga.
 #
@@ -34,6 +34,17 @@ AJAX_SEARCH = 'http://bato.to/search_ajax?p=%d'
 class Batoto(MangaSpider):
     name = 'batoto'
     allowed_domains = ['bato.to']
+
+    form_xpath = '//form[@id="login"]'
+    username_field = 'ips_username'
+    password_field = 'ips_password'
+    login_check = {
+        MangaSpider.LOGIN_ERR: 'Username or password incorrect.'
+    }
+
+    def get_login_url(self):
+        login = 'app=core&module=global&section=login'
+        return 'https://bato.to/forums/index.php?%s' % login
 
     def get_genres_url(self):
         return 'http://bato.to/search?advanced=1'
