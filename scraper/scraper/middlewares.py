@@ -26,6 +26,8 @@ from proxy.utils import needs_proxy
 import django
 django.setup()
 
+logger = logging.getLogger(__name__)
+
 
 class SmartProxy(object):
 
@@ -42,10 +44,10 @@ class SmartProxy(object):
             proxy = Proxy.objects.filter(source__spider=spider.name)
             proxy = proxy.order_by('?').first()
             if proxy:
-                logging.info('Using proxy <%s> for request' % proxy)
+                logger.info('Using proxy <%s> for request' % proxy)
                 request.meta['proxy'] = 'http://%s' % proxy.proxy
             else:
-                logging.error('No proxy found for %s' % spider.name)
+                logger.error('No proxy found for %s' % spider.name)
 
     def process_exception(self, request, exception, spider):
         if 'proxy' not in request.meta:
@@ -55,7 +57,7 @@ class SmartProxy(object):
         del request.meta['proxy']
         try:
             proxy = Proxy.objects.get(proxy=proxy, source__spider=spider.name)
-            logging.warning('Removing failed proxy <%s>, %d proxies left' % (
+            logger.warning('Removing failed proxy <%s>, %d proxies left' % (
                 proxy, Proxy.objects.count()))
             proxy.delete()
         except Proxy.DoesNotExist:
