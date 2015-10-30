@@ -135,7 +135,7 @@ class Batoto(MangaSpider):
         xp = '//h1[@class="ipsType_pagetitle"]/text()'
         manga['name'] = response.xpath(xp).extract()
         # Alternate name
-        xp = '//td[contains(text(),"%s")]/following-sibling::td/.//text()'
+        xp = '//td[contains(text(),"%s")]/following-sibling::td/*/text()'
         manga['alt_name'] = response.xpath(xp % 'Alt Names:').re(r'([^,;]+)')
         # Author
         manga['author'] = response.xpath(xp % 'Author:').extract()
@@ -144,10 +144,13 @@ class Batoto(MangaSpider):
         # Reading direction
         manga['reading_direction'] = 'RL'
         # Status
+        xp = '//td[contains(text(),"%s")]/following-sibling::td/text()'
         manga['status'] = response.xpath(xp % 'Status:').extract()
         # Genres
+        xp = '//td[contains(text(),"%s")]/following-sibling::td/a/span/text()'
         manga['genres'] = response.xpath(xp % 'Genres:').extract()
         # Description
+        xp = '//td[contains(text(),"%s")]/following-sibling::td/text()'
         manga['description'] = response.xpath(xp % 'Description:').extract()
         # Cover image
         xp = '//div[@class="ipsBox"]/div/div/img/@src'
