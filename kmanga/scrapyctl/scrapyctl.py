@@ -107,9 +107,9 @@ class ScrapyCtl(object):
                 username, password = None, None
 
             kwargs = {
+                'latest': until.strftime('%d-%m-%Y'),
                 'username': username,
                 'password': password,
-                'latest': until.strftime('%d-%m-%Y'),
             }
             if dry_run:
                 kwargs['dry_run'] = dry_run
@@ -119,8 +119,15 @@ class ScrapyCtl(object):
     def _create_crawler(self, spider, manga, issue, url, from_email,
                         to_email, dry_run):
         """Utility method to create (crawler, kwargs) tuples."""
+        if spider in self.accounts:
+            username, password = self.accounts[spider]
+        else:
+            username, password = None, None
+
         kwargs = {
             'manga': manga,
+            'username': username,
+            'password': password,
             'issue': issue,
             'url': url,
             'from': from_email,
