@@ -254,26 +254,52 @@ class Batoto(MangaSpider):
             yield scrapy.Request(next_url, self.parse_latest, meta=meta)
 
     def parse_manga(self, response, manga, issue):
-        xp = '//select[@id="page_select"]/option/@value'
-        for number, url in enumerate(response.xpath(xp).extract()):
+        # Get the URL from response.request instead for response, to
+        # use the unormalized one
+        referer_url = response.request.url
+        areader_id = referer_url.split('#')[1]
+        partial_url = response.urljoin('/areader?id=%s&p=%%s' % areader_id)
+
+        # Get the first AJAX answer to recover the list of pages
+        url = partial_url % 1
+        meta = {
+            'manga': manga,
+            'issue': issue,
+            'partial_url': partial_url,
+            'referer_url': referer_url,
+        }
+        return scrapy.Request(url, self._parse_manga, meta=meta)
+
+    def _parse_manga(self, response):
+        partial_url = response.meta['partial_url']
+
+        # This select is used to times (with the same ID), we get only
+        # the first one
+        xp = '(//select[@id="page_select"])[1]/option/@value'
+        for number, _ in enumerate(response.xpath(xp).extract()):
+            url = partial_url % (number + 1)
             meta = {
-                'manga': manga,
-                'issue': issue,
+                'manga': response.meta['manga'],
+                'issue': response.meta['issue'],
                 'number': number + 1,
             }
-            yield scrapy.Request(url, self._parse_page, meta=meta)
+            headers = {
+                'Referer': response.meta['referer_url']
+            }
+            yield scrapy.Request(url, self._parse_page, meta=meta,
+                                 headers=headers)
 
     def _parse_page(self, response):
         manga = response.meta['manga']
         issue = response.meta['issue']
         number = response.meta['number']
 
-        xp = '//img[@id="comic_page"]/@src'
+        xp = '//div[@id="full_image"]/div/img/@src'
         url = response.xpath(xp).extract()
         issue_page = IssuePage(
             manga=manga,
             issue=issue,
             number=number,
-            image_urls=[url[0]]
+            image_urls=url
         )
         return issue_page
