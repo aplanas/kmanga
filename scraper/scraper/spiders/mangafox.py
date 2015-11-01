@@ -22,7 +22,6 @@ from urlparse import urljoin
 
 import scrapy
 
-import re
 from scraper.pipelines import convert_to_date
 from scraper.items import Genres, Manga, Issue, IssuePage
 
@@ -241,6 +240,6 @@ class Mangafox(MangaSpider):
                 manga=manga,
                 issue=issue,
                 number=number,
-                image_urls=[url[0]]
+                image_urls=url
             )
             return issue_page

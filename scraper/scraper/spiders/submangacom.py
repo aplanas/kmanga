@@ -364,7 +364,7 @@ class SubMangaCom(MangaSpider):
             manga=manga,
             issue=issue,
             number=number,
-            image_urls=[url[0]]
+            image_urls=url
         )
         yield issue_page
 
