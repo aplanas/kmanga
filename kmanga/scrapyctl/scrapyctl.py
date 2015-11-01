@@ -101,7 +101,14 @@ class ScrapyCtl(object):
     def update_latest(self, spiders, until, dry_run=False):
         """Launch the scraper to update the latest issues."""
         for spider in spiders:
+            if spider in self.accounts:
+                username, password = self.accounts[spider]
+            else:
+                username, password = None, None
+
             kwargs = {
+                'username': username,
+                'password': password,
                 'latest': until.strftime('%d-%m-%Y'),
             }
             if dry_run:
