@@ -18,6 +18,7 @@
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import re
 import shutil
 import subprocess
 import uuid
@@ -262,7 +263,7 @@ class MangaMobi(object):
 
         # Remove the SRCS section.
         tmp_name = os.path.join(self.container.path, 'tmp.mobi')
-        name = '%s.mobi' % self.info.title.replace(' ', '_')
+        name = '%s.mobi' % re.sub(r'[^\w]', '_', self.info.title)
         full_name = os.path.join(self.container.path, name)
         with open(tmp_name, 'rb') as with_srcs:
             with open(full_name, 'wb') as without_srcs:
