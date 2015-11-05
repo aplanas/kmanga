@@ -22,6 +22,7 @@ from datetime import datetime
 from datetime import timedelta
 import logging
 import re
+import urlparse
 
 from scrapy.exceptions import DropItem
 from scrapy.utils.markup import remove_tags, replace_entities
@@ -426,3 +427,10 @@ class CleanPipeline(CleanBasePipeline):
         return self._clean_field_list(values, exclude=('',),
                                       optional=True,
                                       max_length=200)
+
+    def clean_field_mangafox_issue_url(self, field):
+        # Sometimes Issues URL do not ends with '1.html', this causes
+        # problem in the updatedb part (can remove issues and replace
+        # it with the equivalent ones, but with different URL)
+        url = self._clean_field_str(field)
+        return urlparse.urljoin(url, '1.html')
