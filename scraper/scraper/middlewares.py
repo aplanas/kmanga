@@ -31,6 +31,15 @@ logger = logging.getLogger(__name__)
 
 class SmartProxy(object):
 
+    def __init__(self, settings):
+        self.error_codes = {
+            int(x) for x in settings.getlist('SMART_PROXY_ERROR_CODES')
+        }
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler.settings)
+
     def process_request(self, request, spider):
         # The proxy only works if the operation is fetch an issue
         if not hasattr(spider, '_operation') or spider._operation != 'manga':
@@ -46,13 +55,21 @@ class SmartProxy(object):
             if proxy:
                 logger.info('Using proxy <%s> for request' % proxy)
                 request.meta['proxy'] = 'http://%s' % proxy.proxy
+                # Disable redirection when a proxy is in use
+                request.meta['dont_redirect'] = True
             else:
                 logger.error('No proxy found for %s' % spider.name)
 
-    def process_exception(self, request, exception, spider):
-        if 'proxy' not in request.meta:
-            return
+    def process_response(self, request, response, spider):
+        if 'proxy' in request.meta and response.status in self.error_codes:
+            self._delete_proxy_from_request(request, spider)
+        return response
 
+    def process_exception(self, request, exception, spider):
+        if 'proxy' in request.meta:
+            self._delete_proxy_from_request(request, spider)
+
+    def _delete_proxy_from_request(self, request, spider):
         proxy = request.meta['proxy'].lstrip('htp:/')
         del request.meta['proxy']
         try:
