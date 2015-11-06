@@ -13,10 +13,16 @@ INVALID = 'INVALID'
 
 TIMEOUT = 5
 
+# To be a valid proxy, all the text in the VALID array needs to be in
+# the body, and not one of the INVALID text needs to be present (if
+# there is one, it will be considered as an invalid proxy)
 PROXY_MAP = {
     'mangafox': {
         URL: 'http://mangafox.me/manga/sailor_moon/v01/c001/1.html',
-        VALID: '<select onchange="change_page(this)" class="m">',
+        VALID: [
+            '<select onchange="change_page(this)" class="m">',
+            'http://z.mfcdn.net/store/manga/203/01-001.0/compressed/f000.jpg',
+        ],
         INVALID: None
     },
 }
@@ -98,11 +104,12 @@ def _is_valid_proxy(proxy):
             return None
 
         if valid and invalid:
-            is_valid = valid in body and invalid not in body
+            is_valid = all(i in body for i in valid)
+            is_valid = is_valid and not any(i in body for i in invalid)
         elif valid:
-            is_valid = valid in body
+            is_valid = all(i in body for i in valid)
         elif invalid:
-            is_valid = invalid not in body
+            is_valid = not any(i in body for i in invalid)
         else:
             is_valid = False
         if is_valid:
