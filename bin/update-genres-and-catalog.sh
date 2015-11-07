@@ -9,6 +9,10 @@ fi
 
 . $VENV/bin/activate
 
+# Database backup
+BACKUP=$BACKUP_PATH/kmanga-$(date "+%Y-%m-%d-%T").sql.gz
+pg_dump kmanga | gzip > $BACKUP
+
 # Update genres
 LOG=$LOG_PATH/genres-$(date "+%Y-%m-%d-%T").log
 kmanga/manage.py scrapy update-genres &> $LOG
