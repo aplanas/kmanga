@@ -61,8 +61,15 @@ class SmartProxy(object):
                 logger.error('No proxy found for %s' % spider.name)
 
     def process_response(self, request, response, spider):
-        if 'proxy' in request.meta and response.status in self.error_codes:
-            self._delete_proxy_from_request(request, spider)
+        if 'proxy' in request.meta:
+            if response.status in self.error_codes:
+                self._delete_proxy_from_request(request, spider)
+            elif not response.body:
+                # If the body is empty, we consider it as a proxy
+                # error with HTTP error code 500.  This solution will
+                # trigger another retry with a different proxy.
+                response.status = 500
+                self._delete_proxy_from_request(request, spider)
         return response
 
     def process_exception(self, request, exception, spider):
