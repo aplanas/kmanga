@@ -342,8 +342,8 @@ class Command(BaseCommand):
             except:
                 msg = 'The user %s do not have a subscription to %s' % (user,
                                                                         manga)
-            else:
                 self.stdout.write(msg)
+            else:
                 for issue in issues:
                     # TODO XXX - Remove `unicode` in Python 3
                     self.stdout.write("Marked '%s' as sent" % unicode(issue))
