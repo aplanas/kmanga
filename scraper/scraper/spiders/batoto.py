@@ -179,7 +179,8 @@ class Batoto(MangaSpider):
             issue['release'] = line.xpath(xp).extract()
             # URL
             xp = './td[1]/a/@href'
-            issue['url'] = line.xpath(xp).extract()
+            url = line.xpath(xp).extract()[0]
+            issue['url'] = response.urljoin(url)
             manga['issues'].append(issue)
         yield manga
 
@@ -231,7 +232,8 @@ class Batoto(MangaSpider):
                 issue['release'] = update.xpath(xp).extract()
                 # URL
                 xp = './/td/a[img/@style="vertical-align:middle;"]/@href'
-                issue['url'] = update.xpath(xp).extract()
+                url = update.xpath(xp).extract()[0]
+                issue['url'] = response.urljoin(url)
 
                 # Check if is a new update
                 update_date = convert_to_date(issue['release'][0].strip())
