@@ -35,6 +35,9 @@ class SmartProxy(object):
         self.error_codes = {
             int(x) for x in settings.getlist('SMART_PROXY_ERROR_CODES')
         }
+        self.retry_error_codes = {
+            int(x) for x in settings.getlist('RETRY_HTTP_CODES')
+        }
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -62,12 +65,18 @@ class SmartProxy(object):
 
     def process_response(self, request, response, spider):
         if 'proxy' in request.meta:
-            if response.status in self.error_codes:
+            if response.status in self.retry_error_codes:
+                self._delete_proxy_from_request(request, spider)
+            elif response.status in self.error_codes:
+                # If the status is one of the error codes that is not
+                # in the retry error code, we need to map as one of
+                # them, like HTTP 500
+                response.status = 500
                 self._delete_proxy_from_request(request, spider)
             elif not response.body:
                 # If the body is empty, we consider it as a proxy
                 # error with HTTP error code 500.  This solution will
-                # trigger another retry with a different proxy.
+                # trigger another retry with a different proxy
                 response.status = 500
                 self._delete_proxy_from_request(request, spider)
         return response

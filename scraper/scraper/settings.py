@@ -95,8 +95,8 @@ RETRY_TIMES = 10
 RETRY_HTTP_CODES = [500, 503, 504, 400, 403, 404, 408]
 
 # Some proxy generate redirects of other errors, this codes invalidate
-# the proxy
-SMART_PROXY_ERROR_CODES = RETRY_HTTP_CODES + [301, 302]
+# the proxy and is mapped as a RETRY_HTTP_CODE 500
+SMART_PROXY_ERROR_CODES = [301, 302]
 
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.retry.RetryMiddleware': 90,
