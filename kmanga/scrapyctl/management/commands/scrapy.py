@@ -9,8 +9,8 @@ from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 from django.db import connection
 
-from core.models import History
 from core.models import Manga
+from core.models import Result
 from core.models import Source
 from core.models import Subscription
 from registration.models import UserProfile
@@ -370,7 +370,7 @@ class Command(BaseCommand):
         #     that can be sent for this user today. This calculation
         #     is done in `Subscription.issues_to_send()`
 
-        already_sent = History.objects.sent_last_24hs(user)
+        already_sent = Result.objects.sent_last_24hs(user)
         remains = max(0, user_profile.issues_per_day-already_sent)
 
         issues = []

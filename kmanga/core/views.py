@@ -12,9 +12,9 @@ from django.views.generic.list import MultipleObjectMixin
 
 # import django_rq
 
-from .models import History
 from .models import Issue
 from .models import Manga
+from .models import Result
 from .models import Subscription
 
 
@@ -143,33 +143,33 @@ class SubscriptionDeleteView(LoginRequiredMixin, SubscriptionOwnerMixin,
     success_url = reverse_lazy('subscription-list')
 
 
-class HistoryListView(LoginRequiredMixin, ListView):
-    model = History
+class ResultListView(LoginRequiredMixin, ListView):
+    model = Result
 
 
-class HistoryDetailView(LoginRequiredMixin, DetailView):
-    model = History
+class ResultDetailView(LoginRequiredMixin, DetailView):
+    model = Result
 
 
-class HistoryCreateView(LoginRequiredMixin, CreateView):
-    model = History
-    # form_class = HistoryForm
+class ResultCreateView(LoginRequiredMixin, CreateView):
+    model = Result
+    # form_class = ResultForm
 
     # def form_valid(self, form):
-    #     result = super(HistoryCreateView, self).form_valid(form)
+    #     result = super(ResultCreateView, self).form_valid(form)
     #     for issue in range(form.instance.from_issue, form.instance.to_issue+1):
-    #         line = form.instance.historyline_set.create(issue=issue)
+    #         line = form.instance.resultline_set.create(issue=issue)
     #         django_rq.get_queue('default').enqueue(line.send_mobi)
     #     return result
 
 
-class HistoryUpdateView(LoginRequiredMixin, UpdateView):
-    model = History
+class ResultUpdateView(LoginRequiredMixin, UpdateView):
+    model = Result
 
 
-class HistoryDeleteView(LoginRequiredMixin, DeleteView):
-    model = History
-    success_url = reverse_lazy('history-list')
+class ResultDeleteView(LoginRequiredMixin, DeleteView):
+    model = Result
+    success_url = reverse_lazy('result-list')
 
 
 class LatestUpdates(ListView):

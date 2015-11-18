@@ -16,7 +16,7 @@ class CommandTestCase(TestCase):
     fixtures = ['registration.json', 'core.json']
 
     def setUp(self):
-        self.scrapy = ScrapyCtl('ERROR')
+        self.scrapy = ScrapyCtl(accounts={}, loglevel='ERROR')
         self.command = Command()
         self.command.stdout = mock.MagicMock()
         self.all_spiders = ['batoto', 'mangareader',
@@ -114,6 +114,7 @@ class CommandTestCase(TestCase):
         """Test handle when the parameter is wrong."""
         options = {
             'spiders': 'all',
+            'accounts': {},
             'loglevel': 'ERROR',
             'dry_run': False,
         }
@@ -127,6 +128,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
+            'accounts': {},
             'loglevel': 'ERROR',
             'dry_run': False,
         }
@@ -141,6 +143,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
+            'accounts': {},
             'loglevel': 'ERROR',
             'dry_run': False,
         }
@@ -158,6 +161,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
+            'accounts': {},
             'loglevel': 'ERROR',
             'dry_run': False,
         }
@@ -176,6 +180,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
+            'accounts': {},
             'loglevel': 'ERROR',
             'dry_run': False,
             'manga': 'Manga 1',
@@ -195,6 +200,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
+            'accounts': {},
             'loglevel': 'ERROR',
             'dry_run': False,
             'until': '01-01-2015',
@@ -222,6 +228,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
+            'accounts': {},
             'loglevel': 'ERROR',
             'dry_run': False,
             'manga': 'Manga 1',
@@ -242,6 +249,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
+            'accounts': {},
             'loglevel': 'ERROR',
             'dry_run': False,
             'user': 'user1',
@@ -270,6 +278,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
+            'accounts': {},
             'loglevel': 'ERROR',
             'dry_run': False,
             'issues': [1, 2, 3],
@@ -301,6 +310,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
+            'accounts': {},
             'loglevel': 'ERROR',
             'dry_run': False,
             'user': 'user1',

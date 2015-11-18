@@ -1,15 +1,15 @@
 from django.conf.urls import include, url
 
-from .views import HistoryListView
-from .views import HistoryDetailView
-from .views import HistoryCreateView
-from .views import HistoryUpdateView
-from .views import HistoryDeleteView
 from .views import MangaListView
 from .views import MangaDetailView
 from .views import MangaCreateView
 from .views import MangaUpdateView
 from .views import MangaDeleteView
+from .views import ResultListView
+from .views import ResultDetailView
+from .views import ResultCreateView
+from .views import ResultUpdateView
+from .views import ResultDeleteView
 from .views import SubscriptionListView
 from .views import SubscriptionDetailView
 from .views import SubscriptionCreateView
@@ -42,13 +42,13 @@ urlpatterns = [
     url(r'^subscription/(?P<pk>\d+)/delete$', SubscriptionDeleteView.as_view(),
         name='subscription-delete'),
 
-    # History
-    # url(r'^history/$', HistoryListView.as_view(), name='history-list'),
-    # url(r'^history/(?P<pk>\d+)$', HistoryDetailView.as_view(),
-    #     name='history-read'),
-    # url(r'^history/new/$', HistoryCreateView.as_view(), name='history-create'),
-    # url(r'^history/(?P<pk>\d+)/edit$', HistoryUpdateView.as_view(),
-    #     name='history-update'),
-    # url(r'^history/(?P<pk>\d+)/delete$', HistoryDeleteView.as_view(),
-    #     name='history-delete'),
+    # Result
+    # url(r'^result/$', ResultListView.as_view(), name='result-list'),
+    # url(r'^result/(?P<pk>\d+)$', ResultDetailView.as_view(),
+    #     name='result-read'),
+    # url(r'^result/new/$', ResultCreateView.as_view(), name='result-create'),
+    # url(r'^result/(?P<pk>\d+)/edit$', ResultUpdateView.as_view(),
+    #     name='result-update'),
+    # url(r'^result/(?P<pk>\d+)/delete$', ResultDeleteView.as_view(),
+    #     name='result-delete'),
 ]

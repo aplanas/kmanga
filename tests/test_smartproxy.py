@@ -32,7 +32,9 @@ class Proxy(object):
 class TestSmartProxy(unittest.TestCase):
 
     def setUp(self):
-        self.proxy = SmartProxy()
+        error_codes = [500]
+        settings = mock.Mock(**{'getlist.return_value': error_codes})
+        self.proxy = SmartProxy(settings)
 
     def tearDown(self):
         self.proxy = None

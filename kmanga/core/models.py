@@ -372,13 +372,13 @@ class Issue(TimeStampedModel):
 
     def is_sent(self, user):
         """Check if an user has received this issue."""
-        return self.history(user, status=History.SENT).exists()
+        return self.result(user, status=Result.SENT).exists()
 
-    def history(self, user, status=None):
-        """Return the History for an user for this issue."""
+    def result(self, user, status=None):
+        """Return the Result for an user for this issue."""
         # XXX TODO - Avoid filtering by subscription__deleted using
         # the Subscription manager.
-        query = self.history_set.filter(
+        query = self.result_set.filter(
             subscription__user=user,
             subscription__deleted=False)
         if status:
@@ -388,30 +388,30 @@ class Issue(TimeStampedModel):
 
 class SubscriptionQuerySet(models.QuerySet):
     def latests(self, user):
-        """Return the latests subscriptions with history changes."""
+        """Return the latests subscriptions with changes in Result."""
         # See the notes from `MangaQuerySet.latests()`
         raw_query = '''
          SELECT core_subscription.id,
-                MAX(core_history.modified) AS history__modified__max
+                MAX(core_result.modified) AS result__modified__max
            FROM core_subscription
-LEFT OUTER JOIN core_history
-             ON (core_subscription.id = core_history.subscription_id)
+LEFT OUTER JOIN core_result
+             ON (core_subscription.id = core_result.subscription_id)
           WHERE core_subscription.deleted = false
             AND core_subscription.user_id = %s
        GROUP BY core_subscription.id
-       ORDER BY history__modified__max DESC,
+       ORDER BY result__modified__max DESC,
                 core_subscription.id ASC;
 '''
         paged_query = '''
          SELECT core_subscription.id,
-                MAX(core_history.modified) AS history__modified__max
+                MAX(core_result.modified) AS result__modified__max
            FROM core_subscription
-LEFT OUTER JOIN core_history
-            ON (core_subscription.id = core_history.subscription_id)
+LEFT OUTER JOIN core_result
+            ON (core_subscription.id = core_result.subscription_id)
           WHERE core_subscription.deleted = false
             AND core_subscription.user_id = %s
        GROUP BY core_subscription.id
-       ORDER BY history__modified__max DESC,
+       ORDER BY result__modified__max DESC,
                 core_subscription.id ASC
           LIMIT %s
          OFFSET %s;
@@ -467,31 +467,31 @@ class Subscription(TimeStampedModel):
 
     def issues_to_send(self):
         """Return the list of issues to send, ordered by number."""
-        already_sent = History.objects.sent_last_24hs(self.user,
-                                                      subscription=self)
+        already_sent = Result.objects.sent_last_24hs(self.user,
+                                                     subscription=self)
         remains = max(0, self.issues_per_day-already_sent)
         return self.manga.issue_set.filter(
             language=self.language
         ).exclude(
-            pk__in=self.history_set.filter(status__in=(
-                History.PROCESSING,
-                History.SENT,
-                History.FAILED,
+            pk__in=self.result_set.filter(status__in=(
+                Result.PROCESSING,
+                Result.SENT,
+                Result.FAILED,
             )).values('issue__id')
         ).order_by('order')[:remains]
 
     def add_sent(self, issue):
-        """Add or update an History to a Subscription."""
-        return History.objects.update_or_create(
+        """Add or update a Result to a Subscription."""
+        return Result.objects.update_or_create(
             issue=issue,
             subscription=self,
             defaults={
                 'send_date': timezone.now(),
-                'status': History.SENT,
+                'status': Result.SENT,
             })
 
 
-class HistoryQuerySet(models.QuerySet):
+class ResultQuerySet(models.QuerySet):
     def latests(self, status=None):
         query = self
         if status:
@@ -499,7 +499,7 @@ class HistoryQuerySet(models.QuerySet):
         return query.order_by('-modified')
 
     def _modified_last_24hs(self, user, subscription=None, status=None):
-        """Return the list of `History` modified during the last 24 hours."""
+        """Return the list of `Result` modified during the last 24 hours."""
         today = timezone.now()
         yesterday = today - timezone.timedelta(days=1)
         # TODO XXX - Objects are created / modified always after time
@@ -517,11 +517,11 @@ class HistoryQuerySet(models.QuerySet):
         return query
 
     def modified_last_24hs(self, user, subscription=None, status=None):
-        """Return the number of `History` modified during the last 24 hours."""
+        """Return the number of `Result` modified during the last 24 hours."""
         return self._modified_last_24hs(user, subscription, status).count()
 
     def _sent_last_24hs(self, user, subscription=None):
-        """Return the list of `History` sent during the last 24 hours."""
+        """Return the list of `Result` sent during the last 24 hours."""
         today = timezone.now()
         yesterday = today - timezone.timedelta(days=1)
         # TODO XXX - Objects are created / modified always after time
@@ -531,31 +531,31 @@ class HistoryQuerySet(models.QuerySet):
         query = self.filter(
             subscription__user=user,
             send_date__range=[yesterday, today],
-            status=History.SENT,
+            status=Result.SENT,
         )
         if subscription:
             query = query.filter(subscription=subscription)
         return query
 
     def sent_last_24hs(self, user, subscription=None):
-        """Return the number of `History` sent during the last 24 hours."""
+        """Return the number of `Result` sent during the last 24 hours."""
         return self._sent_last_24hs(user, subscription).count()
 
     def pending(self):
-        return self.latests(status=History.PENDING)
+        return self.latests(status=Result.PENDING)
 
     def processing(self):
-        return self.latests(status=History.PROCESSING)
+        return self.latests(status=Result.PROCESSING)
 
     def sent(self):
-        return self.latests(status=History.SENT)
+        return self.latests(status=Result.SENT)
 
     def failed(self):
-        return self.latests(status=History.FAILED)
+        return self.latests(status=Result.FAILED)
 
 
 @python_2_unicode_compatible
-class History(TimeStampedModel):
+class Result(TimeStampedModel):
     PENDING = 'PE'
     PROCESSING = 'PR'
     SENT = 'SE'
@@ -574,7 +574,7 @@ class History(TimeStampedModel):
     missing_pages = models.IntegerField(default=0)
     send_date = models.DateTimeField(null=True, blank=True)
 
-    objects = HistoryQuerySet.as_manager()
+    objects = ResultQuerySet.as_manager()
 
     class Meta:
         unique_together = ('issue', 'subscription')
@@ -583,16 +583,16 @@ class History(TimeStampedModel):
         return u'%s (%s)' % (self.issue, self.get_status_display())
 
     def get_absolute_url(self):
-        return reverse('history-detail', kwargs={'pk': self.pk})
+        return reverse('result-detail', kwargs={'pk': self.pk})
 
     def is_pending(self):
-        return self.status == History.PENDING
+        return self.status == Result.PENDING
 
     def is_processing(self):
-        return self.status == History.PROCESSING
+        return self.status == Result.PROCESSING
 
     def is_sent(self):
-        return self.status == History.SENT
+        return self.status == Result.SENT
 
     def is_failed(self):
-        return self.status == History.FAILED
+        return self.status == Result.FAILED

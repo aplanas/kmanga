@@ -23,6 +23,6 @@ def is_sent(value, arg):
     return value.is_sent(arg)
 
 
-@register.filter(name='history')
-def history(value, arg):
-    return value.history(arg)
+@register.filter(name='result')
+def result(value, arg):
+    return value.result(arg)

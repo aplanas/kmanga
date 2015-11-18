@@ -30,7 +30,7 @@ except:
 from scrapy.mail import MailSender
 from scrapy.utils.decorators import inthread
 
-from core.models import History
+from core.models import Result
 from core.models import Issue
 from core.models import Subscription
 from django.utils import timezone
@@ -238,15 +238,15 @@ class MobiContainer(object):
 
             issue = Issue.objects.get(url=url)
 
-            # Move the History status to PROCESSING
+            # Move the Result status to PROCESSING
             subscription = Subscription.objects.get(
                 manga=issue.manga,
                 user__userprofile__email_kindle=spider.to_email)
-            history, _ = History.objects.get_or_create(
+            result, _ = Result.objects.get_or_create(
                 issue=issue,
                 subscription=subscription)
-            history.status = History.PROCESSING
-            history.save()
+            result.status = Result.PROCESSING
+            result.save()
 
             if key not in cache:
                 # The containers need to be cleaned here.
@@ -266,19 +266,19 @@ class MobiContainer(object):
                     attachs=((mobi_name, 'application/x-mobipocket-ebook',
                               open(mobi_file, 'rb')),))
                 cb_data = [spider.from_email, spider.to_email, name,
-                           number, history]
+                           number, result]
                 deferred.addCallbacks(self.mail_ok, self.mail_err,
                                       callbackArgs=cb_data,
                                       errbackArgs=cb_data)
                 # XXX TODO - Send email when errors
 
-    def mail_ok(self, result, from_mail, to_mail, manga_name,
-                manga_number, history):
-        history.send_date = timezone.now()
-        history.status = History.SENT
-        history.save()
+    def mail_ok(self, result_mail, from_mail, to_mail, manga_name,
+                manga_number, result):
+        result.send_date = timezone.now()
+        result.status = Result.SENT
+        result.save()
 
-    def mail_err(self, result, from_mail, to_mail, manga_name,
-                 manga_number, history):
-        history.status = History.FAILED
-        history.save()
+    def mail_err(self, result_mail, from_mail, to_mail, manga_name,
+                 manga_number, result):
+        result.status = Result.FAILED
+        result.save()

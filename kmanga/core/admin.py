@@ -6,8 +6,8 @@ from .models import SourceLanguage
 from .models import Genre
 from .models import Manga
 from .models import Issue
+from .models import Result
 from .models import Subscription
-from .models import History
 
 
 class SourceLanguageInline(admin.StackedInline):
@@ -42,6 +42,6 @@ class SubscriptionAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(History)
-class HistoryAdmin(admin.ModelAdmin):
+@admin.register(Result)
+class ResultAdmin(admin.ModelAdmin):
     date_hierarchy = 'modified'

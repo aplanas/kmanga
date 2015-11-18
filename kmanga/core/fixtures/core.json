@@ -658,7 +658,7 @@
             "status": "SE",
             "subscription": 1
         },
-        "model": "core.history",
+        "model": "core.result",
         "pk": 1
     },
     {
@@ -671,7 +671,7 @@
             "status": "FA",
             "subscription": 3
         },
-        "model": "core.history",
+        "model": "core.result",
         "pk": 2
     },
     {
@@ -684,7 +684,7 @@
             "status": "PE",
             "subscription": 4
         },
-        "model": "core.history",
+        "model": "core.result",
         "pk": 3
     }
 ]

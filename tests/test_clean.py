@@ -105,13 +105,15 @@ class TestCleanBasePipeline(unittest.TestCase):
         self.assertEqual(self.clean.process_item(None, spider), None)
 
     def test_process_item_no_method(self):
-        spider = mock.Mock(name='spider')
+        spider = mock.Mock()
+        spider.name = 'spider'
         del spider.dry_run
         item = MyItem()
         self.assertEqual(self.clean.process_item(item, spider), item)
 
     def test_process_item_item_method(self):
-        spider = mock.Mock(name='spider')
+        spider = mock.Mock()
+        spider.name = 'spider'
         del spider.dry_run
         item = MyItem()
         self.clean.clean_myitem = mock.Mock(return_value=item)
@@ -119,7 +121,8 @@ class TestCleanBasePipeline(unittest.TestCase):
         self.clean.clean_myitem.assert_called_with(item, spider)
 
     def test_process_item_spider_method(self):
-        spider = mock.Mock(name='spider')
+        spider = mock.Mock()
+        spider.name = 'spider'
         del spider.dry_run
         item = MyItem()
         self.clean.clean_spider_myitem = mock.Mock(return_value=item)

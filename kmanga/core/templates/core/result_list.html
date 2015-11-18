@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block page_title%}History{% endblock page_title %}
+{% block page_title%}Result{% endblock page_title %}
 {% block content %}
 {% if view.request %}
 <p>Hi {{ view.request.user }}</p>
@@ -8,8 +8,8 @@
 <p>No request</p>
 {% endif %}
 <ul>
-  {% for history in object_list %}
-  <li>{{ history }}</li>
+  {% for result in object_list %}
+  <li>{{ result }}</li>
   {% endfor %}
 </ul>
 {% endblock content %}
