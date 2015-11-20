@@ -22,7 +22,6 @@
       <caption>List of issues in {{ object.get_language_display }}</caption>
       <thead>
 	<tr>
-	  <th>order</th>
 	  <th>number</th>
 	  <th>name</th>
 	  <th>sent</th>
@@ -31,8 +30,7 @@
       <tbody>
 	{% for issue in object.issues %}
 	<tr>
-	  <th scope="row">{{ issue.order }}</th>
-	  <td>{{ issue.number }}</td>
+	  <th scope="row">{{ issue.number }}</th>
 	  <td><a href="{{ issue.url }}">{{ issue.name }}</a></td>
 	  <td>.</td>
 	</tr>
