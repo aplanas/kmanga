@@ -19,23 +19,21 @@
   <div class="col-xs-8">
     <h3>Issues</h3>
     <table class="table table-hover">
-      <caption>List of issues</caption>
+      <caption>List of issues in {{ object.get_language_display }}</caption>
       <thead>
 	<tr>
 	  <th>order</th>
 	  <th>number</th>
 	  <th>name</th>
-	  <th>language</th>
 	  <th>sent</th>
 	</tr>
       </thead>
       <tbody>
-	{% for issue in object.manga.issue_set.all %}
+	{% for issue in object.issues %}
 	<tr>
 	  <th scope="row">{{ issue.order }}</th>
 	  <td>{{ issue.number }}</td>
 	  <td><a href="{{ issue.url }}">{{ issue.name }}</a></td>
-	  <td>{{ issue.language }}</td>
 	  <td>.</td>
 	</tr>
 	{% endfor %}

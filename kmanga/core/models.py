@@ -465,6 +465,10 @@ class Subscription(TimeStampedModel):
     def __str__(self):
         return u'%s (%d per day)' % (self.manga, self.issues_per_day)
 
+    def issues(self):
+        """Return the list of issues in the language of the Subscription."""
+        return self.manga.issue_set.filter(language=self.language)
+
     def issues_to_send(self):
         """Return the list of issues to send, ordered by number."""
         already_sent = Result.objects.sent_last_24hs(self.user,
