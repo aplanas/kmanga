@@ -270,15 +270,19 @@ class MobiContainer(object):
                 deferred.addCallbacks(self.mail_ok, self.mail_err,
                                       callbackArgs=cb_data,
                                       errbackArgs=cb_data)
+                # XXX TODO - Reorder the callbacks to fix scrapy#1611
+                cb = deferred.callbacks
+                cb[-2], cb[-1] = cb[-1], cb[-2]
                 # XXX TODO - Send email when errors
 
-    def mail_ok(self, result_mail, from_mail, to_mail, manga_name,
+    def mail_ok(self, _result, from_mail, to_mail, manga_name,
                 manga_number, result):
         result.send_date = timezone.now()
         result.status = Result.SENT
         result.save()
 
-    def mail_err(self, result_mail, from_mail, to_mail, manga_name,
+    def mail_err(self, failure, from_mail, to_mail, manga_name,
                  manga_number, result):
         result.status = Result.FAILED
         result.save()
+        return failure
