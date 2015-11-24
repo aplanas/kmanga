@@ -1,5 +1,7 @@
 from django import template
 
+from core.models import Result
+
 register = template.Library()
 
 
@@ -13,16 +15,11 @@ def subscription(value, arg):
     return value.subscription(arg)
 
 
-@register.filter(name='subscription')
+@register.filter(name='subscription_pk')
 def subscription_pk(value, arg):
     return subscription(value, arg)[0].pk
 
 
-@register.filter(name='is_sent')
-def is_sent(value, arg):
-    return value.is_sent(arg)
-
-
 @register.filter(name='result')
 def result(value, arg):
-    return value.result(arg)
+    return Result.objects.filter(subscription=value, issue=arg).first()

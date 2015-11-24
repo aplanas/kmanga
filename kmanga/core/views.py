@@ -33,6 +33,13 @@ class SubscriptionOwnerMixin(object):
                                                             **kwargs)
 
 
+class ResultOwnerMixin(object):
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_object().subscription.user != self.request.user:
+            return HttpResponseForbidden()
+        return super(ResultOwnerMixin, self).dispatch(request, *args, **kwargs)
+
+
 class SafeDeleteView(DeleteView):
     """View that provide the ability to safe delete objects."""
 
@@ -147,27 +154,24 @@ class ResultListView(LoginRequiredMixin, ListView):
     model = Result
 
 
-class ResultDetailView(LoginRequiredMixin, DetailView):
+class ResultDetailView(LoginRequiredMixin, ResultOwnerMixin, DetailView):
     model = Result
 
 
 class ResultCreateView(LoginRequiredMixin, CreateView):
     model = Result
-    # form_class = ResultForm
-
-    # def form_valid(self, form):
-    #     result = super(ResultCreateView, self).form_valid(form)
-    #     for issue in range(form.instance.from_issue, form.instance.to_issue+1):
-    #         line = form.instance.resultline_set.create(issue=issue)
-    #         django_rq.get_queue('default').enqueue(line.send_mobi)
-    #     return result
 
 
-class ResultUpdateView(LoginRequiredMixin, UpdateView):
+class ResultUpdateView(LoginRequiredMixin, ResultOwnerMixin, UpdateView):
     model = Result
+    fields = ['status']
+
+    def get_success_url(self):
+        return reverse_lazy('subscription-read',
+                            args=[self.object.subscription.pk])
 
 
-class ResultDeleteView(LoginRequiredMixin, DeleteView):
+class ResultDeleteView(LoginRequiredMixin, ResultOwnerMixin, DeleteView):
     model = Result
     success_url = reverse_lazy('result-list')
 

@@ -25,6 +25,7 @@
 	  <th>number</th>
 	  <th>name</th>
 	  <th>sent</th>
+	  <th>resend</th>
 	</tr>
       </thead>
       <tbody>
@@ -32,7 +33,29 @@
 	<tr>
 	  <th scope="row">{{ issue.number }}</th>
 	  <td><a href="{{ issue.url }}">{{ issue.name }}</a></td>
-	  <td>.</td>
+	  {% with result=object|result:issue %}
+	  <td>{{ result.modified|date:"d/m/Y" }}</td>
+	  <td>
+	    {% if result %}
+	    <form method="post" action="{% url 'result-update' result.pk %}">{% csrf_token %}
+	      <input type="hidden" name="status" value="{{ result.PENDING }}">
+	      {% if result.is_processing %}
+	      <button type="submit" class="btn btn-warning">
+		<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> processing
+	      </button>
+	      {% elif result.is_sent %}
+	      <button type="submit" class="btn btn-success">
+		<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> sent
+	      </button>
+	      {% elif result.is_failed %}
+	      <button type="submit" class="btn btn-danger">
+		<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> failed
+	      </button>
+	      {% endif %}
+	    </form>
+	    {% endif %}
+	  </td>
+	  {% endwith %}
 	</tr>
 	{% endfor %}
       </tbody>
