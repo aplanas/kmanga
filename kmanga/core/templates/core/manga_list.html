@@ -11,7 +11,7 @@
   <div class="col-xs-4">
     <div class="thumbnail">
       {% if manga|is_subscribed:view.request.user %}
-      <a href="{% url 'subscription-read' manga|subscription:view.request.user %}">
+      <a href="{% url 'subscription-read' manga|subscription_pk:view.request.user %}">
       {% else %}
       <a href="{% url 'manga-read' manga.pk %}">
       {% endif %}
