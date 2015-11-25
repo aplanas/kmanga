@@ -160,6 +160,11 @@ class ResultDetailView(LoginRequiredMixin, ResultOwnerMixin, DetailView):
 
 class ResultCreateView(LoginRequiredMixin, CreateView):
     model = Result
+    fields = ['issue', 'subscription', 'status']
+
+    def get_success_url(self):
+        return reverse_lazy('subscription-read',
+                            args=[self.object.subscription.pk])
 
 
 class ResultUpdateView(LoginRequiredMixin, ResultOwnerMixin, UpdateView):

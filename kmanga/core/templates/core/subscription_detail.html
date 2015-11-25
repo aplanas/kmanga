@@ -36,22 +36,42 @@
 	  {% with result=object|result:issue %}
 	  <td>{{ result.modified|date:"d/m/Y" }}</td>
 	  <td>
-	    {% if result %}
+	    {% if not result %}
+	    <form method="post" action="{% url 'result-create' %}">{% csrf_token %}
+	      <input type="hidden" name="issue" value="{{ issue.pk }}">
+	      <input type="hidden" name="subscription" value="{{ object.pk }}">
+	      <input type="hidden" name="status" value="{{ 'SE' }}">
+	      <button type="submit" class="btn btn-default">
+		<span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> pending
+	      </button>
+	    </form>
+	    {% elif result.is_pending %}
+	    <form method="post" action="{% url 'result-update' result.pk %}">{% csrf_token %}
+	      <input type="hidden" name="status" value="{{ result.SENT }}">
+	      <button type="submit" class="btn btn-default">
+		<span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> pending
+	      </button>
+	    </form>
+	    {% elif result.is_processing %}
 	    <form method="post" action="{% url 'result-update' result.pk %}">{% csrf_token %}
 	      <input type="hidden" name="status" value="{{ result.PENDING }}">
-	      {% if result.is_processing %}
 	      <button type="submit" class="btn btn-warning">
 		<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> processing
 	      </button>
-	      {% elif result.is_sent %}
+	    </form>
+	    {% elif result.is_sent %}
+	    <form method="post" action="{% url 'result-update' result.pk %}">{% csrf_token %}
+	      <input type="hidden" name="status" value="{{ result.PENDING }}">
 	      <button type="submit" class="btn btn-success">
 		<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> sent
 	      </button>
-	      {% elif result.is_failed %}
+	    </form>
+	    {% elif result.is_failed %}
+	    <form method="post" action="{% url 'result-update' result.pk %}">{% csrf_token %}
+	      <input type="hidden" name="status" value="{{ result.PENDING }}">
 	      <button type="submit" class="btn btn-danger">
 		<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> failed
 	      </button>
-	      {% endif %}
 	    </form>
 	    {% endif %}
 	  </td>
