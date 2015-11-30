@@ -91,6 +91,8 @@ class Container(object):
         if as_link and not img_adjusted:
             os.link(image, cover_path)
         elif img_adjusted:
+            if img_adjusted.mode != 'RGB':
+                img_adjusted = img_adjusted.convert('RGB')
             img_adjusted.save(cover_path)
         else:
             shutil.copyfile(image, cover_path)
