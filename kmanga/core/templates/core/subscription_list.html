@@ -13,7 +13,7 @@
 	<img src="{{ subscription.manga.cover|default:'default_cover.png'|thumbnail_url:'cover' }}" alt="{{ subscription.manga }}" height="360" width="270">
       </a>
       <div class="caption">
-	<h3>{{ subscription.manga.name }} <a href="{{ subscription.manga.url }}" class="label label-default">{{ subscription.manga.source.name }}</a></h3>
+	<h3>{{ subscription.manga.name }} <span class="badge">{{ subscription.language }}</span> <a href="{{ subscription.manga.url }}"><span class="badge">{{ subscription.manga.source.name }}</span></a></h3>
 	<ul class="nav nav-pills" role="tablist">
 	  <li class="pill" role="presentation">
 	    <div data-toggle="tooltip" data-placement="top" title="Issues sent">
