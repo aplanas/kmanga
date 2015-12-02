@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
@@ -10,19 +10,10 @@ from django.views.generic.edit import DeleteView
 from django.views.generic.edit import UpdateView
 from django.views.generic.list import MultipleObjectMixin
 
-# import django_rq
-
 from .models import Issue
 from .models import Manga
 from .models import Result
 from .models import Subscription
-
-
-class LoginRequiredMixin(object):
-    @classmethod
-    def as_view(cls, **initkwargs):
-        view = super(LoginRequiredMixin, cls).as_view(**initkwargs)
-        return login_required(view)
 
 
 class SubscriptionOwnerMixin(object):

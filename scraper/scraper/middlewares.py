@@ -22,7 +22,7 @@ import logging
 from proxy.models import Proxy
 from proxy.utils import needs_proxy
 
-# https://docs.djangoproject.com/en/dev/releases/1.8/#standalone-scripts
+# https://docs.djangoproject.com/en/dev/releases/1.9/#standalone-scripts
 import django
 django.setup()
 

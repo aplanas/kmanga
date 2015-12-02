@@ -38,7 +38,7 @@ from django.utils import timezone
 from mobi import Container
 from mobi import MangaMobi
 
-# https://docs.djangoproject.com/en/dev/releases/1.8/#standalone-scripts
+# https://docs.djangoproject.com/en/dev/releases/1.9/#standalone-scripts
 import django
 django.setup()
 

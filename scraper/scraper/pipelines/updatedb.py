@@ -26,7 +26,7 @@ from django.db import transaction
 
 from core.models import Source, Manga, Issue
 
-# https://docs.djangoproject.com/en/dev/releases/1.8/#standalone-scripts
+# https://docs.djangoproject.com/en/dev/releases/1.9/#standalone-scripts
 import django
 django.setup()
 

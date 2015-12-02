@@ -1,5 +1,3 @@
-from django.core.urlresolvers import reverse
-from django.test import Client
 from django.test import TestCase
 
 from core.models import AltName
