@@ -95,7 +95,7 @@ class UpdateDBPipeline(object):
             if not m2m:
                 new_obj = rel_obj.model()
                 update(new_obj, values_items[i])
-                rel_obj.add(new_obj)
+                rel_obj.add(new_obj, bulk=False)
             else:
                 # Sometimes the m2m relation is based on a string, and
                 # we can try a different uppercase / lowercase
@@ -252,7 +252,7 @@ class UpdateDBPipeline(object):
             if not manga.issue_set.filter(url=item_issue['url']).exists():
                 issue = Issue()
                 self._update_issue(issue, item_issue)
-                manga.issue_set.add(issue)
+                manga.issue_set.add(issue, bulk=False)
 
     @transaction.atomic
     def update_manga(self, item, spider):
