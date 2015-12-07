@@ -170,6 +170,10 @@ RQ_QUEUES = {
 SCRAPY_SETTINGS_MODULE = 'scraper.settings'
 SCRAPY_ACCOUNTS = {}
 
+DEFAULT_FROM_EMAIL = 'admin@kmanga.net'
+
+CONTACT_EMAIL = 'admin@kmanga.net'
+
 KMANGA_EMAIL = 'kindle@kmanga.net'
 
 # Import local settings

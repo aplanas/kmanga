@@ -31,6 +31,10 @@ urlpatterns = [
     # Site URLs
     url(r'^$', RedirectView.as_view(url=reverse_lazy('subscription-list')),
         name='home'),
+    url(r'^about/', RedirectView.as_view(url=reverse_lazy('about-view')),
+        name='about'),
+    url(r'^contact/', RedirectView.as_view(url=reverse_lazy('contact-form')),
+        name='contact'),
     url(r'^kmanga/', include(core_urls)),
     url(r'^accounts/', include(registration_urls)),
 

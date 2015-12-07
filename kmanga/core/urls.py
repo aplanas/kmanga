@@ -1,5 +1,7 @@
 from django.conf.urls import url
 
+from .views import AboutTemplateView
+from .views import ContactFormView
 from .views import MangaListView
 from .views import MangaDetailView
 # from .views import MangaCreateView
@@ -15,6 +17,7 @@ from .views import SubscriptionDetailView
 from .views import SubscriptionCreateView
 from .views import SubscriptionUpdateView
 from .views import SubscriptionDeleteView
+from .views import ThanksTemplateView
 
 
 urlpatterns = [
@@ -51,4 +54,9 @@ urlpatterns = [
         name='result-update'),
     # url(r'^result/(?P<pk>\d+)/delete$', ResultDeleteView.as_view(),
     #     name='result-delete'),
+
+    # Others
+    url(r'^about/$', AboutTemplateView.as_view(), name='about-view'),
+    url(r'^contact/$', ContactFormView.as_view(), name='contact-form'),
+    url(r'^thanks/$', ThanksTemplateView.as_view(), name='thanks-view'),
 ]

@@ -5,11 +5,14 @@ from django.http import HttpResponseRedirect
 # from django.shortcuts import render
 from django.views.generic import DetailView
 from django.views.generic import ListView
+from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic.edit import DeleteView
+from django.views.generic.edit import FormView
 from django.views.generic.edit import UpdateView
 from django.views.generic.list import MultipleObjectMixin
 
+from .forms import ContactForm
 from .models import Issue
 from .models import Manga
 from .models import Result
@@ -41,6 +44,24 @@ class SafeDeleteView(DeleteView):
         self.object.deleted = True
         self.object.save()
         return HttpResponseRedirect(success_url)
+
+
+class AboutTemplateView(TemplateView):
+    template_name = 'core/about.html'
+
+
+class ContactFormView(FormView):
+    template_name = 'core/contact.html'
+    form_class = ContactForm
+    success_url = reverse_lazy('thanks-view')
+
+    def form_valid(self, form):
+        form.send_email()
+        return super(ContactFormView, self).form_valid(form)
+
+
+class ThanksTemplateView(TemplateView):
+    template_name = 'core/thanks.html'
 
 
 class MangaListView(LoginRequiredMixin, ListView, MultipleObjectMixin):

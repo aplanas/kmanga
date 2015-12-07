@@ -2,6 +2,8 @@
 
 DEBUG = False
 
+ADMINS = [('admin', 'admin@kmanga.net')]
+
 ALLOWED_HOSTS = [
     '.example.com',   # Allow domain and subdomains
     '.example.com.',  # Also allow FQDN and subdomains
@@ -11,6 +13,8 @@ STATIC_ROOT = '/full/path/static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/full/path/media/'
+
+CONTACT_EMAIL = 'admin@kmanga.net'
 
 RQ_QUEUES = {
     'default': {
