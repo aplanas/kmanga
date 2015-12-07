@@ -70,6 +70,8 @@ def convert_to_date(str_, dmy=False):
         return datetime.strptime(str_, '%d %B %Y - %I:%M %p').date()
     elif re.match(r'\d{2} \w{3} \d{4}', str_):
         return datetime.strptime(str_, '%d %b %Y').date()
+    elif re.match(r'\w{3} \d{1,2}, \d{4} \d{2}:\d{2}\w{2}', str_):
+        return datetime.strptime(str_, '%b %d, %Y %H:%M%p').date()
     elif re.match(r'\w{3} \d{1,2}, \d{4}', str_):
         return datetime.strptime(str_, '%b %d, %Y').date()
     elif re.match(r'\d{2}/\d{2}/\d{4}', str_):
@@ -84,6 +86,10 @@ def convert_to_date(str_, dmy=False):
 def convert_to_number(str_, as_int=False, default=0):
     """Parse issues / viewers numbers."""
     result = default
+    # Remove ordinal suffix
+    str_ = re.sub(r'(st|nd|rd|th)', '', str_)
+    # Remove decimal separator (for millards)
+    str_ = re.sub(r',', '', str_)
     try:
         if str_.endswith('k'):
             result = 1000 * float(str_[:-1])
