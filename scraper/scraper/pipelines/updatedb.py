@@ -24,11 +24,13 @@ import urlparse
 from django.core.files import File
 from django.db import transaction
 
-from core.models import Source, Manga, Issue
-
 # https://docs.djangoproject.com/en/dev/releases/1.9/#standalone-scripts
 import django
 django.setup()
+
+from core.models import Issue
+from core.models import Manga
+from core.models import Source
 
 logger = logging.getLogger(__name__)
 

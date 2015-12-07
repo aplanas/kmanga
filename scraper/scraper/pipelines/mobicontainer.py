@@ -30,6 +30,10 @@ except:
 from scrapy.mail import MailSender
 from scrapy.utils.decorators import inthread
 
+# https://docs.djangoproject.com/en/dev/releases/1.9/#standalone-scripts
+import django
+django.setup()
+
 from core.models import Result
 from core.models import Issue
 from core.models import Subscription
@@ -37,10 +41,6 @@ from django.utils import timezone
 
 from mobi import Container
 from mobi import MangaMobi
-
-# https://docs.djangoproject.com/en/dev/releases/1.9/#standalone-scripts
-import django
-django.setup()
 
 
 # Empty page.  Used when the original one can't be downloaded.
