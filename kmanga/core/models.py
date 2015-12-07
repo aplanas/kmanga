@@ -166,6 +166,8 @@ LEFT OUTER JOIN core_issue
 
     def _to_tsquery(self, q):
         """Convert a query to a PostgreSQL tsquery."""
+        # Remove special chars (except parens)
+        q = ''.join(c if c.isalnum() or c in '()' else ' ' for c in q)
         # Separate parentesis from words
         for token in ('(', ')'):
             q = q.replace(token, ' %s ' % token)
