@@ -1,10 +1,21 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse_lazy
+from django.http import HttpResponseForbidden
 from django.views.generic import CreateView
+from django.views.generic import UpdateView
 from django.views.generic import TemplateView
 
 from .forms import UserCreateForm
 from .models import UserProfile
+
+
+class UserProfileOwnerMixin(object):
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_object().user != self.request.user:
+            return HttpResponseForbidden()
+        return super(UserProfileOwnerMixin, self).dispatch(request, *args,
+                                                           **kwargs)
 
 
 class UserCreateView(CreateView):
@@ -17,25 +28,13 @@ class UserCreateView(CreateView):
         result = super(UserCreateView, self).form_valid(form)
         return result
 
-# (request, is_admin_site=False,
-#                   template_name='registration/user_creation_form.html',
-#                   email_template_name='registration/user_creation_email.html',
-#                   subject_template_name='registration/user_creation_subject.txt',
-#                   account_register_form=UserCreationForm,
-#                   token_generator=default_token_generator,
-#                   post_reset_redirect=None,
-#                   from_email=None,
-#                   current_app=None,
-#                   extra_context=None):
-#     if post_reset_redirect is None:
-#         post_reset_redirect = reverse('password_reset_done')
-#     else:
-#         post_reset_redirect = resolve_url(post_reset_redirect)
-
 
 class UserCreateDoneView(TemplateView):
     template_name = 'registration/user_create_done.html'
 
 
-class UserProfileView(TemplateView):
-    template_name = 'registration/user_profile.html'
+class UserProfileUpdateView(LoginRequiredMixin, UserProfileOwnerMixin,
+                            UpdateView):
+    model = UserProfile
+    fields = ['language', 'email_kindle']
+    success_url = reverse_lazy('subscription-list')

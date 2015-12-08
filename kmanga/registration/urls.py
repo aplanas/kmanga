@@ -8,7 +8,7 @@ from django.contrib.auth import views
 
 from .views import UserCreateView
 from .views import UserCreateDoneView
-from .views import UserProfileView
+from .views import UserProfileUpdateView
 
 urlpatterns = [
     # From django.contrib.auth.urls
@@ -33,5 +33,6 @@ urlpatterns = [
     #     'accounts.views.confirm', name='confirm'),
     # url(r'^confirm/done/$', 'django.contrib.auth.views.confirm_done', name='confirm_done'),
 
-    url(r'^profile/$', UserProfileView.as_view(), name='profile'),
+    url(r'^profile/(?P<pk>\d+)/edit$', UserProfileUpdateView.as_view(),
+        name='profile-update'),
 ]
