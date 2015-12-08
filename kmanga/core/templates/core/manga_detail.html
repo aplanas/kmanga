@@ -19,8 +19,8 @@
   <div class="col-xs-4">
     <form method="post" action="{% url 'subscription-create' %}">{% csrf_token %}
       <input type="hidden" name="manga" value="{{ object.pk }}">
-      <input type="hidden" name="user" value="{{ request.user.pk }}">
-      <input type="hidden" name="language" value="{{ request.user.userprofile.language }}">
+      <input type="hidden" name="user" value="{{ user.pk }}">
+      <input type="hidden" name="language" value="{{ user.userprofile.language }}">
       <button type="submit" class="btn btn-lg btn-default">Subscribe</button>
     </form>
   </div>

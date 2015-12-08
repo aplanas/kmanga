@@ -55,7 +55,7 @@
 	    <li><a href="{% url 'about' %}">About</a></li>
 	    <li><a href="{% url 'contact' %}">Contact</a></li>
 	  </ul>
-	  {% if view.request.user %}
+	  {% if user.is_authenticated %}
 	  <a href="{% url 'logout' %}" class="btn btn-default navbar-btn navbar-right" role="button">Log out</a>
 	  <form class="navbar-form navbar-right" role="search" action="{% url 'manga-list' %}">
 	    <div class="form-group">

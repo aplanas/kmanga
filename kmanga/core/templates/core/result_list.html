@@ -3,7 +3,7 @@
 {% block page_title %}Result{% endblock page_title %}
 {% block content %}
 {% if view.request %}
-<p>Hi {{ view.request.user }}</p>
+<p>Hi {{ user }}</p>
 {% else %}
 <p>No request</p>
 {% endif %}

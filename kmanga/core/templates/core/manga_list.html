@@ -10,8 +10,8 @@
   {% endif %}
   <div class="col-xs-4">
     <div class="thumbnail">
-      {% if manga|is_subscribed:view.request.user %}
-      <a href="{% url 'subscription-read' manga|subscription_pk:view.request.user %}">
+      {% if manga|is_subscribed:user %}
+      <a href="{% url 'subscription-read' manga|subscription_pk:user %}">
       {% else %}
       <a href="{% url 'manga-read' manga.pk %}">
       {% endif %}
@@ -19,7 +19,7 @@
       </a>
       <div class="caption">
 	<h3>{{ manga.name }} <a href="{{ manga.url }}" class="label label-default">{{ manga.source.name }}</a></h3>
-	{% if manga|is_subscribed:view.request.user %}
+	{% if manga|is_subscribed:user %}
 	<p><a href="#" class="btn btn-default disable" role="button">Subscribed <span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a></p>
 	{# else #}
 	<!-- <p><a href="#" class="btn btn-default" role="button">Subscribe <span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a></p> -->
