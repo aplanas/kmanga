@@ -29,10 +29,7 @@ urlpatterns = [
     # url(r'^reset/done/$', views.password_reset_complete,
     #     {'template_name': 'registration/password_reset_complete_.html'}, name='password_reset_complete'),
 
-    # url(r'^confim/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-    #     'accounts.views.confirm', name='confirm'),
-    # url(r'^confirm/done/$', 'django.contrib.auth.views.confirm_done', name='confirm_done'),
-
+    # UserProfile
     url(r'^profile/(?P<pk>\d+)/edit$', UserProfileUpdateView.as_view(),
         name='profile-update'),
 ]
