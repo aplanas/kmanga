@@ -57,7 +57,7 @@
 	  </ul>
 	  {% if user.is_authenticated %}
 	  <ul class="nav navbar-nav navbar-right">
-	    <li {% if '/profile/' in request.path %}class="active"{% endif %}><a href="{% url 'profile-update' user.userprofile.pk %}">{{ user }}</a></li>
+	    <li {% if '/user/' in request.path %}class="active"{% endif %}><a href="{% url 'user-update' %}">{{ user }}</a></li>
 	    <li {% if '/logout/' in request.path %}class="active"{% endif %}><a href="{% url 'logout' %}">Log out</a></li>
 	  </ul>
 	  <form class="navbar-form navbar-right" role="search" action="{% url 'manga-list' %}">

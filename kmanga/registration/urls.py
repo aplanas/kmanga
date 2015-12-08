@@ -6,9 +6,8 @@
 from django.conf.urls import url
 from django.contrib.auth import views
 
-from .views import UserCreateView
-from .views import UserCreateDoneView
-from .views import UserProfileUpdateView
+# from .views import UserCreateView
+from .views import UserUpdateView
 
 urlpatterns = [
     # From django.contrib.auth.urls
@@ -29,7 +28,9 @@ urlpatterns = [
     # url(r'^reset/done/$', views.password_reset_complete,
     #     {'template_name': 'registration/password_reset_complete_.html'}, name='password_reset_complete'),
 
-    # UserProfile
-    url(r'^profile/(?P<pk>\d+)/edit$', UserProfileUpdateView.as_view(),
-        name='profile-update'),
+    # User / UserProfile
+    # url(r'^user/new/$', UserCreateView.as_view(),
+    #     name='user-create'),
+    url(r'^user/edit$', UserUpdateView.as_view(),
+        name='user-update'),
 ]
