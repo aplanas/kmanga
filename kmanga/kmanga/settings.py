@@ -128,10 +128,10 @@ INSTALLED_APPS += [
     'django_rq',
     'easy_thumbnails',
     # Project applications
-    'core',
-    'proxy',
-    'registration',
-    'scrapyctl',
+    'core.apps.CoreConfig',
+    'proxy.apps.ProxyConfig',
+    'registration.apps.RegistrationConfig',
+    'scrapyctl.apps.ScrapyCtlConfig',
 ]
 
 STATICFILES_DIRS = [
