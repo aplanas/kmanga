@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load thumbnail %}
 
-{% block page_title%}Subscription <small>for user {{ view.request.user }}</small>{% endblock page_title %}
+{% block page_title %}Subscription <small>for user {{ view.request.user }}</small>{% endblock page_title %}
 {% block content %}
 {% for subscription in object_list %}
   {% if forloop.first %}

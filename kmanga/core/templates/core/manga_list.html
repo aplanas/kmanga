@@ -2,7 +2,7 @@
 {% load kmanga %}
 {% load thumbnail %}
 
-{% block page_title%}Manga Search <small>page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>{% endblock page_title %}
+{% block page_title %}Manga Search <small>page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>{% endblock page_title %}
 {% block content %}
 {% for manga in object_list %}
   {% if forloop.first %}
