@@ -6,7 +6,7 @@
 from django.conf.urls import url
 from django.contrib.auth import views
 
-# from .views import UserCreateView
+from .views import UserCreateView
 from .views import UserUpdateView
 
 urlpatterns = [
@@ -18,20 +18,25 @@ urlpatterns = [
         {'template_name': 'registration/password_change_form_.html'},
         name='password_change'),
     url(r'^password_change/done/$', views.password_change_done,
-        {'template_name': 'registration/password_change_done_.html'}, name='password_change_done'),
-    # url(r'^password_reset/$', views.password_reset,
-    #     {'template_name': 'registration/password_reset_form_.html'}, name='password_reset'),
-    # url(r'^password_reset/done/$', views.password_reset_done,
-    #     {'template_name': 'registration/password_reset_done_.html'}, name='password_reset_done'),
-    # url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-    #     views.password_reset_confirm, {'template_name': 'registration/password_reset_confirm_.html'},
-    #     name='password_reset_confirm'),
-    # url(r'^reset/done/$', views.password_reset_complete,
-    #     {'template_name': 'registration/password_reset_complete_.html'}, name='password_reset_complete'),
+        {'template_name': 'registration/password_change_done_.html'},
+        name='password_change_done'),
+    url(r'^password_reset/$', views.password_reset,
+        {'template_name': 'registration/password_reset_form_.html'},
+        name='password_reset'),
+    url(r'^password_reset/done/$', views.password_reset_done,
+        {'template_name': 'registration/password_reset_done_.html'},
+        name='password_reset_done'),
+    url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+        views.password_reset_confirm,
+        {'template_name': 'registration/password_reset_confirm_.html'},
+        name='password_reset_confirm'),
+    url(r'^reset/done/$', views.password_reset_complete,
+        {'template_name': 'registration/password_reset_complete_.html'},
+        name='password_reset_complete'),
 
     # User / UserProfile
-    # url(r'^user/new/$', UserCreateView.as_view(),
-    #     name='user-create'),
+    url(r'^user/new/$', UserCreateView.as_view(),
+        name='user-create'),
     url(r'^user/edit$', UserUpdateView.as_view(),
         name='user-update'),
 ]

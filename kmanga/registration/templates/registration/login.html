@@ -21,10 +21,12 @@
 	  <div class="form-group">
 	    <input class="form-control" placeholder="Password" name="password" type="password" value="">
 	  </div>
-	  
-	  {#{ form.as_p }#}
 	  <input type="hidden" name="next" value="{{ next }}" />
-	  <button type="submit" class="btn btn-success">Login</button>
+	  <p>
+	    <a href="{% url 'password_reset' %}">Reset password</a>
+	    <a href="{% url 'user-create' %}" class="pull-right">Create account</a>
+	  </p>
+	  <button type="submit" class="btn btn-lg btn-default">Login</button>
 	</fieldset>
       </form>
   </div>
