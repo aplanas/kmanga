@@ -1,22 +1,22 @@
 {% extends "base.html" %}
 
-{% block page_title %}User Profile{% endblock page_title %}
+{% block page_title %}User profile{% endblock page_title %}
 {% block content %}
 <form method="post" action="">{% csrf_token %}
   <div class="form-group">
     <label for="first_name">First name</label>
     <input type="text" class="form-control" id="first_name" name="first_name" placeholder="First name" value="{{ object.first_name }}">
-    {% if form.first_name.errors %}<span class="help-inline">{{ form.first_name.errors.as_text }}</span>{% endif %}
+    {% if form.first_name.errors %}<span class="help-block">{{ form.first_name.errors.as_text }}</span>{% endif %}
   </div>
   <div class="form-group">
     <label for="last_name">Last name</label>
     <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last name" value="{{ object.last_name }}">
-    {% if form.last_name.errors %}<span class="help-inline">{{ form.last_name.errors.as_text }}</span>{% endif %}
+    {% if form.last_name.errors %}<span class="help-block">{{ form.last_name.errors.as_text }}</span>{% endif %}
   </div>
   <div class="form-group">
     <label for="last_name">Email address</label>
     <input type="email" class="form-control" id="email" name="email" placeholder="Email address" value="{{ object.email }}">
-    {% if form.email.errors %}<span class="help-inline">{{ form.email.errors.as_text }}</span>{% endif %}
+    {% if form.email.errors %}<span class="help-block">{{ form.email.errors.as_text }}</span>{% endif %}
   </div>
   <div class="form-group">
     <label for="language">Preferred language</label>
@@ -25,15 +25,15 @@
       <option value="{{ language.0 }}" {% if object.userprofile.language == language.0 %}selected="1"{% endif %}>{{ language.1}}</option>
       {% endfor %}
     </select>
-    {% if form.language.errors %}<span class="help-inline">{{ form.language.errors.as_text }}</span>{% endif %}
+    {% if form.language.errors %}<span class="help-block">{{ form.language.errors.as_text }}</span>{% endif %}
   </div>
   <div class="form-group">
     <label for="email_kindle">Kindle email</label>
     <input type="email" class="form-control" id="email_kindle" name="email_kindle" placeholder="Email Kindle" value="{{ object.userprofile.email_kindle }}">
-    {% if form.email_kindle.errors %}<span class="help-inline">{{ form.email_kindle.errors.as_text }}</span>{% endif %}
+    {% if form.email_kindle.errors %}<span class="help-block">{{ form.email_kindle.errors.as_text }}</span>{% endif %}
   </div>
   <input type="hidden" name="password">
   <p><a href="{% url 'password_change' %}">Change your password</a></p>
-  <button type="submit" class="btn btn-default">Submit</button>
+  <button type="submit" class="btn btn-lg btn-default">Update</button>
 </form>
 {% endblock content %}

@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block page_title %}Subscription{% endblock page_title %}
+{% block page_title %}Confirm unsubscription{% endblock page_title %}
 {% block content %}
 <form method="post" action="">{% csrf_token %}
   <p>Are you sure you want to unsubscribe from "{{ object }}"?</p>
-  <p>Unsubscription will not remove the current result, so if you decide to subscribe again, the sent will continue from the last unsent issue.</p>
-  <button type="submit" class="btn btn-lg btn-default" value="Confirm">Unsubscribe</button>
+  <p>Unsubscription will not remove the current result, so if you decide to subscribe again, the process will continue from the last unsent issue.</p>
+  <button type="submit" class="btn btn-lg btn-default">Confirm</button>
 </form>
 {% endblock content %}
