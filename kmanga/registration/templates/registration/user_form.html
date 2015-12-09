@@ -33,6 +33,7 @@
     {% if form.email_kindle.errors %}<span class="help-inline">{{ form.email_kindle.errors.as_text }}</span>{% endif %}
   </div>
   <input type="hidden" name="password">
+  <p><a href="{% url 'password_change' %}">Change your password</a></p>
   <button type="submit" class="btn btn-default">Submit</button>
 </form>
 {% endblock content %}
