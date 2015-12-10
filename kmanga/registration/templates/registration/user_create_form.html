@@ -37,6 +37,7 @@
   <div class="form-group">
     <label for="email_kindle">Kindle email</label>
     <input type="email" class="form-control" id="email_kindle" name="email_kindle" placeholder="Email Kindle" {% if form.email_kindle.value %}value="{{ form.email_kindle.value }}"{% endif %}>
+    <span class="help-block">Add <strong>kindle@kmanga.net</strong> in the list of email address authorized to send personal documents.</span>
     {% if form.email_kindle.errors %}<span class="help-block">{{ form.email_kindle.errors.as_text }}</span>{% endif %}
   </div>
   <button type="submit" class="btn btn-lg btn-default">Register</button>
