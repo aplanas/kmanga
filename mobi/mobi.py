@@ -30,8 +30,8 @@ from kindlestrip import SRCSStripper
 
 KINDLEGEN = '../bin/kindlegen'
 GENERATOR = 'kmanga'
-WIDTH = 800
-HEIGHT = 1280
+WIDTH = 758
+HEIGHT = 1024
 
 
 class Container(object):
