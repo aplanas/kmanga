@@ -96,6 +96,11 @@ class MangaHere(MangaSpider):
         if response.xpath(xp).extract():
             return
 
+        # Check if manga is licensed
+        xp = '//div[@class="detail_list"]/div[@class="mt10 color_ff00 mb10"]'
+        if response.xpath(xp).extract():
+            return
+
         # Alternate name
         xp = '//li[label[contains(text(),"%s")]]/text()'
         manga['alt_name'] = response.xpath(
