@@ -34,6 +34,7 @@
   </div>
   <input type="hidden" name="password">
   <p><a href="{% url 'password_change' %}">Change your password</a></p>
+  <p><a href="{% url 'user-delete' %}" class="text-danger">Remove you account</a></p>
   <button type="submit" class="btn btn-lg btn-default">Update</button>
 </form>
 {% endblock content %}

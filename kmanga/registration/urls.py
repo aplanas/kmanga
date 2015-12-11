@@ -7,6 +7,7 @@ from django.conf.urls import url
 from django.contrib.auth import views
 
 from .views import UserCreateView
+from .views import UserDeleteView
 from .views import UserUpdateView
 
 urlpatterns = [
@@ -39,4 +40,6 @@ urlpatterns = [
         name='user-create'),
     url(r'^user/edit$', UserUpdateView.as_view(),
         name='user-update'),
+    url(r'^suser/delete$', UserDeleteView.as_view(),
+        name='user-delete'),
 ]

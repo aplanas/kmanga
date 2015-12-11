@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic import CreateView
+from django.views.generic import DeleteView
 from django.views.generic import UpdateView
 
 from .forms import UserCreateForm
@@ -36,6 +37,15 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
     form_class = UserUpdateForm
     template_name = 'registration/user_update_form.html'
     success_url = reverse_lazy('subscription-list')
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+
+class UserDeleteView(LoginRequiredMixin, DeleteView):
+    model = User
+    template_name = 'registration/user_confirm_delete.html'
+    success_url = reverse_lazy('home')
 
     def get_object(self, queryset=None):
         return self.request.user

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block page_title %}Confirm remove account{% endblock page_title %}
+{% block content %}
+<form method="post" action="">{% csrf_token %}
+  <p>Are you sure you want to remove your account from Kmanga?</p>
+  <p>If you remove your account, all the subscriptions will be deleted.</p>
+  <button type="submit" class="btn btn-lg btn-default">Confirm</button>
+</form>
+{% endblock content %}
