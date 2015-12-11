@@ -208,28 +208,21 @@ class SubMangaCom(MangaSpider):
         return requests
 
     def _on_error_issue_date(self, err, meta):
-        """Called when a 404 happends in a issue."""
+        """Called when a 404 happends in an issue."""
         # Remove the issue in the manga and in the issues list.
         manga = meta['manga']
         issue = meta['issue']
         issues = meta['issues']
 
         manga['issues'].remove(issue)
-        # In the issues list is empty, this is the last issue, so we
+        # If the issues list is empty, this is the last issue, so we
         # can return the manga item.
         issues.remove(issue)
         if not issues:
             return manga
 
     def _parse_issue_date(self, response):
-        """Generate the list of issues for a manga
-
-        @url http://submanga.com/Soul_Eater/1/6674
-        @returns items 0 1
-        @returns request 0 0
-        @scrapes url name alt_name author artist reading_direction
-        @scrapes status genres description issues
-        """
+        """Parse the date og an issue."""
         manga = response.meta['manga']
         issue = response.meta['issue']
         issues = response.meta['issues']
@@ -238,7 +231,7 @@ class SubMangaCom(MangaSpider):
         xp = '//div[@class="well"]/text()'
         issue['release'] = response.xpath(xp).re(r'\d{2}/\d{2}/\d{4}')
 
-        # In Submanga a 404 page returns a 200.  If we do not have
+        # If Submanga a 404 page returns a 200.  If we do not have
         # release date we can assume that is a 404 and drop the issue.
         if not issue['release']:
             manga['issues'].remove(issue)
