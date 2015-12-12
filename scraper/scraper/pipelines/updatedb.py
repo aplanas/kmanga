@@ -205,11 +205,13 @@ class UpdateDBPipeline(object):
         exceptions = ('alt_name', 'genres', 'image_urls', 'images', 'issues')
         fields = [f for f in item if f not in (ignore_fields + exceptions)]
         # Update the fields of the manga object
-        changed = [self._sic(manga, item, f) for f in fields]
+        for f in fields:
+            self._sic(manga, item, f)
 
-        # Save the object to have a PK (creation of relations)
-        if not manga.pk or any(changed):
-            manga.save()
+        # Save the object to have a PK (creation of relations). Also
+        # update the the `modified` field to signalize that the Manga
+        # is still there (share semantic with `last_seen`)
+        manga.save()
 
         # alt_name
         alt_names = [{'name': i} for i in item['alt_name']]
