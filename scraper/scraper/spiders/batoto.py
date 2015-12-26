@@ -270,7 +270,8 @@ class Batoto(MangaSpider):
             'partial_url': partial_url,
             'referer_url': referer_url,
         }
-        return scrapy.Request(url, self._parse_manga, meta=meta)
+        return scrapy.Request(url, self._parse_manga, meta=meta,
+                              dont_filter=True)
 
     def _parse_manga(self, response):
         partial_url = response.meta['partial_url']
