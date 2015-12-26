@@ -260,7 +260,8 @@ class Batoto(MangaSpider):
         # use the unormalized one
         referer_url = response.request.url
         areader_id = referer_url.split('#')[1]
-        partial_url = response.urljoin('/areader?id=%s&p=%%s' % areader_id)
+        partial_url = '/areader?id=%s&p=%%s&supress_webtoon=t' % areader_id
+        partial_url = response.urljoin(partial_url)
 
         # Get the first AJAX answer to recover the list of pages
         url = partial_url % 1
