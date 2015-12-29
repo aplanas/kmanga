@@ -92,16 +92,19 @@ import os.path
 # Retry many times since proxies often fail
 RETRY_TIMES = 10
 # Retry on most error codes since proxies fail for different reasons
-RETRY_HTTP_CODES = [500, 502, 503, 504, 400, 403, 404, 408]
+RETRY_HTTP_CODES = [500, 502, 503, 400, 403, 404, 408]
 
 # Some proxy generate redirects of other errors, this codes invalidate
 # the proxy and is mapped as a RETRY_HTTP_CODE 500
-SMART_PROXY_ERROR_CODES = [301, 302]
+SMART_PROXY_ERROR_CODES = [301, 302, 504]
 
 DOWNLOADER_MIDDLEWARES = {
-    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 90,
-    'scraper.middlewares.SmartProxy': 100,
-    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
+    # Engine side
+    # We need to put SmartProxy between RetryMiddleware (500) and
+    # HttpProxyMiddleware (750).  Note that RedirectMiddleware (600)
+    # can influence if the response is seem by SmartProxy.
+    'scraper.middlewares.SmartProxy': 650,
+    # Downloader side
 }
 
 ITEM_PIPELINES = {
