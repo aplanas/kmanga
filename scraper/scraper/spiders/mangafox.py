@@ -100,6 +100,11 @@ class Mangafox(MangaSpider):
         else:
             manga = Manga(url=response.url)
 
+        # Check if manga is licensed
+        xp = '//div[@class="warning" and contains(text(),"has been licensed")]'
+        if response.xpath(xp).extract():
+            return
+
         # Name
         xp = '//title/text()'
         manga['name'] = response.xpath(xp).re(r'(.*) - Read')
