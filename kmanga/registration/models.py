@@ -39,7 +39,7 @@ class UserProfile(models.Model):
     language = models.CharField(max_length=2,
                                 choices=LANGUAGE_CHOICES)
     issues_per_day = models.IntegerField(default=ISSUES_PER_DAY[FREE])
-    email_kindle = models.EmailField()
+    email_kindle = models.EmailField(unique=True)
 
     def __str__(self):
         return self.user.username
