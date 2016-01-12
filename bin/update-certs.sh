@@ -18,4 +18,6 @@ cat $CERTS_PATH/signed.crt $CERTS_PATH/intermediate.pem > $CERTS_PATH/chained.pe
 
 # Add in /etc/sudoers.d/httpd a line like:
 #  <username> ALL = NOPASSWD: /usr/bin/systemctl restart httpd.service
+#  Defaults   !requiretty
+#  Defaults   visiblepw
 sudo systemctl restart httpd.service
