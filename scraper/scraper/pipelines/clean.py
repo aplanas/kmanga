@@ -386,7 +386,7 @@ class CleanPipeline(CleanBasePipeline):
     def clean_issuepage(self, item, spider):
         cleaning_plan = {
             'manga': self._clean_field_str,
-            'issue': self._clean_field_str,
+            'issue': (self._clean_field_str, {'optional': True}),
             'number': self._clean_field_int,
             # 'image_urls'
             # 'images'
