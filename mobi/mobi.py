@@ -26,12 +26,10 @@ import xml.etree.cElementTree as ET
 
 from PIL import Image
 
-from kindlestrip import SRCSStripper
-
 KINDLEGEN = '../bin/kindlegen'
 GENERATOR = 'kmanga'
-WIDTH = 758
-HEIGHT = 1024
+WIDTH = 800
+HEIGHT = 1280
 
 
 class Container(object):
@@ -260,17 +258,13 @@ class MangaMobi(object):
         if not self.container.has_cover:
             cover = self.container.get_image_path(0)
             self.container.set_cover(cover, adjust=Container.RESIZE_CROP)
-        subprocess.call([self.kindlegen, self.container.get_content_opf_path(),
-                         '-o', 'tmp.mobi'])
 
-        # Remove the SRCS section.
-        tmp_name = os.path.join(self.container.path, 'tmp.mobi')
         name = '%s.mobi' % re.sub(r'[^\w]', '_', self.info.title)
         full_name = os.path.join(self.container.path, name)
-        with open(tmp_name, 'rb') as with_srcs:
-            with open(full_name, 'wb') as without_srcs:
-                stripper = SRCSStripper(with_srcs.read())
-                without_srcs.write(stripper.get_result())
+        subprocess.call([self.kindlegen, self.container.get_content_opf_path(),
+                         '-dont_append_source',
+                         '-o', name])
+
         return name, full_name
 
     def content_opf(self, identifier=None):
