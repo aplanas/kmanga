@@ -119,7 +119,7 @@ class Command(BaseCommand):
         kwargs = {}
         if manga:
             kwargs['name'] = manga
-        if url:
+        elif url:
             kwargs['url'] = url
         mangas = source.manga_set.filter(**kwargs)
 
