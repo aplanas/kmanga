@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="kmanga" name="generator"/>
+    <title>0</title>
+    <link href="../css/style.css" rel="stylesheet" type="text/css"/>
+  </head>
+  <body>
+    <div>
+      <img src="../images/000.jpg" style="width:800px;height:1280px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px;"/>
+    </div>
+  </body>
+</html>

@@ -1,29 +1,45 @@
 <?xml version="1.0" ?>
-<package unique-identifier="id" version="2.0" xmlns="http://www.idpf.org/2007/opf">
+<package unique-identifier="dtb:uid" version="3.0" xmlns="http://www.idpf.org/2007/opf">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-    <dc:title>title</dc:title>
-    <dc:language>en</dc:language>
-    <dc:creator opf:file-as="author" opf:role="aut">author</dc:creator>
-    <dc:publisher>publisher</dc:publisher>
+    <meta content="true" name="fixed-layout"/>
+    <meta content="none" name="orientation-lock"/>
+    <meta content="800x1280" name="original-resolution"/>
     <meta content="comic" name="book-type"/>
+    <meta content="horizontal-rl" name="primary-writing-mode"/>
     <meta content="true" name="zero-gutter"/>
     <meta content="true" name="zero-margin"/>
-    <meta content="true" name="fixed-layout"/>
     <meta content="kmanga" name="generator"/>
-    <meta content="none" name="orientation-lock"/>
-    <meta content="horizontal-rl" name="primary-writing-mode"/>
-    <meta content="false" name="region-mag"/>
-    <meta content="800x1280" name="original-resolution"/>
+    <meta content="cover-image" name="cover"/>
+    <meta property="rendition:layout">pre-paginated</meta>
+    <meta property="rendition:orientation">auto</meta>
+    <dc:title>title</dc:title>
+    <dc:creator opf:file-as="author" opf:role="aut">author</dc:creator>
+    <dc:creator opf:role="ill">author</dc:creator>
+    <dc:publisher>publisher</dc:publisher>
+    <dc:rights>Original Authors</dc:rights>
+    <dc:language>en</dc:language>
+    <dc:identifier id="BookId">Version 1.0</dc:identifier>
+    <dc:identifier id="PrimaryId" opf:scheme="ISBN">NONE</dc:identifier>
+    <dc:identifier id="dtb:uid">id</dc:identifier>
+    <dc:type>preview</dc:type>
+    <dc:subject>COMICS &amp; GRAPHIC NOVELS / Manga / General</dc:subject>
+    <dc:description>title</dc:description>
   </metadata>
   <manifest>
     <item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>
-    <item href="cover.jpg" id="cimage" media-type="image/jpeg" properties="cover-image"/>
+    <item href="css/style.css" id="layout-styles" media-type="text/css"/>
     <item href="html/page-000.html" id="page-000" media-type="application/xhtml+xml"/>
     <item href="html/page-001.html" id="page-001" media-type="application/xhtml+xml"/>
     <item href="html/page-002.html" id="page-002" media-type="application/xhtml+xml"/>
     <item href="html/page-003.html" id="page-003" media-type="application/xhtml+xml"/>
     <item href="html/page-004.html" id="page-004" media-type="application/xhtml+xml"/>
     <item href="html/page-005.html" id="page-005" media-type="application/xhtml+xml"/>
+    <item href="images/000.jpg" id="image-000" media-type="image/jpeg"/>
+    <item href="images/001.jpg" id="image-001" media-type="image/jpeg"/>
+    <item href="images/002.jpg" id="image-002" media-type="image/jpeg"/>
+    <item href="images/003.jpg" id="image-003" media-type="image/jpeg"/>
+    <item href="images/004.jpg" id="image-004" media-type="image/jpeg"/>
+    <item href="images/005.jpg" id="image-005" media-type="image/jpeg"/>
   </manifest>
   <spine toc="ncx">
     <itemref idref="page-000" linear="yes"/>
@@ -33,4 +49,7 @@
     <itemref idref="page-004" linear="yes"/>
     <itemref idref="page-005" linear="yes"/>
   </spine>
+  <guide>
+    <reference href="html/page-000.html" title="Beginning" type="text"/>
+  </guide>
 </package>

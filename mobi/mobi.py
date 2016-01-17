@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
+import glob
 import os
 import re
 import shutil
@@ -28,8 +29,97 @@ from PIL import Image
 
 KINDLEGEN = '../bin/kindlegen'
 GENERATOR = 'kmanga'
-WIDTH = 800
-HEIGHT = 1280
+# We need to maintain the rest of the images with the same aspect ratio
+WIDTH = 800    # 1200
+HEIGHT = 1280  # 1920
+
+# Reading directions
+HORIZONTAL_LR = 'horizontal-lr'
+HORIZONTAL_RL = 'horizontal-rl'
+VERTICAL_LR = 'vertical-lr'
+VERTICAL_RL = 'vertical-rl'
+
+CSS = """
+html{color:#000;background:#FFF;}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal;}li{list-style:none;}caption,th{text-align:left;}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}q:before,q:after{content:'';}abbr,acronym{border:0;font-variant:normal;}sup{vertical-align:text-top;}sub{vertical-align:text-bottom;}input,textarea,select{font-family:inherit;font-size:inherit;font-weight:inherit;}input,textarea,select{*font-size:100%;}legend{color:#000;}
+
+#fs {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#fs a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#fs div, img {
+  position: absolute;
+}
+
+.fs-panel {
+  position: absolute;
+  display: none;
+  overflow: hidden;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+}
+
+#reg-tr {
+  top: 0%;
+  left: 50%;
+  width: 50%;
+  height: 50%;
+}
+
+#reg-tr-mt img {
+  position: absolute;
+  top: 0%;
+  right: 0%;
+}
+
+#reg-tl {
+  top: 0%;
+  left: 0%;
+  width: 50%;
+  height: 50%;
+}
+
+#reg-tl-mt img {
+  position: absolute;
+  top: 0%;
+  left: 0%;
+}
+
+#reg-br {
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 50%;
+}
+
+#reg-br-mt img {
+  position: absolute;
+  bottom: 0%;
+  right: 0%;
+}
+
+#reg-bl {
+  top: 50%;
+  left: 0%;
+  width: 50%;
+  height: 50%;
+}
+
+#reg-bl-mt img {
+  position: absolute;
+  bottom: 0%;
+  left: 0%;
+}
+"""
 
 
 class Container(object):
@@ -42,6 +132,9 @@ class Container(object):
     def __init__(self, path):
         self.path = path
         self.has_cover = False
+        # Store information about images.  This information can be
+        # recreated from the container.
+        # (img_path, (size_x, size_y), img_size, adjust)
         self._image_info = []
         self._npages = 0
 
@@ -52,7 +145,10 @@ class Container(object):
                 self.clean()
             else:
                 raise ValueError('Container %s is not empty' % self.path)
-        os.makedirs(os.path.join(self.path, 'html/images'))
+        os.makedirs(self.path)
+        os.mkdir(os.path.join(self.path, 'css'))
+        os.mkdir(os.path.join(self.path, 'html'))
+        os.mkdir(os.path.join(self.path, 'images'))
 
     def clean(self):
         """Remove the container directoy and all the content."""
@@ -61,11 +157,17 @@ class Container(object):
     def add_image(self, image, adjust=None, as_link=False):
         """Add an image into the container."""
         order = self._npages
-        img_dir = os.path.join(self.path, 'html/images')
+        img_dir = os.path.join(self.path, 'images')
         img_name = '%03d%s' % (order, os.path.splitext(image)[1])
         img_dst = os.path.join(img_dir, img_name)
 
         img_adjusted = self.adjust_image(image, adjust)
+
+        # Add the last part of the name, that descibe the kind of
+        # transformation
+        if img_adjusted:
+            img_dst, img_dst_ext = os.path.splitext(img_dst)
+            img_dst = '%s_%s%s' % (img_dst, adjust, img_dst_ext)
 
         if as_link and not img_adjusted:
             os.link(image, img_dst)
@@ -86,6 +188,10 @@ class Container(object):
         cover_path = self.get_cover_path()
 
         img_adjusted = self.adjust_image(image, adjust)
+        if not img_adjusted and image.endswith('.png'):
+            # If the image is a PNG, we read it to store it in JPG
+            # format in the next section.
+            img_adjusted = Image.open(image)
 
         if as_link and not img_adjusted:
             os.link(image, cover_path)
@@ -100,68 +206,90 @@ class Container(object):
     def npages(self):
         """Return the total number of pages / images."""
         if not self._npages:
-            images_path = os.path.join(self.path, 'html', 'images')
-            files = [f for f in os.listdir(images_path)
+            img_path = os.path.join(self.path, 'images')
+            files = [f for f in os.listdir(img_path)
                      if f.endswith(('jpg', 'png'))]
             self._npages = len(files)
         return self._npages
 
+    def _get_adjust(self, img_path):
+        """Return the kind of transformation done in a image."""
+        adjusts = (Container.RESIZE, Container.RESIZE_CROP, Container.ROTATE)
+        for adjust in adjusts:
+            if adjust in img_path:
+                return adjust
+
     def get_image_info(self):
-        """Get the list of (image_path, (size_x, size_y), image_size)."""
+        """Get the list of (img_path, (size_x, size_y), img_size, adjust)."""
         if not self._image_info:
-            html_path = os.path.join(self.path, 'html')
-            images_path = os.path.join(self.path, 'html', 'images')
+            img_path = os.path.join(self.path, 'images')
             files = [os.path.join('images', f)
-                     for f in os.listdir(images_path)
+                     for f in os.listdir(img_path)
                      if f.endswith(('jpg', 'png'))]
             for file_ in sorted(files):
-                file_path = os.path.join(html_path, file_)
+                file_path = os.path.join(self.path, file_)
+                adjust = self._get_adjust(file_)
                 self._image_info.append(
                     (file_, Image.open(file_path).size,
-                     os.path.getsize(file_path)))
+                     os.path.getsize(file_path), adjust))
         return self._image_info
-
-    def _get_image_path(self, number, ext, relative=False):
-        """Get the path of an image."""
-        image_path = os.path.join('html', 'images',
-                                  '%03d.%s' % (number, ext))
-        if not relative:
-            image_path = os.path.join(self.path, image_path)
-        return image_path
 
     def get_image_path(self, number, relative=False):
         """Get the path of an image."""
         if number > self.npages():
             raise ValueError('Page number not found')
-        # First try with the JPG extension, if not, try PNG
-        for ext in ('jpg', 'png'):
-            image_path = self._get_image_path(number, ext)
-            if os.path.isfile(image_path):
-                return self._get_image_path(number, ext, relative)
-        raise ValueError('Page number not found in JPG or PNG format')
+        # With glob we need to use the absolute path
+        img_glob = os.path.join(self.path, 'images', '%03d*' % number)
+        imgs_path = glob.glob(img_glob)
+        if not imgs_path:
+            raise ValueError('Page number not found in JPG or PNG format')
+        if len(imgs_path) > 1:
+            raise ValueError('Multiple page found for the same page number')
+        img_path = imgs_path[0]
+        if relative:
+            # Remove the path and the first '/'
+            img_path = img_path[len(self.path)+1:]
+        return img_path
+
+    def get_image_mime_type(self, number):
+        """Get image MIME type."""
+        image_path = self.get_image_path(number)
+        _, ext = os.path.splitext(image_path.lower())
+        mime_type = {
+            '.jpg': 'image/jpeg',
+            '.png': 'image/png',
+        }
+        return mime_type[ext]
+
+    def _get_path(self, file_path, relative):
+        if not relative:
+            file_path = os.path.join(self.path, file_path)
+        return file_path
 
     def get_cover_path(self, relative=False):
         """Get the path of the cover image."""
-        # XXX TODO - The cover image can be of a different type
-        image_path = 'cover.jpg'
-        if not relative:
-            image_path = os.path.join(self.path, image_path)
-        return image_path
+        return self._get_path('cover.jpg', relative)
 
-    def get_content_opf_path(self):
+    def get_content_opf_path(self, relative=False):
         """Get the path for content.opf."""
-        return os.path.join(self.path, 'content.opf')
+        return self._get_path('content.opf', relative)
 
     def get_page_path(self, number, relative=False):
         """Get the path for page-XXX.html."""
-        page_path = os.path.join('html', 'page-%03d.html' % number)
-        if not relative:
-            page_path = os.path.join(self.path, page_path)
-        return page_path
+        return self._get_path(
+            os.path.join('html', 'page-%03d.html' % number), relative)
 
-    def get_toc_ncx_path(self):
+    def get_toc_ncx_path(self, relative=False):
         """Get the path for the toc.ncx."""
-        return os.path.join(self.path, 'toc.ncx')
+        return self._get_path('toc.ncx', relative)
+
+    def get_nav_path(self, relative=False):
+        """Get the path for the nav.xhtml."""
+        return self._get_path('nav.xhtml', relative)
+
+    def get_style_css_path(self, relative=False):
+        """Get the path of the CSS file."""
+        return self._get_path(os.path.join('css', 'style.css'), relative)
 
     def get_size(self):
         """Get the size of the images in bytes."""
@@ -211,6 +339,10 @@ class Container(object):
             width, height = img.size
             if float(width) / float(height) > 1.0:
                 img = img.transpose(Image.ROTATE_270)
+            else:
+                # If ROTATE is not done, signalize it and return None
+                # (no transformation)
+                img = None
         # elif adjust == Container.SPLIT:
         #     pass
         else:
@@ -257,10 +389,12 @@ class MangaMobi(object):
 
     def create(self):
         """Create the mobi file calling kindlegen."""
+        self.style_css()
         self.content_opf()
         for i in range(self.container.npages()):
             self.page(i)
         self.toc_ncx()
+        self.nav()
         if not self.container.has_cover:
             cover = self.container.get_image_path(0)
             self.container.set_cover(cover, adjust=Container.RESIZE_CROP)
@@ -274,12 +408,11 @@ class MangaMobi(object):
         return full_name
 
     def content_opf(self, identifier=None):
-        """Generate and return the content OPF."""
-        identifier = identifier if identifier else str(uuid.uuid1())
+        """Generate the content OPF."""
         package = ET.Element('package', {
-            'version': '2.0',
-            'unique-identifier': identifier,
             'xmlns': 'http://www.idpf.org/2007/opf',
+            'version': '3.0',
+            'unique-identifier': 'dtb:uid',
         })
 
         metadata = ET.SubElement(package, 'metadata', {
@@ -287,26 +420,20 @@ class MangaMobi(object):
             'xmlns:opf': 'http://www.idpf.org/2007/opf',
         })
 
-        ET.SubElement(metadata, 'dc:title').text = self.info.title
-        ET.SubElement(metadata, 'dc:language').text = self.info.language
-        ET.SubElement(metadata, 'dc:creator', {
-            'opf:role': 'aut',
-            'opf:file-as': self.info.author,
-        }).text = self.info.author
-        ET.SubElement(metadata, 'dc:publisher').text = self.info.publisher
-
+        # Kindle specific metadata
         metas = (
-            ('book-type', 'comic'),
-            ('zero-gutter', 'true'),
-            ('zero-margin', 'true'),
             ('fixed-layout', 'true'),
-            ('generator', GENERATOR),
-            # XXX WARNING - Maybe I can fix to 'portrait'
             ('orientation-lock', 'none'),
-            ('primary-writing-mode', self.info.reading_direction),
-            ('region-mag', 'false'),
             # XXX TODO - Detect the original resolution
             ('original-resolution', '%dx%d' % (WIDTH, HEIGHT)),
+            # This is decided by KindleGen
+            # ('RegionMagnification', 'true'),
+            ('book-type', 'comic'),
+            ('primary-writing-mode', self.info.reading_direction),
+            ('zero-gutter', 'true'),
+            ('zero-margin', 'true'),
+            ('generator', GENERATOR),
+            ('cover', 'cover-image'),
         )
         for name, content in metas:
             ET.SubElement(metadata, 'meta', {
@@ -314,21 +441,70 @@ class MangaMobi(object):
                 'content': content,
             })
 
+        # EPUB3 metadata
+        ET.SubElement(metadata, 'meta', {
+            'property': 'rendition:layout'
+        }).text = 'pre-paginated'
+        ET.SubElement(metadata, 'meta', {
+            'property': 'rendition:orientation'
+        }).text = 'auto'
+
+        # eBook content metadata
+        ET.SubElement(metadata, 'dc:title').text = self.info.title
+        ET.SubElement(metadata, 'dc:creator', {
+            'opf:role': 'aut',
+            'opf:file-as': self.info.author,
+        }).text = self.info.author
+        ET.SubElement(metadata, 'dc:creator', {
+            'opf:role': 'ill',
+        }).text = self.info.author
+        ET.SubElement(metadata, 'dc:publisher').text = self.info.publisher
+        ET.SubElement(metadata, 'dc:rights').text = 'Original Authors'
+        ET.SubElement(metadata, 'dc:language').text = self.info.language
+
+        # XXX TODO - We do not add a timestamp in the document
+        # ET.SubElement(metadata, 'dc:date', {
+        #     'opf:event': 'creation',
+        # }).text = '2015-12-31'
+        # ET.SubElement(metadata, 'dc:date', {
+        #     'opf:event': 'publication',
+        # }).text = '2015'
+        # ET.SubElement(metadata, 'dc:date', {
+        #     'opf:event': 'modification',
+        # }).text = '2015-12-31'
+
+        ET.SubElement(metadata, 'dc:identifier', {
+            'id': 'BookId',
+        }).text = 'Version 1.0'
+        ET.SubElement(metadata, 'dc:identifier', {
+            'id': 'PrimaryId',
+            'opf:scheme': 'ISBN',
+        }).text = 'NONE'
+        identifier = identifier if identifier else str(uuid.uuid1())
+        ET.SubElement(metadata, 'dc:identifier', {
+            'id': 'dtb:uid',
+        }).text = identifier
+
+        ET.SubElement(metadata, 'dc:type').text = 'preview'
+        subject = 'COMICS & GRAPHIC NOVELS / Manga / General'
+        ET.SubElement(metadata, 'dc:subject').text = subject
+
+        ET.SubElement(metadata, 'dc:description').text = self.info.title
+
         manifest = ET.SubElement(package, 'manifest')
-        # Add the TOC item
+        # Add the NCX item
         ET.SubElement(manifest, 'item', {
             'id': 'ncx',
-            'href': 'toc.ncx',
+            'href': self.container.get_toc_ncx_path(relative=True),
             'media-type': 'application/x-dtbncx+xml',
         })
-        # Add the cover image item
+        # Add the CSS style item
         ET.SubElement(manifest, 'item', {
-            'id': 'cimage',
-            'href': 'cover.jpg',
-            'media-type': 'image/jpeg',
-            'properties': 'cover-image',
+            'id': 'layout-styles',
+            'href': self.container.get_style_css_path(relative=True),
+            'media-type': 'text/css',
         })
-
+        # Add HTML page items
         pages = [(self.container.get_page_path(n, relative=True),
                   'page-%03d' % n, 'application/xhtml+xml')
                  for n in range(self.container.npages())]
@@ -338,7 +514,27 @@ class MangaMobi(object):
                 'href': href,
                 'media-type': media_type,
             })
+        # XXX TODO - We do not add it in the table to avoid to appear
+        # as a normal page
+        # Add the cover image item
+        # ET.SubElement(manifest, 'item', {
+        #     'id': 'cover-image',
+        #     'href': self.container.get_cover_path(relative=True),
+        #     'media-type': 'image/jpeg',
+        #     'properties': 'cover-image',
+        # })
+        # Add image items
+        images = [(self.container.get_image_path(n, relative=True),
+                   'image-%03d' % n, self.container.get_image_mime_type(n))
+                  for n in range(self.container.npages())]
+        for href, id_, media_type in images:
+            ET.SubElement(manifest, 'item', {
+                'id': id_,
+                'href': href,
+                'media-type': media_type,
+            })
 
+        # Spine
         spine = ET.SubElement(package, 'spine', {'toc': 'ncx'})
         for idref in range(self.container.npages()):
             ET.SubElement(spine, 'itemref', {
@@ -346,25 +542,86 @@ class MangaMobi(object):
                 'linear': 'yes',
             })
 
+        # Guide
+        guide = ET.SubElement(package, 'guide')
+        ET.SubElement(guide, 'reference', {
+            'type': 'text',
+            'title': 'Beginning',
+            'href': self.container.get_page_path(0, relative=True),
+        })
+
         tree = ET.ElementTree(package)
         with open(self.container.get_content_opf_path(), 'w') as f:
             tree.write(f, encoding='utf-8', xml_declaration=True)
 
-    def _img_style(self, size):
+    def _use_panel_view(self):
+        """Evaluate if PanelView is used."""
+        # We want to use PanelView only in the case that there is a
+        # rotated image, because in this case we need to control the
+        # zoom order for the four regions of a page.
+        image_info = self.container.get_image_info()
+        return any(info[-1] == Container.ROTATE for info in image_info)
+
+    def _img_scaled_size(self, size, scale=1.0):
         width, height = size
         ratio = min((WIDTH/float(width), HEIGHT/float(height)))
-        width, height = int(ratio*width+0.5), int(ratio*height+0.5)
-        assert width <= WIDTH and height <= HEIGHT, 'Scale error'
-        style = 'width:%dpx;height:%dpx;' % (width, height)
+        width, height = int(scale*ratio*width+0.5), int(scale*ratio*height+0.5)
+        return width, height
 
+    def _img_style_size(self, size, scale=1.0):
+        width, height = self._img_scaled_size(size, scale)
+        style = 'width:%dpx;height:%dpx;' % (width, height)
+        return style
+
+    def _img_style_margin(self, size):
+        width, height = self._img_scaled_size(size)
         mtop, mleft = (HEIGHT - height) / 2, (WIDTH - width) / 2
         mbottom, mright = (HEIGHT - height) - mtop, (WIDTH - width) - mleft
-        style += 'margin-top:%dpx;margin-bottom:%dpx;' % (mtop, mbottom)
+        style = 'margin-top:%dpx;margin-bottom:%dpx;' % (mtop, mbottom)
         style += 'margin-left:%dpx;margin-right:%dpx;' % (mleft, mright)
         return style
 
+    def _get_regions(self, number):
+        """Get the region names and order for a page."""
+        order = {
+            HORIZONTAL_LR: (
+                ('tl', 1), ('tr', 2), ('bl', 3), ('br', 4),
+            ),
+            HORIZONTAL_RL: (
+                ('tl', 2), ('tr', 1), ('bl', 4), ('br', 3),
+            ),
+            VERTICAL_LR: (
+                ('tl', 1), ('tr', 3), ('bl', 2), ('br', 4),
+            ),
+            VERTICAL_RL: (
+                ('tl', 3), ('tr', 1), ('bl', 4), ('br', 2),
+            ),
+            'rotate_%s' % HORIZONTAL_LR: (
+                ('tl', 2), ('tr', 1), ('bl', 4), ('br', 3),
+            ),
+            'rotate_%s' % HORIZONTAL_RL: (
+                ('tl', 4), ('tr', 3), ('bl', 2), ('br', 1),
+            ),
+            'rotate_%s' % VERTICAL_LR: (
+                ('tl', 2), ('tr', 1), ('bl', 4), ('br', 3),
+            ),
+            'rotate_%s' % VERTICAL_RL: (
+                ('tl', 4), ('tr', 3), ('bl', 2), ('br', 1),
+            ),
+        }
+        _, _, _, adjust = self.container.get_image_info()[number]
+        rd = self.info.reading_direction
+        if not adjust:
+            return order[rd]
+        elif adjust == Container.ROTATE:
+            return order['rotate_%s' % rd]
+        else:
+            raise ValueError('Adjust type is not ROTATE: %s' % adjust)
+
     def page(self, number):
-        """Generate and return the content of a page."""
+        """Generate the content of a page."""
+        use_panel_view = self._use_panel_view()
+
         html = ET.Element('html')
 
         head = ET.SubElement(html, 'head')
@@ -372,17 +629,53 @@ class MangaMobi(object):
             'name': 'generator',
             'content': GENERATOR,
         })
-        title = ET.SubElement(head, 'title')
-        title.text = str(number)
-
-        body = ET.SubElement(html, 'body')
-        div = ET.SubElement(body, 'div')
-
-        img_path, img_size, _ = self.container.get_image_info()[number]
-        ET.SubElement(div, 'img', {
-            'style': self._img_style(img_size),
-            'src': img_path,
+        ET.SubElement(head, 'title').text = str(number)
+        ET.SubElement(head, 'link', {
+            'href': '../%s' % self.container.get_style_css_path(relative=True),
+            'rel': 'stylesheet',
+            'type': 'text/css',
         })
+
+        img_path, img_size, _, adjust = self.container.get_image_info()[number]
+        body = ET.SubElement(html, 'body')
+        if use_panel_view:
+            div_fs = ET.SubElement(body, 'div', {
+                'id': 'fs'
+            })
+            div = ET.SubElement(div_fs, 'div')
+        else:
+            div = ET.SubElement(body, 'div')
+
+        size = self._img_style_size(img_size)
+        margin = self._img_style_margin(img_size)
+        ET.SubElement(div, 'img', {
+            'src': '../%s' % img_path,
+            'style': size + margin,
+        })
+
+        if use_panel_view:
+            regions = self._get_regions(number)
+            for region in regions:
+                label, order = region
+                div_reg = ET.SubElement(div_fs, 'div', {
+                    'id': 'reg-%s' % label
+                })
+                json_data = '{"targetId": "%s", "ordinal": %d}' % (
+                    'reg-%s-mt' % label,
+                    order,
+                )
+                ET.SubElement(div_reg, 'a', {
+                    'class': 'app-amzn-magnify',
+                    'data-app-amzn-magnify': json_data,
+                })
+                div_mt = ET.SubElement(div_fs, 'div', {
+                    'id': 'reg-%s-mt' % label,
+                    'class': 'fs-panel',
+                })
+                ET.SubElement(div_mt, 'img', {
+                    'src': '../%s' % img_path,
+                    'style': self._img_style_size(img_size, scale=1.8),
+                })
 
         tree = ET.ElementTree(html)
         with open(self.container.get_page_path(number), 'w') as f:
@@ -390,20 +683,20 @@ class MangaMobi(object):
             tree.write(f, encoding='utf-8', xml_declaration=False)
 
     def toc_ncx(self):
-        """Generate and return the logical table of content."""
+        """Generate the logical table of content."""
         ncx = ET.Element('ncx', {
             'version': '2005-1',
-            'xml:lang': 'en-US',
-            'xmlns': 'http://www.daisy.org/z3986/2005/ncx/'
+            'xml:lang': 'en',
+            'xmlns': 'http://www.daisy.org/z3986/2005/ncx/',
         })
 
         head = ET.SubElement(ncx, 'head')
         metas = (
             ('dtb:uid', self.info.title),
-            ('dtb:depth', '2'),
+            ('dtb:depth', '1'),
             ('dtb:totalPageCount', '0'),
             ('dtb:maxPageNumber', '0'),
-            ('generated', 'true'),
+            # ('generated', 'true'),
         )
         for name, content in metas:
             ET.SubElement(head, 'meta', {
@@ -436,3 +729,49 @@ class MangaMobi(object):
             print >>f, '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" ' \
                        '"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">'
             tree.write(f, encoding='utf-8', xml_declaration=False)
+
+    def nav(self):
+        """Generate the navigation file."""
+        html = ET.Element('html', {
+            'xmlns': 'http://www.w3.org/1999/xhtml',
+            'xml:lang': 'en',
+            'lang': 'en',
+            'xmlns:epub': 'http://www.idpf.org/2007/ops',
+        })
+
+        head = ET.SubElement(html, 'head')
+        ET.SubElement(head, 'title').text = self.info.title
+        ET.SubElement(head, 'meta', {
+            'http-equiv': 'Content-Type',
+            'content': 'text/html; charset=utf-8',
+        })
+
+        body = ET.SubElement(html, 'body')
+        landmarks = ET.SubElement(body, 'nav', {
+            'epub:type': 'landmarks'
+        })
+        ol = ET.SubElement(landmarks, 'ol')
+        ET.SubElement(ET.SubElement(ol, 'li'), 'a', {
+            'epub:type': 'bodymatter',
+            'href': self.container.get_page_path(0, relative=True),
+        }).text = 'Beginning'
+
+        toc = ET.SubElement(body, 'nav', {
+            'epub:type': 'toc'
+        })
+        ol = ET.SubElement(toc, 'ol')
+
+        for n in range(self.container.npages()):
+            ET.SubElement(ET.SubElement(ol, 'li'), 'a', {
+                'href': self.container.get_page_path(n, relative=True)
+            }).text = 'Page-%03d' % n
+
+        tree = ET.ElementTree(html)
+        with open(self.container.get_nav_path(), 'w') as f:
+            print >>f, '<?xml version="1.0" encoding="UTF-8"?>'
+            tree.write(f, encoding='utf-8', xml_declaration=False)
+
+    def style_css(self):
+        """Generate the CSS."""
+        with open(self.container.get_style_css_path(), 'w') as f:
+            print >>f, CSS

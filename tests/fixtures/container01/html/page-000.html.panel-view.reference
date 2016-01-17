@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="kmanga" name="generator"/>
+    <title>0</title>
+    <link href="../css/style.css" rel="stylesheet" type="text/css"/>
+  </head>
+  <body>
+    <div id="fs">
+      <div>
+        <img src="../images/000.jpg" style="width:800px;height:1280px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px;"/>
+      </div>
+      <div id="reg-tl">
+        <a class="app-amzn-magnify" data-app-amzn-magnify="{&quot;targetId&quot;: &quot;reg-tl-mt&quot;, &quot;ordinal&quot;: 2}"/>
+      </div>
+      <div class="fs-panel" id="reg-tl-mt">
+        <img src="../images/000.jpg" style="width:1440px;height:2304px;"/>
+      </div>
+      <div id="reg-tr">
+        <a class="app-amzn-magnify" data-app-amzn-magnify="{&quot;targetId&quot;: &quot;reg-tr-mt&quot;, &quot;ordinal&quot;: 1}"/>
+      </div>
+      <div class="fs-panel" id="reg-tr-mt">
+        <img src="../images/000.jpg" style="width:1440px;height:2304px;"/>
+      </div>
+      <div id="reg-bl">
+        <a class="app-amzn-magnify" data-app-amzn-magnify="{&quot;targetId&quot;: &quot;reg-bl-mt&quot;, &quot;ordinal&quot;: 4}"/>
+      </div>
+      <div class="fs-panel" id="reg-bl-mt">
+        <img src="../images/000.jpg" style="width:1440px;height:2304px;"/>
+      </div>
+      <div id="reg-br">
+        <a class="app-amzn-magnify" data-app-amzn-magnify="{&quot;targetId&quot;: &quot;reg-br-mt&quot;, &quot;ordinal&quot;: 3}"/>
+      </div>
+      <div class="fs-panel" id="reg-br-mt">
+        <img src="../images/000.jpg" style="width:1440px;height:2304px;"/>
+      </div>
+    </div>
+  </body>
+</html>

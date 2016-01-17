@@ -2,13 +2,12 @@
 <!DOCTYPE ncx
   PUBLIC '-//NISO//DTD ncx 2005-1//EN'
   'http://www.daisy.org/z3986/2005/ncx-2005-1.dtd'>
-<ncx version="2005-1" xml:lang="en-US" xmlns="http://www.daisy.org/z3986/2005/ncx/">
+<ncx version="2005-1" xml:lang="en" xmlns="http://www.daisy.org/z3986/2005/ncx/">
   <head>
     <meta content="title" name="dtb:uid"/>
-    <meta content="2" name="dtb:depth"/>
+    <meta content="1" name="dtb:depth"/>
     <meta content="0" name="dtb:totalPageCount"/>
     <meta content="0" name="dtb:maxPageNumber"/>
-    <meta content="true" name="generated"/>
   </head>
   <docTitle>
     <text>title</text>

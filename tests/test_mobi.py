@@ -47,6 +47,13 @@ class TestContainer(unittest.TestCase):
     def tearDown(self):
         self.container.clean()
 
+    def test_create_new(self):
+        container = Container('tests/fixtures/empty')
+        container.create()
+        self.assertTrue(os.path.exists('tests/fixtures/empty'))
+        container.clean()
+        self.assertFalse(os.path.exists('tests/fixtures/empty'))
+
     def test_create(self):
         with self.assertRaises(ValueError):
             self.container.create(clean=False)
@@ -57,25 +64,31 @@ class TestContainer(unittest.TestCase):
     def test_add_image(self):
         self.container.add_image('tests/fixtures/images/width-small.jpg')
         self.assertTrue(
-            os.path.exists('tests/fixtures/dummy/html/images/006.jpg'))
+            os.path.exists('tests/fixtures/dummy/images/006.jpg'))
 
         self.container.add_image('tests/fixtures/images/width-small.jpg',
                                  as_link=True)
         self.assertTrue(
-            os.path.exists('tests/fixtures/dummy/html/images/007.jpg'))
+            os.path.exists('tests/fixtures/dummy/images/007.jpg'))
 
         self.container.add_image('tests/fixtures/images/width-small.jpg',
                                  adjust=Container.ROTATE)
         self.assertTrue(
-            os.path.exists('tests/fixtures/dummy/html/images/008.jpg'))
+            os.path.exists('tests/fixtures/dummy/images/008.jpg'))
 
-        self.container.add_image('tests/fixtures/images/width-small-bw.jpg',
+        self.container.add_image(
+            'tests/fixtures/images/height-large-horizontal.jpg',
+            adjust=Container.ROTATE)
+        self.assertTrue(
+            os.path.exists('tests/fixtures/dummy/images/009_rotate.jpg'))
+
+        self.container.add_image('tests/fixtures/images/width-small-bw.png',
                                  adjust=Container.ROTATE)
         self.assertTrue(
-            os.path.exists('tests/fixtures/dummy/html/images/009.jpg'))
+            os.path.exists('tests/fixtures/dummy/images/010.png'))
 
-        self.assertEqual(self.container._npages, 10)
-        self.assertEqual(self.container.npages(), 10)
+        self.assertEqual(self.container._npages, 11)
+        self.assertEqual(self.container.npages(), 11)
 
     def test_add_images(self):
         pass
@@ -92,14 +105,14 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(
             os.path.exists('tests/fixtures/dummy/cover.jpg'))
 
-        os.unlink('tests/fixtures/dummy/cover.jpg')
-        self.container.set_cover('tests/fixtures/images/width-small.jpg',
-                                 adjust=Container.ROTATE)
+        self.container.set_cover(
+            'tests/fixtures/images/height-large-horizontal.jpg',
+            adjust=Container.ROTATE)
         self.assertTrue(
             os.path.exists('tests/fixtures/dummy/cover.jpg'))
 
         os.unlink('tests/fixtures/dummy/cover.jpg')
-        self.container.set_cover('tests/fixtures/images/width-small-bw.jpg',
+        self.container.set_cover('tests/fixtures/images/width-small-bw.png',
                                  adjust=Container.ROTATE)
         self.assertTrue(
             os.path.exists('tests/fixtures/dummy/cover.jpg'))
@@ -107,21 +120,44 @@ class TestContainer(unittest.TestCase):
     def test_get_image_info(self):
         info = self.container.get_image_info()
         self.assertEqual(len(info), 6)
-        e1 = ('images/000.jpg', (800, 1280), 12547)
+        e1 = ('images/000.jpg', (800, 1280), 12547, None)
         self.assertEqual(info[0], e1)
-        e5 = ('images/005.jpg', (800, 1280), 12547)
+        e5 = ('images/005.jpg', (800, 1280), 12547, None)
         self.assertEqual(info[-1], e5)
+
+        self.container.add_image(
+            'tests/fixtures/images/height-large-horizontal.jpg',
+            adjust=Container.ROTATE)
+        info = self.container.get_image_info()
+        e6 = ('images/006_rotate.jpg', (800, 1920), 33336, Container.ROTATE)
+        self.assertEqual(info[-1], e6)
+
+        info2 = self.container.get_image_info()
+        self.assertEqual(info, info2)
+
+    def test_get_image_mime_type(self):
+        self.assertEqual(
+            self.container.get_image_mime_type(0),
+            'image/jpeg')
 
     def test_container_get_path(self):
         with self.assertRaises(ValueError):
             self.container.get_image_path(10)
 
         self.assertEqual(self.container.get_image_path(1),
-                         'tests/fixtures/dummy/html/images/001.jpg')
+                         'tests/fixtures/dummy/images/001.jpg')
         self.assertEqual(self.container.get_image_path(1, relative=True),
-                         'html/images/001.jpg')
+                         'images/001.jpg')
+
+        # Duplicate the third image
+        os.link('tests/fixtures/dummy/images/002.jpg',
+                'tests/fixtures/dummy/images/002.png')
+        with self.assertRaises(ValueError):
+            self.container.get_image_path(2)
+
         # Remove the third image
-        os.unlink('tests/fixtures/dummy/html/images/002.jpg')
+        os.unlink('tests/fixtures/dummy/images/002.jpg')
+        os.unlink('tests/fixtures/dummy/images/002.png')
         with self.assertRaises(ValueError):
             self.container.get_image_path(2)
 
@@ -132,10 +168,28 @@ class TestContainer(unittest.TestCase):
 
         self.assertEqual(self.container.get_content_opf_path(),
                          'tests/fixtures/dummy/content.opf')
+        self.assertEqual(self.container.get_content_opf_path(relative=True),
+                         'content.opf')
+
         self.assertEqual(self.container.get_page_path(1),
                          'tests/fixtures/dummy/html/page-001.html')
+        self.assertEqual(self.container.get_page_path(1, relative=True),
+                         'html/page-001.html')
+
         self.assertEqual(self.container.get_toc_ncx_path(),
                          'tests/fixtures/dummy/toc.ncx')
+        self.assertEqual(self.container.get_toc_ncx_path(relative=True),
+                         'toc.ncx')
+
+        self.assertEqual(self.container.get_nav_path(),
+                         'tests/fixtures/dummy/nav.xhtml')
+        self.assertEqual(self.container.get_nav_path(relative=True),
+                         'nav.xhtml')
+
+        self.assertEqual(self.container.get_style_css_path(),
+                         'tests/fixtures/dummy/css/style.css')
+        self.assertEqual(self.container.get_style_css_path(relative=True),
+                         'css/style.css')
 
     def test_get_size(self):
         self.assertTrue(self.container.get_size(), 75282)
@@ -154,7 +208,10 @@ class TestContainer(unittest.TestCase):
             self.assertTrue(img.size[0] == WIDTH and img.size[1] == HEIGHT)
 
             img = self.container.adjust_image(img_path, Container.ROTATE)
-            self.assertTrue(img.size[0] < img.size[1])
+            if name.endswith('horizontal.jpg'):
+                self.assertTrue(img.size[0] < img.size[1])
+            else:
+                self.assertEqual(img, None)
 
             with self.assertRaises(ValueError):
                 self.container.adjust_image(img_path, 'ERROR')
@@ -179,7 +236,6 @@ class TestContainer(unittest.TestCase):
 class TestMangaMobi(unittest.TestCase):
 
     def setUp(self):
-        pass
         shutil.copytree('tests/fixtures/container01', 'tests/fixtures/dummy')
         self.container = Container('tests/fixtures/dummy')
         # Count the number of current pages as a side effect
@@ -212,32 +268,54 @@ class TestMangaMobi(unittest.TestCase):
             with open('tests/fixtures/dummy/content.opf.reference') as f2:
                 self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
 
-    def test_page(self):
+    def test_page_no_panel_view(self):
         self.mangamobi.page(0)
         page = 'tests/fixtures/dummy/html/page-000.html'
         with open(page) as f1:
-            with open(page+'.reference') as f2:
+            with open(page+'.no-panel-view.reference') as f2:
                 self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
-        
+
+    def test_page_panel_view(self):
+        self.container.add_image(
+            'tests/fixtures/images/height-large-horizontal.jpg',
+            adjust=Container.ROTATE)
+        self.mangamobi.page(0)
+        page = 'tests/fixtures/dummy/html/page-000.html'
+        with open(page) as f1:
+            with open(page+'.panel-view.reference') as f2:
+                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
+
     def test_toc_ncx(self):
         self.mangamobi.toc_ncx()
         with open('tests/fixtures/dummy/toc.ncx') as f1:
             with open('tests/fixtures/dummy/toc.ncx.reference') as f2:
                 self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
 
-    def test_img_style(self):
-        style = self.mangamobi._img_style((900, 1276))
-        self.assertTrue('width:800px;height:1134px;' in style)
-        self.assertTrue('margin-top:73px;margin-bottom:73px;' in style)
-        self.assertTrue('margin-left:0px;margin-right:0px;' in style)
-        style = self.mangamobi._img_style((1000, 702))
-        self.assertTrue('width:800px;height:562px;' in style)
-        self.assertTrue('margin-top:359px;margin-bottom:359px;' in style)
-        self.assertTrue('margin-left:0px;margin-right:0px;' in style)
-        style = self.mangamobi._img_style((800, 1280))
-        self.assertTrue('width:800px;height:1280px;' in style)
-        self.assertTrue('margin-top:0px;margin-bottom:0px;' in style)
-        self.assertTrue('margin-left:0px;margin-right:0px;' in style)
+    def test_nav(self):
+        self.mangamobi.nav()
+        with open('tests/fixtures/dummy/nav.xhtml') as f1:
+            with open('tests/fixtures/dummy/nav.xhtml.reference') as f2:
+                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
+
+    def test_style_css(self):
+        self.mangamobi.style_css()
+        with open('tests/fixtures/dummy/css/style.css') as f1:
+            with open('tests/fixtures/dummy/css/style.css.reference') as f2:
+                self.assertEqual(f1.read(), f2.read())
+
+    # def test_img_style(self):
+    #     style = self.mangamobi._img_style((900, 1276))
+    #     self.assertTrue('width:800px;height:1134px;' in style)
+    #     self.assertTrue('margin-top:73px;margin-bottom:73px;' in style)
+    #     self.assertTrue('margin-left:0px;margin-right:0px;' in style)
+    #     style = self.mangamobi._img_style((1000, 702))
+    #     self.assertTrue('width:800px;height:562px;' in style)
+    #     self.assertTrue('margin-top:359px;margin-bottom:359px;' in style)
+    #     self.assertTrue('margin-left:0px;margin-right:0px;' in style)
+    #     style = self.mangamobi._img_style((800, 1280))
+    #     self.assertTrue('width:800px;height:1280px;' in style)
+    #     self.assertTrue('margin-top:0px;margin-bottom:0px;' in style)
+    #     self.assertTrue('margin-left:0px;margin-right:0px;' in style)
 
 
 if __name__ == '__main__':
