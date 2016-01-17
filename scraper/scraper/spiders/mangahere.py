@@ -130,7 +130,7 @@ class MangaHere(MangaSpider):
 
         # Parse the manga issues list
         manga['issues'] = []
-        xp = '//div[@class="detail_list"]/ul[1]/li'
+        xp = '//div[@class="detail_list"]/ul[not(@class)]/li'
         lines = response.xpath(xp)
 
         # Check if the lines are empty
