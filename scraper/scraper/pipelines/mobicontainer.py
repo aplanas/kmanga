@@ -55,7 +55,7 @@ class MobiCache(collections.MutableMapping):
     This cache avoid the creation of new MOBI documents previously
     created.
 
-    key = ('spider_name', 'manga_name', 'manga_number', 'url')
+    key = ('spider_name', 'manga_name', 'issue_number', 'url')
     value = (
         [('mobi1.1.mobi', 'tests/fixtures/cache/mobi1.1.mobi'),
          ('mobi1.2.mobi', 'tests/fixtures/cache/mobi1.2.mobi')],
