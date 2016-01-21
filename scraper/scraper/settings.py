@@ -104,6 +104,10 @@ DOWNLOADER_MIDDLEWARES = {
     # HttpProxyMiddleware (750).  Note that RedirectMiddleware (600)
     # can influence if the response is seem by SmartProxy.
     'scraper.middlewares.SmartProxy': 650,
+    # RetryPartial needs to be after SmartProxy, so the
+    # process_respose (that is called from the downloader side to
+    # engine side direction) can process is a map it as a error.
+    'scraper.middlewares.RetryPartial': 655,
     # Downloader side
 }
 

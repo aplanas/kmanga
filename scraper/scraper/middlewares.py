@@ -31,8 +31,33 @@ from proxy.utils import needs_proxy
 logger = logging.getLogger(__name__)
 
 
-class SmartProxy(object):
+class RetryPartial(object):
+    """Middleware to consider partial results as errors."""
+    def __init__(self, settings):
+        self.error_codes = {
+            int(x) for x in settings.getlist('SMART_PROXY_ERROR_CODES')
+        }
 
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler.settings)
+
+    def process_response(self, request, response, spider):
+        logger.debug('Process respose - url: %s, status: %s, '
+                     'flags: %s' % (request.url, response.status,
+                                    response.flags))
+
+        is_partial = 'partial' in response.flags
+        if is_partial and response.status not in self.error_codes:
+            # Partial results, not considered as errors, are marked as
+            # incorrect.
+            logger.debug('Partial result - url: %s' % request.url)
+            response.status = 500
+        return response
+
+
+class SmartProxy(object):
+    """Middleware to add a proxy to certain requests."""
     def __init__(self, settings):
         self.error_codes = {
             int(x) for x in settings.getlist('SMART_PROXY_ERROR_CODES')
@@ -46,8 +71,11 @@ class SmartProxy(object):
         return cls(crawler.settings)
 
     def process_request(self, request, spider):
-        # The proxy only works if the operation is fetch an issue
-        if not hasattr(spider, '_operation') or spider._operation != 'manga':
+        # The proxy only works if the operation is fetch an issue or a
+        # commection
+        has_operation = hasattr(spider, '_operation')
+        operations = ('catalog', 'collection', 'latest', 'manga')
+        if not has_operation or spider._operation not in operations:
             return
 
         logger.debug('Process request - proxy: %s, url: %s' % (
@@ -76,10 +104,9 @@ class SmartProxy(object):
                              request.meta['proxy'], request.url,
                              response.status, response.flags))
 
-            is_partial = 'partial' in response.flags
             if response.status in self.retry_error_codes:
                 self._delete_proxy_from_request(request, spider)
-            elif response.status in self.error_codes and not is_partial:
+            elif response.status in self.error_codes:
                 # Some of the error codes are redirects, we need to
                 # check if this a valid redirect, to maintain the
                 # proxy and enable the redirect.
@@ -106,12 +133,6 @@ class SmartProxy(object):
                                      response.status))
                     self._map_status_error(response)
                     self._delete_proxy_from_request(request, spider)
-            elif is_partial:
-                # Partial results are marked as incorrect, and the
-                # proxy is removed.  This indicate a proxy error.
-                logger.debug('Partial result - url: %s' % request.url)
-                self._map_status_error(response)
-                self._delete_proxy_from_request(request, spider)
         return response
 
     def process_exception(self, request, exception, spider):
