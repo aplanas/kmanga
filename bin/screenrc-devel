@@ -1,0 +1,27 @@
+# Hide wellcome message
+startup_message off
+
+# Terminal with color
+term screen-256color
+
+# Status line
+hardstatus alwayslastline '%{= G}[ %{G}%H %{g}][%= %{= w}%?%-Lw%?%{= R}%n*%f %t%?%{= R}(%u)%?%{= w}%+Lw%?%= %{= g}][ %{y}Load: %l %{g}][%{B}%Y-%m-%d %{W}%c:%s %{g}]'
+
+# Screens used for development
+screen -t PostgresSQL
+stuff ". bin/setenv.sh ; psql_stop.sh ; psql_start.sh^M"
+
+screen -t "Redis Server"
+stuff ". bin/setenv.sh ; redis_stop.sh ; redis_start.sh^M"
+
+screen -t "Worker"
+stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high default low^M"
+
+screen -t "Django Server"
+stuff ". bin/setenv.sh ; sleep 2 ; kmanga/manage.py runserver^M"
+
+screen -t "Django Shell"
+stuff ". bin/setenv.sh ; kmanga/manage.py shell^M"
+
+screen -t "Shell"
+stuff ". bin/setenv.sh^M"

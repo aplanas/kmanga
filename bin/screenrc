@@ -1,0 +1,27 @@
+# Hide wellcome message
+startup_message off
+
+# Terminal with color
+term screen-256color
+
+# Status line
+hardstatus alwayslastline '%{= G}[ %{G}%H %{g}][%= %{= w}%?%-Lw%?%{= R}%n*%f %t%?%{= R}(%u)%?%{= w}%+Lw%?%= %{= g}][ %{y}Load: %l %{g}][%{B}%Y-%m-%d %{W}%c:%s %{g}]'
+
+# Screens used for deployment
+screen -t "Worker 1"
+stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high default low^M"
+
+screen -t "Worker 2"
+stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high default low^M"
+
+screen -t "Worker 3"
+stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high default^M"
+
+screen -t "Worker 4"
+stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high^M"
+
+screen -t "Django Shell"
+stuff ". bin/setenv.sh ; kmanga/manage.py shell^M"
+
+screen -t "Shell"
+stuff ". bin/setenv.sh^M"
