@@ -17,15 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
-import collections
-import hashlib
 import logging
 import os
-
-try:
-    import cPickle as pickle
-except:
-    import pickle
 
 from scrapy.mail import MailSender
 from scrapy.utils.decorators import inthread
@@ -41,95 +34,13 @@ from django.utils import timezone
 
 from mobi import Container
 from mobi import MangaMobi
+from mobi.cache import MobiCache
 
 
 # Empty page.  Used when the original one can't be downloaded.
 EMPTY = 'empty.png'
 
 logger = logging.getLogger(__name__)
-
-
-class MobiCache(collections.MutableMapping):
-    """Cache for `.mobi` documents.
-
-    This cache avoid the creation of new MOBI documents previously
-    created.
-
-    key = ('spider_name', 'manga_name', 'issue_number', 'url')
-    value = (
-        [('mobi1.1.mobi', 'tests/fixtures/cache/mobi1.1.mobi'),
-         ('mobi1.2.mobi', 'tests/fixtures/cache/mobi1.2.mobi')],
-        stats_dict)
-
-    """
-    def __init__(self, mobi_store):
-        self.mobi_store = mobi_store
-        self.index = os.path.join(mobi_store, 'cache', 'index')
-        self.data = os.path.join(mobi_store, 'cache', 'data')
-
-        # Create cache directories if they don't exists.
-        for directory in (self.index, self.data):
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-
-    def __file(self, key):
-        """Return the MD5 hash for the key."""
-        # Generate an unique hash from the key components.
-        spider, name, number, url = key
-        name = '%s_%s_%s_%s' % (spider, name, number, url)
-        name = hashlib.md5(name).hexdigest()
-        return name
-
-    def __index_file(self, key):
-        """Return the full path of the index file."""
-        name = self.__file(key)
-        return os.path.join(self.index, name)
-
-    def __data_file(self, key):
-        """Return the full path of the data file."""
-        name = self.__file(key)
-        return os.path.join(self.data, name)
-
-    def __getitem__(self, key):
-        try:
-            # The last element contains the key.
-            return pickle.load(open(self.__index_file(key), 'rb'))[:-1]
-        except:
-            raise KeyError
-
-    def __setitem__(self, key, value):
-        # Makes sure that the element is not there anymore.
-        if key in self:
-            del self[key]
-
-        # Create first the links into the data store.
-        data_file_prefix = self.__data_file(key)
-        value_ext = [(v[0], v[1], '%s-%02d' % (data_file_prefix, i))
-                     for i, v in enumerate(value[0])]
-        for _, mobi_file, data_file in value_ext:
-            os.link(mobi_file, data_file)
-
-        # Store the index in the index file.  The index file is
-        # composed of the mobi name, the path of the mobi file, the
-        # statistics and the key.
-        index = [(v[0], v[2]) for v in value_ext]
-        index = [index, value[-1], key]
-        pickle.dump(index, open(self.__index_file(key), 'wb'),
-                    pickle.HIGHEST_PROTOCOL)
-
-    def __delitem__(self, key):
-        index, _ = self[key]
-        for _, _data_file in index:
-            os.unlink(_data_file)
-        os.unlink(self.__index_file(key))
-
-    def __iter__(self):
-        for index_path in os.listdir(self.index):
-            index_path = os.path.join(self.index, index_path)
-            yield pickle.load(open(index_path, 'rb'))[-1]
-
-    def __len__(self):
-        return len(os.listdir(self.index))
 
 
 class MobiContainer(object):
@@ -177,7 +88,7 @@ class MobiContainer(object):
         return ''.join(number)
 
     def _create_mobi(self, name, number, images, issue):
-        """Create the MOBI file and return a list of values and containers."""
+        """Create the MOBI file and return a list of files and containers."""
         dir_name = '%s_%s' % (name, self._normalize(number))
         container = Container(os.path.join(self.mobi_store, dir_name))
         container.create(clean=True)
@@ -213,15 +124,15 @@ class MobiContainer(object):
                 reading_direction = issue.manga.reading_direction.lower()
                 self.reading_direction = 'horizontal-%s' % reading_direction
 
-        values_and_containers = []
+        mobi_and_containers = []
         for volume, container in enumerate(containers):
             multi_vol, vol = len(containers) > 1, volume + 1
             info = Info(issue, multi_vol, vol)
 
             mobi = MangaMobi(container, info, kindlegen=self.kindlegen)
-            mobi_name, mobi_file = mobi.create()
-            values_and_containers.append(((mobi_name, mobi_file), container))
-        return values_and_containers
+            mobi_file = mobi.create()
+            mobi_and_containers.append((mobi_file, container))
+        return mobi_and_containers
 
     @inthread
     def create_mobi(self, spider):
@@ -236,6 +147,9 @@ class MobiContainer(object):
             # First element is the spider name
             _, name, number, url = key
 
+            # URL is unicode, convert it as a string
+            url = str(url)
+
             issue = Issue.objects.get(url=url)
 
             # Move the Result status to PROCESSING
@@ -248,15 +162,21 @@ class MobiContainer(object):
             result.status = Result.PROCESSING
             result.save()
 
-            if key not in cache:
+            if url not in cache:
                 # The containers need to be cleaned here.
-                values_and_containers = self._create_mobi(name, number,
-                                                          value, issue)
-                cache[key] = ([v[0] for v in values_and_containers],
-                              self.stats.get_stats())
-                for _, container in values_and_containers:
+                mobi_and_containers = self._create_mobi(name, number,
+                                                        value, issue)
+                # XXX TODO - We are not storing stats in the cache
+                # anymore (is not the place), so we need to store it
+                # in a different place.  Maybe in the database?
+                #
+                # Note: to get the stats: self.stats.get_stats()
+                #
+                cache[url] = [m[0] for m in mobi_and_containers]
+                for _, container in mobi_and_containers:
                     container.clean()
-            mobi_info, stats = cache[key]
+            # Ignore the creation date from the cache
+            mobi_info, _ = cache[url]
             for mobi_name, mobi_file in mobi_info:
                 mail = MailSender.from_settings(spider.settings)
                 deferred = mail.send(

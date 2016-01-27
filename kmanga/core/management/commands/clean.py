@@ -11,10 +11,11 @@ from django.db.models import Max
 from django.db.models import Q
 from django.utils import timezone
 
-from scraper.pipelines.mobicontainer import MobiCache
+from mobi.cache import MobiCache
 from scraper.settings import IMAGES_STORE
 from scraper.settings import MOBI_STORE
 
+from core.models import Issue
 from core.models import Manga
 from core.models import Source
 from registration.models import UserProfile
@@ -245,21 +246,21 @@ class Command(BaseCommand):
             header = (('manga', 35), ('issue', 5), ('source', 11), ('days', 3))
             body = []
 
-        for key, value in cache.items():
-            spider, manga, issue, url = key
-            mobis, stats = value
-            mobi, file_ = mobis[0]
-            mtime = self._file_date(file_, today.tzinfo)
-            old = (today - mtime).days
-            if old >= days:
-                if list_:
-                    body.append((manga, issue, spider, old))
-                else:
-                    logger.info('Removing %s %s - %s [%d].' % (manga,
-                                                               issue,
-                                                               spider,
-                                                               old))
-                    del cache[key]
+        tzinfo = today.tzinfo
+        to_delete = ((k, (today - v[-1].replace(tzinfo=tzinfo)).days)
+                     for k, v in cache.iteritems())
+        to_delete = ((k, o) for k, o in to_delete if o >= days)
+
+        for key, old in to_delete:
+            issue = Issue.objects.get(url=key)
+            manga = issue.manga
+            spider = manga.source.spider
+            if list_:
+                body.append((manga, issue, spider, old))
+            else:
+                logger.info('Removing %s %s - %s [%d].' % (manga, issue,
+                                                           spider, old))
+                del cache[key]
 
         if list_:
             print_table(title, header, body)

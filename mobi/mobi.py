@@ -260,12 +260,12 @@ class MangaMobi(object):
             self.container.set_cover(cover, adjust=Container.RESIZE_CROP)
 
         name = '%s.mobi' % re.sub(r'[^\w]', '_', self.info.title)
-        full_name = os.path.join(self.container.path, name)
         subprocess.call([self.kindlegen, self.container.get_content_opf_path(),
                          '-dont_append_source',
                          '-o', name])
 
-        return name, full_name
+        full_name = os.path.join(self.container.path, name)
+        return full_name
 
     def content_opf(self, identifier=None):
         """Generate and return the content OPF."""
