@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import datetime
 import logging
-from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -20,72 +19,72 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
+    help = 'Launch scrapy spiders from command line.'
+
+    def add_arguments(self, parser):
+        parser.add_argument('command', choices=[
+            'list',
+            'update-genres',
+            'update-catalog',
+            'update-collection',
+            'update-latest',
+            'search',
+            'subscribe',
+            'send',
+            'sendsub',
+        ], help='Command to execute')
+
         # Parameters used by some commands
-        make_option(
+        parser.add_argument(
             '-m', '--manga', action='store', dest='manga', default=None,
-            help='Name of the manga. Partial match for search (<manga>).'),
-        make_option(
+            help='Name of the manga. Partial match for search (<manga>).')
+        parser.add_argument(
             '--issues', action='store', dest='issues', default=None,
-            help='List of issues numbers (order) (<list_of_numbers|all>).'),
-        make_option(
+            help='List of issues numbers (order) (<list_of_numbers|all>).')
+        parser.add_argument(
             '--url', action='store', dest='url', default=None,
-            help='Manga or issue URL (<url>).'),
-        make_option(
+            help='Manga or issue URL (<url>).')
+        parser.add_argument(
             '--lang', action='store', dest='lang', default=None,
-            help='Language of the manga (<EN|ES>).'),
-        make_option(
+            help='Language of the manga (<EN|ES>).')
+        parser.add_argument(
             '--details', action='store_true', dest='details', default=False,
-            help='Add more details in the list of mangas.'),
-        make_option(
+            help='Add more details in the list of mangas.')
+        parser.add_argument(
             '--until', action='store', dest='until',
             default=datetime.date.today(),
-            help='Until parameter to latest update (<DD-MM-YYYY>).'),
-        make_option(
+            help='Until parameter to latest update (<DD-MM-YYYY>).')
+        parser.add_argument(
             '--issues-per-day', action='store', dest='issues-per-day',
             default=4,
-            help='Number of issues to send per day (<number>).'),
-        make_option(
+            help='Number of issues to send per day (<number>).')
+        parser.add_argument(
             '--do-not-send', action='store_true', dest='do-not-send',
             default=False,
-            help='Avoid the send of the manga, but register the send.'),
-        make_option(
+            help='Avoid the send of the manga, but register the send.')
+        parser.add_argument(
             '--user', action='store', dest='user', default=None,
-            help='User name for the subscription (<user>).'),
-        make_option(
+            help='User name for the subscription (<user>).')
+        parser.add_argument(
             '--from', action='store', dest='from', default=None,
-            help='Email address from where to send the issue (<email>).'),
-        make_option(
+            help='Email address from where to send the issue (<email>).')
+        parser.add_argument(
             '--to', action='store', dest='to', default=None,
-            help='Email address or user to send the issue (<email|user>).'),
+            help='Email address or user to send the issue (<email|user>).')
 
         # General parameters
-        make_option(
+        parser.add_argument(
             '--spiders', action='store', dest='spiders', default='all',
-            help='List of spiders (<list_of_spiders|all>).'),
-        make_option(
+            help='List of spiders (<list_of_spiders|all>).')
+        parser.add_argument(
             '--accounts', action='append', dest='accounts', default=[],
             nargs=3, help='Spider login (<spider> <username> <password>).'),
-        make_option(
+        parser.add_argument(
             '--loglevel', action='store', dest='loglevel', default='WARNING',
             help='Scrapy log level (<CRITICAL|ERROR|WARNING|INFO|DEBUG>).'),
-        make_option(
+        parser.add_argument(
             '--dry-run', action='store_true', dest='dry_run', default=False,
-            help='Bypass all the pipelines.'),
-        )
-    help = 'Launch scrapy spiders from command line.'
-    commands = [
-        'list',
-        'update-genres',
-        'update-catalog',
-        'update-collection',
-        'update-latest',
-        'search',
-        'subscribe',
-        'send',
-        'sendsub',
-    ]
-    args = '|'.join(commands)
+            help='Bypass all the pipelines.')
 
     def _get_accounts(self, accounts):
         """Parse the `accounts` lists and convert it to dictionary."""
@@ -174,10 +173,7 @@ class Command(BaseCommand):
         return _issues
 
     def handle(self, *args, **options):
-        if not args or len(args) > 1:
-            msg = 'Please, provide one command: %s' % Command.args
-            raise CommandError(msg)
-        command = args[0]
+        command = options['command']
 
         accounts = self._get_accounts(options['accounts'])
         loglevel = options['loglevel']
@@ -250,8 +246,7 @@ class Command(BaseCommand):
                 self.prepare_sendsub(scrapy, user_profile, do_not_send)
             self.sendsub(scrapy)
         else:
-            raise CommandError('Not valid command value. '
-                               'Please, provide a command: %s' % Command.args)
+            raise CommandError('Not valid command value.')
 
         # Refresh the MATERIALIZED VIEW for full text search
         if command.startswith('update'):

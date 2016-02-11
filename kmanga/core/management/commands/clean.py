@@ -2,8 +2,6 @@ import datetime
 import logging
 import os
 
-from optparse import make_option
-
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
@@ -42,37 +40,37 @@ def print_table(title, header, body):
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option(
+    help = 'Clean old resources from the system.'
+
+    def add_arguments(self, parser):
+        parser.add_argument('command', choices=[
+            'manga',
+            'user',
+            'image-cache',
+            'mobi-cache',
+            'cover',
+        ], help='Command to execute')
+
+        parser.add_argument(
             '-d', '--days', action='store', dest='days', default=None,
-            help='Number of days to select objects (<number>).'),
-        make_option(
+            help='Number of days to select objects (<number>).')
+        parser.add_argument(
             '-s', '--spiders', action='store', dest='spiders', default='all',
-            help='List of spiders (<list_of_spiders|all>).'),
-        make_option(
+            help='List of spiders (<list_of_spiders|all>).')
+        parser.add_argument(
             '-r', '--remove', action='store_true', dest='remove',
             default=False,
-            help='Force the remove of users, instead of disabling them'),
-        make_option(
+            help='Force the remove of users, instead of disabling them')
+        parser.add_argument(
             '-l', '--list', action='store_true', dest='list', default=False,
-            help='List the elements to remove or disable.'),
-        make_option(
+            help='List the elements to remove or disable.')
+        parser.add_argument(
             '-f', '--force', action='store_true', dest='force', default=False,
-            help='Force the deletion, otherwise exit the command.'),
+            help='Force the deletion, otherwise exit the command.')
         # General parameters
-        make_option(
+        parser.add_argument(
             '--loglevel', action='store', dest='loglevel', default='WARNING',
-            help='Log level (<CRITICAL|ERROR|WARNING|INFO|DEBUG>).'),
-        )
-    help = 'Clean old resources from the system.'
-    commands = [
-        'manga',
-        'user',
-        'image-cache',
-        'mobi-cache',
-        'cover',
-    ]
-    args = '|'.join(commands)
+            help='Log level (<CRITICAL|ERROR|WARNING|INFO|DEBUG>).')
 
     def _get_sources(self, spiders):
         """Parse the `spiders` option and return a valid list of Sources."""
@@ -86,10 +84,7 @@ class Command(BaseCommand):
         return sources
 
     def handle(self, *args, **options):
-        if not args or len(args) > 1:
-            msg = 'Please, provide one command: %s' % Command.args
-            raise CommandError(msg)
-        command = args[0]
+        command = options['command']
 
         actions = ('force', 'list', 'remove')
         if not any(options[i] for i in actions):
@@ -124,8 +119,7 @@ class Command(BaseCommand):
         elif command == 'cover':
             self._clean_cover(sources, list_)
         else:
-            raise CommandError('Not valid command value. '
-                               'Please, provide a command: %s' % Command.args)
+            raise CommandError('Not valid command value.')
 
     def _clean_manga(self, days, sources, list_):
         """Remove old mangas."""

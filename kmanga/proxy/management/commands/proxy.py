@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 
-from optparse import make_option
-
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 
@@ -15,40 +13,36 @@ from scrapyctl.scrapyctl import ScrapyCtl
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option(
-            '-c', '--clean', action='store_true', dest='clean', default=False,
-            help='Remove broken proxies from the database.'),
-        # General parameters
-        make_option(
-            '--loglevel', action='store', dest='loglevel', default='WARNING',
-            help='Log level (<CRITICAL|ERROR|WARNING|INFO|DEBUG>).'),
-        )
     help = 'Process proxies for spiders from command line.'
-    commands = [
-        'list',
-        'update-proxy',
-    ]
-    args = '|'.join(commands)
+
+    def add_arguments(self, parser):
+        parser.add_argument('command', choices=[
+            'list',
+            'update-proxy',
+        ], help='Command to execute')
+
+        parser.add_argument(
+            '-c', '--clean', action='store_true', dest='clean', default=False,
+            help='Remove broken proxies from the database.')
+        # General parameters
+        parser.add_argument(
+            '--loglevel', action='store', dest='loglevel', default='WARNING',
+            help='Log level (<CRITICAL|ERROR|WARNING|INFO|DEBUG>).')
 
     def handle(self, *args, **options):
-        if not args or len(args) > 1:
-            msg = 'Please, provide one command: %s' % Command.args
-            raise CommandError(msg)
-        command = args[0]
+        command = options['command']
 
         loglevel = options['loglevel']
         logger.setLevel(loglevel)
 
         if command == 'list':
-            scrapy = ScrapyCtl(loglevel)
+            scrapy = ScrapyCtl(None, loglevel)
             self._list_spiders(scrapy)
         elif command == 'update-proxy':
             clean = options['clean']
             self._update_proxy(clean)
         else:
-            raise CommandError('Not valid command value. '
-                               'Please, provide a command: %s' % Command.args)
+            raise CommandError('Not valid command value.')
 
     def _list_spiders(self, scrapy):
         """List current spiders than can be activated."""
