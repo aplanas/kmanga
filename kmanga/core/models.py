@@ -498,6 +498,14 @@ class Subscription(TimeStampedModel):
                 'status': Result.SENT,
             })
 
+    def latest_issues(self):
+        """Return the list of issues ordered by modified result."""
+        return self.issues().filter(
+            result__subscription=self
+        ).annotate(
+            models.Max('result__modified')
+        ).order_by('-result__modified')
+
 
 class ResultQuerySet(models.QuerySet):
     def latests(self, status=None):
