@@ -61,7 +61,7 @@
 	</tr>
       </thead>
       <tbody>
-	{% for issue in object.issues %}
+	{% for issue in object_list %}
 	<tr>
 	  <th scope="row">{{ issue.number }}</th>
 	  <td><a href="{{ issue.url }}">{{ issue.name }}</a></td>
@@ -127,4 +127,21 @@
     </table>
   </div>
 </div>
+
+<nav>
+  <ul class="pager">
+    {% if page_obj.has_previous %}
+    <li><a {% if q %}href="?page={{ page_obj.previous_page_number }}&q={{ q }}"{% else %}href="?page={{ page_obj.previous_page_number }}"{% endif %}>Previous</a>
+    </li>
+    {% else %}
+    <li class="disabled"><a href="#" onclick="javascript:return false;">Previous</a></li>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <li><a {% if q %}href="?page={{ page_obj.next_page_number }}&q={{ q }}"{% else %}href="?page={{ page_obj.next_page_number }}"{% endif %}>Next</a>
+    </li>
+    {% else %}
+    <li class="disabled"><a href="#" onclick="javascript:return false;">Next</a></li>
+    {% endif %}
+  </ul>
+</nav>
 {% endblock content %}

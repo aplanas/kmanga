@@ -1,5 +1,9 @@
+import bisect
+
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import InvalidPage, Paginator
 from django.core.urlresolvers import reverse_lazy
+from django.http import Http404
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
 # from django.shortcuts import render
@@ -135,6 +139,58 @@ class SubscriptionListView(LoginRequiredMixin, ListView, MultipleObjectMixin):
 class SubscriptionDetailView(LoginRequiredMixin, SubscriptionOwnerMixin,
                              DetailView):
     model = Subscription
+    paginate_by = 25
+
+    def get_context_data(self, **kwargs):
+        """Extend the context data with the paginator."""
+        context = super(SubscriptionDetailView, self).get_context_data(
+            **kwargs)
+
+        paginator = Paginator(
+            self.object.issues(),
+            self.paginate_by,
+            orphans=0,
+            allow_empty_first_page=True
+        )
+
+        page = self.kwargs.get('page') or self.request.GET.get('page')
+        if not page:
+            page = self.get_last_page()
+        try:
+            page_number = int(page)
+        except ValueError:
+            if page == 'last':
+                page_number = paginator.num_pages
+            else:
+                msg = "Page is not 'last', nor can it be converted to an int."
+                raise Http404(msg)
+
+        try:
+            page = paginator.page(page_number)
+        except InvalidPage as e:
+            raise Http404('Invalid page (%s): %s' % (page_number, str(e)))
+
+        context.update({
+            'paginator': paginator,
+            'page_obj': page,
+            'object_list': page.object_list
+        })
+        return context
+
+    def get_last_page(self):
+        """Get the page number of the last modified issue's result."""
+        # We get the last page taking first the Issue that contains
+        # the most updated result, and searching it in the ordered
+        # list of issues.  For each Issue we get the same fields used
+        # in Meta.ordering, so we are sure that bisect will work.
+        fields = Issue._meta.ordering
+        latest_issues = self.object.latest_issues
+        latest_issue = latest_issues().values_list(*fields).first()
+        if not latest_issue:
+            return 1
+        issues = self.object.issues().values_list(*fields)
+        index = bisect.bisect_left(issues, latest_issue)
+        return (index / self.paginate_by) + 1
 
 
 class SubscriptionCreateView(LoginRequiredMixin, CreateView):
