@@ -97,9 +97,9 @@ class Batoto(MangaSpider):
             manga['rank'] = (rating + 0.1) * viewers * followers
             manga['rank_order'] = 'DESC'
             # URL Hack to avoid a redirection. This is used because
-            # the download_delay is also added to the redirector.  The
-            # other solution is to assign to request this:
-            # scrapy.Request(manga['url'][0], self._parse_catalog_item)
+            # the download_delay is also added to the redirector.
+            # This makes the spider a bit faster, but we still needs
+            # to update the real URL in the `parse_collection` side.
             url = manga['url'][0].split('_/')[-1]
             url = 'http://bato.to/comic/_/comics/%s' % url
             # Also use this URL in the Item to avoid duplicates.
@@ -131,6 +131,10 @@ class Batoto(MangaSpider):
         else:
             manga = Manga(url=response.url)
 
+        # URL
+        # Batoto can have different URLs for comics (_/comics/,
+        # _/sp/), so here we update the manga with the real one.
+        manga['url'] = response.url
         # Name
         xp = '//h1[@class="ipsType_pagetitle"]/text()'
         manga['name'] = response.xpath(xp).extract()
