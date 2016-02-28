@@ -46,7 +46,7 @@ class LockFile(object):
         return self
 
     def unlock(self):
-        if LockFile.lockers == 0:
+        if not LockFile.lockers:
             raise Exception('Unlock without lock')
         if LockFile.lockers == 1:
             fcntl.flock(self._lck.fileno(), fcntl.LOCK_UN)
@@ -59,6 +59,45 @@ class LockFile(object):
 
     def __exit__(self, *exc_info):
         self.unlock()
+
+
+class DB(object):
+    """Small wrapper over a Shelve to use the LockFile."""
+
+    # Store the number of times that was open
+    openers = 0
+    db = None
+
+    def __init__(self, dbname):
+        self.dbname = dbname
+        self.lck = dbname + '.lck'
+
+    def open(self):
+        # In a similar way that happends with LockFile, openers is
+        # unique per process (unless comes from a fork after this was
+        # initialized)
+        if not DB.openers:
+            self._lck = LockFile(self.lck)
+            self._lck.lock()
+            DB.db = shelve.open(self.dbname, 'c')
+        DB.openers += 1
+        return DB.db
+
+    def close(self):
+        if not DB.openers:
+            raise Exception('Close without open')
+        if DB.openers == 1:
+            self.db.close()
+            self._lck.unlock()
+            self._lck = None
+            DB.db = None
+        DB.openers -= 1
+
+    def __enter__(self):
+        return self.open()
+
+    def __exit__(self, *exc_info):
+        self.close()
 
 
 class MobiCache(collections.MutableMapping):
@@ -101,16 +140,13 @@ class MobiCache(collections.MutableMapping):
         if not os.path.exists(cache):
             os.makedirs(cache)
 
-        # Create the index database if needed
-        index = os.path.join(cache, 'index.db')
-        self.index = shelve.open(index, 'c')
+        # Name of the index database
+        self.index = os.path.join(cache, 'index.db')
 
         # Create the data directory if needed
         self.data = os.path.join(cache, 'data')
         if not os.path.exists(self.data):
             os.makedirs(self.data)
-
-        self.lck = os.path.join(mobi_store, 'cache', 'index.lck')
 
     def __data_file(self, key):
         """Return the full path of the data file."""
@@ -118,13 +154,13 @@ class MobiCache(collections.MutableMapping):
         return os.path.join(self.data, name)
 
     def __getitem__(self, key):
-        with LockFile(self.lck):
+        with DB(self.index) as db:
             # The value is composed of two components:
             #   (list_of_tuples_of_names_and_paths, creation_date)
-            return self.index[key]
+            return db[key]
 
     def __setitem__(self, key, value):
-        with LockFile(self.lck):
+        with DB(self.index) as db:
             # Makes sure that the element is not there anymore.
             if key in self:
                 del self[key]
@@ -144,28 +180,29 @@ class MobiCache(collections.MutableMapping):
             # the mobi file in the data cache directory, and the UTC
             # time when was stored.
             now = datetime.utcnow()
-            self.index[key] = (value_cache, now)
+            db[key] = (value_cache, now)
 
     def __delitem__(self, key):
-        with LockFile(self.lck):
+        with DB(self.index) as db:
             for _, data_file in self[key][0]:
                 os.unlink(data_file)
-            del self.index[key]
+            del db[key]
 
     def __iter__(self):
-        with LockFile(self.lck):
-            for key in self.index.keys():
+        with DB(self.index) as db:
+            for key in db.keys():
                 yield key
 
     def __len__(self):
-        return len(self.index)
+        with DB(self.index) as db:
+            return len(db)
 
     def clean(self, ttl):
         """Remove entries older than `ttl` seconds."""
         now = datetime.utcnow()
         # The last part of the value is the `ttl`
         to_delete = (
-            k for k, v in self.index.iteritems()
+            k for k, v in self.iteritems()
             if (now - v[-1]).seconds > ttl
         )
         for key in to_delete:
@@ -174,7 +211,7 @@ class MobiCache(collections.MutableMapping):
     def free(self):
         """If the cache is too big, remove a fix number of elements."""
         if len(self) > MobiCache.SLOTS:
-            elements = [(k, v[-1]) for k, v in self.index.iteritems()]
+            elements = [(k, v[-1]) for k, v in self.iteritems()]
             elements = sorted(elements, key=lambda x: x[-1])
             for key, _ in elements[:MobiCache.NCLEAN]:
                 del self[key]
