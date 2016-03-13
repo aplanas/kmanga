@@ -24,6 +24,7 @@ import unittest
 import shutil
 import time
 
+from mobi.cache import DB
 from mobi.cache import LockFile
 from mobi.cache import MobiCache
 
@@ -89,6 +90,77 @@ class TestLockFile(unittest.TestCase):
         p.join()
         # We expect to find the text 'parentprocess'
         self.assertEqual(open(self.FNAME).read(), 'parentprocess')
+
+
+def write_db(dbname, key, value):
+    # We need to sleep, to guarantee that the start of the process
+    # happends before adquiring the lock
+    time.sleep(0.1)
+    with DB(dbname) as db:
+        db[key] += value
+
+
+class TestDB(unittest.TestCase):
+    DBNAME = 'tests/fixtures/cache/test.db'
+    DBNAMELCK = 'tests/fixtures/cache/test.db.lck'
+
+    def setUp(self):
+        self.db = DB(TestDB.DBNAME)
+
+    def tearDown(self):
+        for fname in (TestDB.DBNAME, TestDB.DBNAMELCK):
+            if os.path.exists(fname):
+                os.unlink(fname)
+
+    def test_open_close(self):
+        db = self.db.open()
+        self.assertTrue(os.path.exists(TestDB.DBNAME))
+        self.assertTrue(os.path.exists(TestDB.DBNAMELCK))
+        db['key'] = 'value'
+        self.assertEqual(db['key'], 'value')
+        self.db.close()
+        self.assertTrue(os.path.exists(TestDB.DBNAME))
+        self.assertTrue(os.path.exists(TestDB.DBNAMELCK))
+
+    def test_close(self):
+        with self.assertRaises(Exception):
+            self.db.close()
+
+    def test_multiopen(self):
+        self.db.open()
+        self.assertEqual(self.db.openers, 1)
+        self.db.open()
+        self.assertEqual(self.db.openers, 2)
+        self.db.close()
+        self.assertEqual(self.db.openers, 1)
+        self.db.close()
+        self.assertEqual(self.db.openers, 0)
+        with self.assertRaises(Exception):
+            self.db.close()
+
+    def test_context(self):
+        with self.db:
+            self.assertEqual(self.db.openers, 1)
+            self.assertEqual(DB._local.openers, 1)
+        self.assertEqual(self.db.openers, 0)
+
+    def test_lock(self):
+        n = 10
+        process = []
+        for _ in range(n):
+            p = Process(target=write_db,
+                        args=(self.DBNAME, 'key', 'value'))
+            p.start()
+            process.append(p)
+        with self.db as db:
+            # Give time to `write_db` to try to run
+            time.sleep(0.5)
+            db['key'] = 'other'
+        for p in process:
+            p.join()
+        # We expect to find the text 'other(value){n}'
+        with self.db as db:
+            self.assertEqual(db['key'], 'other'+'value'*n)
 
 
 class TestMobiCache(unittest.TestCase):
