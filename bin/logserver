@@ -1,0 +1,100 @@
+#!/usr/bin/env python
+import asyncore
+import argparse
+import logging
+import logging.config
+import logging.handlers
+try:
+    import cPickle as pickle
+except:
+    import pickle
+import socket
+import struct
+import sys
+
+CONF = {
+    'version': 1,
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s [%(name)s] %(levelname)s: %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+            'stream': 'ext://sys.stdout',
+        },
+        'file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'default',
+            'filename': 'kmanga.log',
+            'maxBytes': 2*1024*1024,
+            'backupCount': 3,
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['file'],
+        },
+    },
+}
+
+
+class LogRecordHandler(asyncore.dispatcher):
+    def handle_read(self):
+        """Read and process a log record."""
+        chunk = self.recv(4)
+        if len(chunk) < 4:
+            return
+        slen = struct.unpack('>L', chunk)[0]
+        chunk = self.recv(slen)
+        while len(chunk) < slen:
+            chunk = chunk + self.recv(slen - len(chunk))
+        obj = pickle.loads(chunk)
+        record = logging.makeLogRecord(obj)
+        logger = logging.getLogger(record.name)
+        logger.handle(record)
+
+
+class LogRecordServer(asyncore.dispatcher):
+    def __init__(self, host, port):
+        asyncore.dispatcher.__init__(self)
+        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.set_reuse_addr()
+        self.bind((host, port))
+        self.listen(5)
+
+    def handle_accept(self):
+        pair = self.accept()
+        if pair is not None:
+            sock, addr = pair
+            LogRecordHandler(sock)
+
+
+def main(args):
+    # Set the name of the log file
+    CONF['handlers']['file']['filename'] = args.log
+    # Set the default handler (console or file)
+    if args.console:
+        CONF['loggers']['']['handlers'] = ['console']
+    logging.config.dictConfig(CONF)
+
+    LogRecordServer(args.host, args.port)
+    print 'Starting log server at %s:%s' % (args.host, args.port)
+    return asyncore.loop()
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Python log server')
+    parser.add_argument('--host', default='localhost', help='Hostname')
+    parser.add_argument('--port',
+                        default=logging.handlers.DEFAULT_TCP_LOGGING_PORT,
+                        help='Listening port')
+    parser.add_argument('--console', action='store_true', default=False,
+                        help='Use stdout to show logs')
+    parser.add_argument('--log', default='kmanga.log',
+                        help='Full path for the log file')
+    args = parser.parse_args()
+
+    sys.exit(main(args))
