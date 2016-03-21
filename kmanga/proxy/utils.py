@@ -1,5 +1,4 @@
 import gzip
-import httplib
 import logging
 from multiprocessing.pool import ThreadPool
 import re
@@ -81,8 +80,8 @@ def _collect_proxies():
         try:
             body = urllib2.urlopen(url).read()
             proxies.extend(proxy_re.findall(body))
-        except (urllib2.URLError, httplib.IncompleteRead):
-            logger.info('Fail URL %s' % url)
+        except Exception:
+            logger.warning('Fail URL %s' % url)
     return list(set(proxies)-set(('127.0.0.1',)))
 
 
