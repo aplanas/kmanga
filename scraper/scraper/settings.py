@@ -115,16 +115,12 @@ ITEM_PIPELINES = {
     'scrapy.pipelines.images.ImagesPipeline': 25,
     'scraper.pipelines.CleanPipeline': 50,
     'scraper.pipelines.UpdateDBPipeline': 75,
-    'scraper.pipelines.MobiContainer': 100,
+    'scraper.pipelines.CollectorPipeline': 100,
 }
 
 _dirname = os.path.dirname(__file__)
-KINDLEGEN = os.path.join(_dirname, '..', '..', 'bin', 'kindlegen')
-
 IMAGES_STORE = os.path.join(_dirname, '..', 'img_store')
-MOBI_STORE = os.path.join(_dirname, '..', 'mobi_store')
-
-VOLUME_MAX_SIZE = 12 * 1024**2
+ISSUES_STORE = os.path.join(_dirname, '..', 'issue_store')
 
 USER_AGENTS = [
     'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; AcooBrowser; .NET CLR 1.1.4322; .NET CLR 2.0.50727)',

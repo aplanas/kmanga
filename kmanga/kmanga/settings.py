@@ -167,6 +167,13 @@ RQ_QUEUES = {
     }
 }
 
+KINDLEGEN = os.path.join(BASE_DIR, '..', 'bin', 'kindlegen')
+# IMAGES_STORE and ISSUES_STORE are also in `scraper` settings
+IMAGES_STORE = os.path.join(BASE_DIR, '..', 'scraper', 'img_store')
+ISSUES_STORE = os.path.join(BASE_DIR, '..', 'scraper', 'issue_store')
+MOBI_STORE = os.path.join(BASE_DIR, '..', 'scraper', 'mobi_store')
+VOLUME_MAX_SIZE = 12 * 1024**2
+
 SCRAPY_SETTINGS_MODULE = 'scraper.settings'
 SCRAPY_ACCOUNTS = {}
 
