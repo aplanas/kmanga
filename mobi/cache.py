@@ -235,7 +235,8 @@ class IssueCache(Cache):
         if url not in self:
             return False
 
-        images = self[url]
+        # Ignore the creation date from the cache.
+        images, _ = self[url]
         for i in images:
             if i['images']:
                 image_path = i['images'][0]['path']

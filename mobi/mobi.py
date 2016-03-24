@@ -132,7 +132,7 @@ class Container(object):
         """Get the path an image."""
         # First try with the JPG extension, if not, is a PNG
         image_path = self._get_image_path(number, 'jpg', relative)
-        if not os.path.exists(image_path):
+        if not os.path.isfile(image_path):
             image_path = self._get_image_path(number, 'png', relative)
         return image_path
 
