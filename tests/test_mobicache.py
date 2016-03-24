@@ -167,21 +167,22 @@ class TestDB(unittest.TestCase):
 class TestIssueCache(unittest.TestCase):
 
     def setUp(self):
-        self.cache = IssueCache('tests/fixtures/tmp')
+        self.cache = IssueCache('tests/fixtures/tmp', 'tests/fixtures/images')
 
     def tearDown(self):
         shutil.rmtree('tests/fixtures/tmp')
 
     def test_cache(self):
-        self.cache['url1'] = [{'key': 'value'}]
+        self.cache['url1'] = [{'images': [{'path': 'width-large.jpg'}]}]
         self.cache['url2'] = [
-            {'key1': 'value1'},
-            {'key2': 'value2'}
+            {'images': [{'path': 'width-large.jpg'}]},
+            {'images': [{'path': 'width-small.jpg'}]}
         ]
-        self.cache['url3'] = [{'key': 'value'}]
+        self.cache['url3'] = [{'images': [{'path': 'width-small.jpg'}]}]
         self.assertTrue(len(self.cache) == 3)
 
-        self.assertEqual(self.cache['url1'][0], [{'key': 'value'}])
+        self.assertEqual(self.cache['url1'][0],
+                         [{'images': [{'path': 'width-large.jpg'}]}])
 
         for key in self.cache:
             self.assertTrue(key in ('url1', 'url2', 'url3'))

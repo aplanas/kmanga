@@ -23,7 +23,6 @@ import xml.dom.minidom
 
 from mobi import Container, MangaMobi
 from mobi.mobi import WIDTH, HEIGHT
-from scraper.pipelines import MobiCache
 
 
 _xml_pretty = lambda x: xml.dom.minidom.parseString(x).toprettyxml(indent='  ')
