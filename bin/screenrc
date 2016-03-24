@@ -5,7 +5,7 @@ startup_message off
 term screen-256color
 
 # Status line
-hardstatus alwayslastline '%{= G}[ %{G}%H %{g}][%= %{= w}%?%-Lw%?%{= R}%n*%f %t%?%{= R}(%u)%?%{= w}%+Lw%?%= %{= g}][ %{y}Load: %l %{g}][%{B}%Y-%m-%d %{W}%c:%s %{g}]'
+hardstatus alwayslastline '%{= kg}[ %{G}%H %{g}][%= %{w}%?%-Lw%?%{Y}%n*%f %t%?%{G}(%u)%?%{w}%+Lw%?%= %{g}][ %{y}Load: %l %{g}][ %{B}%Y-%m-%d %{W}%c:%s %{g}]'
 
 # Screens used for deployment
 screen -t "Worker 1"
@@ -20,8 +20,11 @@ stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high default^M"
 screen -t "Worker 4"
 stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high^M"
 
-screen -t "Django Shell"
-stuff ". bin/setenv.sh ; kmanga/manage.py shell^M"
+screen -t "Log server"
+stuff ".  bin/kmanga.conf ; bin/logserver --log \$LOG_PATH/kmanga.log^M"
 
-screen -t "Shell"
-stuff ". bin/setenv.sh^M"
+# screen -t "Django Shell"
+# stuff ". bin/setenv.sh ; kmanga/manage.py shell^M"
+
+# screen -t "Shell"
+# stuff ". bin/setenv.sh^M"
