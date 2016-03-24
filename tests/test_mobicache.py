@@ -25,6 +25,7 @@ import shutil
 import time
 
 from mobi.cache import DB
+from mobi.cache import IssueCache
 from mobi.cache import LockFile
 from mobi.cache import MobiCache
 
@@ -163,6 +164,39 @@ class TestDB(unittest.TestCase):
             self.assertEqual(db['key'], 'other'+'value'*n)
 
 
+class TestIssueCache(unittest.TestCase):
+
+    def setUp(self):
+        self.cache = IssueCache('tests/fixtures/tmp')
+
+    def tearDown(self):
+        shutil.rmtree('tests/fixtures/tmp')
+
+    def test_cache(self):
+        self.cache['url1'] = [{'key': 'value'}]
+        self.cache['url2'] = [
+            {'key1': 'value1'},
+            {'key2': 'value2'}
+        ]
+        self.cache['url3'] = [{'key': 'value'}]
+        self.assertTrue(len(self.cache) == 3)
+
+        self.assertEqual(self.cache['url1'][0], [{'key': 'value'}])
+
+        for key in self.cache:
+            self.assertTrue(key in ('url1', 'url2', 'url3'))
+            v = self.cache[key]
+            if key in ('url1', 'url3'):
+                self.assertTrue(len(v[0]) == 1)
+            else:
+                self.assertTrue(len(v[0]) == 2)
+        del self.cache['url1']
+        self.assertTrue(len(self.cache) == 2)
+        self.assertTrue('url1' not in self.cache)
+        self.assertTrue('url2' in self.cache)
+        self.assertTrue('url3' in self.cache)
+
+
 class TestMobiCache(unittest.TestCase):
 
     def setUp(self):
@@ -183,7 +217,7 @@ class TestMobiCache(unittest.TestCase):
         md5 = hashlib.md5('url1').hexdigest()
         self.assertEqual(
             self.cache['url1'][0],
-            [('mobi1.mobi', 'tests/fixtures/tmp/cache/data/%s-00' % md5)]
+            [('mobi1.mobi', 'tests/fixtures/tmp/data/%s-00' % md5)]
         )
 
         for key in self.cache:

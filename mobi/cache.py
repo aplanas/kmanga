@@ -150,7 +150,102 @@ class DB(object):
         self.close()
 
 
-class MobiCache(collections.MutableMapping):
+class Cache(collections.MutableMapping):
+    """Generic class for cache."""
+
+    # Configuration variables
+    slots = 4096            # Number of slots in the cache file
+    nclean = 1024           # Number of slots to remove when limit reached
+    dbname = 'cache.db'     # Name of the database file
+
+    def __init__(self, store):
+        self.store = store
+
+        # Create the cache directory if needed
+        if not os.path.exists(store):
+            os.makedirs(store)
+
+        # Name of the cache database
+        self.cache = os.path.join(store, self.dbname)
+
+    def __getitem__(self, key):
+        with DB(self.cache) as db:
+            # The value is composed of two components:
+            #   (value, creation_date)
+            return db[key]
+
+    def __setitem__(self, key, value):
+        with DB(self.cache) as db:
+            now = datetime.utcnow()
+            db[key] = (value, now)
+
+    def __delitem__(self, key):
+        with DB(self.cache) as db:
+            del db[key]
+
+    def __iter__(self):
+        with DB(self.cache) as db:
+            for key in db:
+                yield key
+
+    def __len__(self):
+        with DB(self.cache) as db:
+            return len(db)
+
+    def clean(self, ttl):
+        """Remove entries older than `ttl` seconds."""
+        now = datetime.utcnow()
+        # The last part of the value is the `ttl`
+        to_delete = (
+            k for k, v in self.iteritems()
+            if (now - v[-1]).seconds > ttl
+        )
+        for key in to_delete:
+            del self[key]
+
+    def free(self):
+        """If the cache is too big, remove a fix number of elements."""
+        if len(self) > self.slots:
+            elements = [(k, v[-1]) for k, v in self.iteritems()]
+            elements = sorted(elements, key=lambda x: x[-1])
+            for key, _ in elements[:self.nclean]:
+                del self[key]
+
+
+class IssueCache(Cache):
+    """Cache for issues."""
+
+    def __init__(self, store, images_store):
+        super(IssueCache, self).__init__(store)
+        self.images_store = images_store
+
+    def __setitem__(self, key, value):
+        """Refresh the time for the stored images."""
+        super(IssueCache, self).__setitem__(key, value)
+
+        for i in value:
+            if i['images']:
+                image_path = i['images'][0]['path']
+                image_path = os.path.join(self.images_store, image_path)
+                # Set the current (atime, mtime) to `now`
+                os.utime(image_path, None)
+
+    def is_valid(self, url):
+        """Check if URL is in the cache and the images are in the store."""
+        if url not in self:
+            return False
+
+        images = self[url]
+        for i in images:
+            if i['images']:
+                image_path = i['images'][0]['path']
+                image_path = os.path.join(self.images_store, image_path)
+                if not os.path.isfile(image_path):
+                    return False
+        return True
+
+
+class MobiCache(Cache):
     """Cache for `.mobi` documents.
 
     This cache avoid the creation of new MOBI documents previously
@@ -178,23 +273,13 @@ class MobiCache(collections.MutableMapping):
 
     """
 
-    # Configuration variables
-    SLOTS = 4096            # Number of slots in the cache file
-    NCLEAN = 1024           # Number of slots to remove when limit reached
+    dbname = 'index.db'
 
-    def __init__(self, mobi_store):
-        self.mobi_store = mobi_store
-
-        # Create the cache directory if needed
-        cache = os.path.join(mobi_store, 'cache')
-        if not os.path.exists(cache):
-            os.makedirs(cache)
-
-        # Name of the index database
-        self.index = os.path.join(cache, 'index.db')
+    def __init__(self, store):
+        super(MobiCache, self).__init__(store)
 
         # Create the data directory if needed
-        self.data = os.path.join(cache, 'data')
+        self.data = os.path.join(store, 'data')
         if not os.path.exists(self.data):
             os.makedirs(self.data)
 
@@ -203,14 +288,8 @@ class MobiCache(collections.MutableMapping):
         name = hashlib.md5(key).hexdigest()
         return os.path.join(self.data, name)
 
-    def __getitem__(self, key):
-        with DB(self.index) as db:
-            # The value is composed of two components:
-            #   (list_of_tuples_of_names_and_paths, creation_date)
-            return db[key]
-
     def __setitem__(self, key, value):
-        with DB(self.index) as db:
+        with DB(self.cache) as db:
             # Makes sure that the element is not there anymore.
             if key in self:
                 del self[key]
@@ -233,35 +312,7 @@ class MobiCache(collections.MutableMapping):
             db[key] = (value_cache, now)
 
     def __delitem__(self, key):
-        with DB(self.index) as db:
+        with DB(self.cache) as db:
             for _, data_file in self[key][0]:
                 os.unlink(data_file)
             del db[key]
-
-    def __iter__(self):
-        with DB(self.index) as db:
-            for key in db.keys():
-                yield key
-
-    def __len__(self):
-        with DB(self.index) as db:
-            return len(db)
-
-    def clean(self, ttl):
-        """Remove entries older than `ttl` seconds."""
-        now = datetime.utcnow()
-        # The last part of the value is the `ttl`
-        to_delete = (
-            k for k, v in self.iteritems()
-            if (now - v[-1]).seconds > ttl
-        )
-        for key in to_delete:
-            del self[key]
-
-    def free(self):
-        """If the cache is too big, remove a fix number of elements."""
-        if len(self) > MobiCache.SLOTS:
-            elements = [(k, v[-1]) for k, v in self.iteritems()]
-            elements = sorted(elements, key=lambda x: x[-1])
-            for key, _ in elements[:MobiCache.NCLEAN]:
-                del self[key]
