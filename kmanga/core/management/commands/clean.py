@@ -10,11 +10,10 @@ from django.db.models import Q
 from django.utils import timezone
 
 from mobi.cache import MobiCache
-from scraper.settings import IMAGES_STORE
-from scraper.settings import MOBI_STORE
 
 from core.models import Issue
 from core.models import Manga
+from core.models import Result
 from core.models import Source
 from registration.models import UserProfile
 
@@ -49,6 +48,8 @@ class Command(BaseCommand):
             'image-cache',
             'mobi-cache',
             'cover',
+            'result-processing',
+            'result-failed',
         ], help='Command to execute')
 
         parser.add_argument(
@@ -111,13 +112,17 @@ class Command(BaseCommand):
         elif command == 'user':
             self._clean_user(days, remove, list_)
         elif command == 'image-cache':
-            cache = os.path.join(IMAGES_STORE, 'full')
+            cache = os.path.join(settings.IMAGES_STORE, 'full')
             self._clean_image_cache(days, cache, list_)
         elif command == 'mobi-cache':
-            cache = MobiCache(MOBI_STORE)
+            cache = MobiCache(settings.MOBI_STORE)
             self._clean_mobi_cache(days, cache, list_)
         elif command == 'cover':
             self._clean_cover(sources, list_)
+        elif command == 'result-processing':
+            self._clean_result(days, Result.PROCESSING, list_)
+        elif command == 'result-failed':
+            self._clean_result(days, Result.FAILED, list_)
         else:
             raise CommandError('Not valid command value.')
 
@@ -285,6 +290,37 @@ class Command(BaseCommand):
                 else:
                     logger.info('Removing %s - %s.' % (cover, source))
                     os.unlink(cover)
+
+        if list_:
+            print_table(title, header, body)
+
+    def _clean_result(self, days, status, list_):
+        """Remove old results in a bad state."""
+        today = timezone.now()
+        since = today - timezone.timedelta(days=days)
+        results = Result.objects.filter(modified__lt=since, status=status)
+
+        if list_:
+            title = 'Results to clean (days: %d)' % days
+            header = (('manga', 35), ('issue', 5), ('source', 11), ('user', 8),
+                      ('days', 3))
+            body = []
+
+        for result in results:
+            old = (today - result.modified).days
+            if list_:
+                body.append((result.issue.manga.name,
+                             result.issue.number,
+                             result.issue.manga.source.name,
+                             result.subscription.user,
+                             old))
+            else:
+                logger.info('Removing %s (%s) for user %s [%d].' % (
+                    result.issue,
+                    result.status,
+                    result.subscription.user,
+                    old))
+                result.delete()
 
         if list_:
             print_table(title, header, body)
