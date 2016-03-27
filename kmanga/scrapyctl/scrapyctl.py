@@ -1,12 +1,33 @@
+from __future__ import absolute_import
+
+import logging
+import logging.handlers
 import os
 
 from django.conf import settings
+from django_rq import job
 
+from mobi.cache import IssueCache
 from scrapy import signals
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
 MAX_CRAWLERS = 5
+
+
+class ScrapySocketHandler(logging.handlers.SocketHandler):
+    """Fix the log record created by Scrapy."""
+
+    def makePickle(self, record):
+        # Some Scrapy componets, like the engine or the telnet
+        # middleware, add some components to the log record, that
+        # contains references to objects that can't be serialized with
+        # pikcle.  For now we remove this extra information.
+        if hasattr(record, 'spider'):
+            del record.spider
+        if hasattr(record, 'crawler'):
+            del record.crawler
+        return super(ScrapySocketHandler, self).makePickle(record)
 
 
 class ProcessControl(object):
@@ -37,7 +58,7 @@ class ProcessControl(object):
 class ScrapyCtl(object):
     """Class to store and manage the CrawlerProcess single instance."""
 
-    def __init__(self, accounts, loglevel):
+    def __init__(self, accounts, loglevel, remote=False):
         self.accounts = settings.SCRAPY_ACCOUNTS
         if accounts:
             self.accounts.update(accounts)
@@ -45,11 +66,16 @@ class ScrapyCtl(object):
         self.settings = self._get_settings()
         # Values for `loglevel`: CRITICAL, ERROR, WARNING, INFO, DEBUG.
         self.settings.set('LOG_LEVEL', loglevel)
-        self.process = CrawlerProcess(self.settings)
+        if remote:
+            # Configure remote logging and disable the scrapy logging.
+            self.settings.set('LOG_ENABLED', False)
+            logger = logging.getLogger()
+            handler = ScrapySocketHandler(
+                'localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+            handler.setLevel(loglevel)
+            logger.addHandler(handler)
 
-        # Store the crawlers that are going to be spinning with the
-        # `send` command.
-        self.crawlers = []
+        self.process = CrawlerProcess(self.settings)
 
     def _get_settings(self):
         """Return the current scrapy settings."""
@@ -116,8 +142,7 @@ class ScrapyCtl(object):
             self.process.crawl(spider, **kwargs)
         self.process.start()
 
-    def _create_crawler(self, spider, manga, issue, url, from_email,
-                        to_email, dry_run):
+    def _create_crawler(self, spider, manga, issue, url, dry_run):
         """Utility method to create (crawler, kwargs) tuples."""
         if spider in self.accounts:
             username, password = self.accounts[spider]
@@ -130,39 +155,30 @@ class ScrapyCtl(object):
             'password': password,
             'issue': issue,
             'url': url,
-            'from': from_email,
-            'to': to_email,
         }
         if dry_run:
             kwargs['dry_run'] = dry_run
         crawler = self.process._create_crawler(spider)
         return (crawler, kwargs)
 
-    def _send(self, spider, manga, issues, urls, from_email, to_email,
-              dry_run=False):
-        """Send a list of issues to an user."""
-        crawlers = []
-        for issue, url in zip(issues, urls):
-            crawlers.append(self._create_crawler(spider, manga, issue,
-                                                 url, from_email,
-                                                 to_email, dry_run))
-        process_control = ProcessControl(crawlers, self.process)
-        process_control.run()
-
-    def prepare_send(self, issues, user, dry_run=False):
-        """Create crawlers of issues for an user."""
-        for issue in issues:
-            self.crawlers.append(self._create_crawler(
+    def scrape(self, issues, dry_run=False):
+        """Create crawlers to scrape issues."""
+        cache = IssueCache(settings.ISSUES_STORE, settings.IMAGES_STORE)
+        crawlers = [
+            self._create_crawler(
                 issue.manga.source.name.lower(),
                 issue.manga.name,
                 issue.number,
                 issue.url,
-                settings.KMANGA_EMAIL,
-                user.userprofile.email_kindle,
                 dry_run
-            ))
-
-    def send(self):
-        """Send the issues prepared in `prepare_send`."""
-        process_control = ProcessControl(self.crawlers, self.process)
+            ) for issue in issues if str(issue.url) not in cache
+        ]
+        process_control = ProcessControl(crawlers, self.process)
         process_control.run()
+
+
+@job('default', timeout=60*60)
+def scrape_issues(issues, accounts, loglevel):
+    """RQ job to scrape issues."""
+    scrapy = ScrapyCtl(accounts, loglevel, remote=True)
+    scrapy.scrape(issues)

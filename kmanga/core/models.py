@@ -518,7 +518,7 @@ class ResultQuerySet(models.QuerySet):
         """Return the list of `Result` modified during the last 24 hours."""
         today = timezone.now()
         yesterday = today - timezone.timedelta(days=1)
-        # TODO XXX - Objects are created / modified always after time
+        # XXX TODO - Objects are created / modified always after time
         # T.  If the send process is slow, the error margin can be
         # bigger than the one used here.
         yesterday += timezone.timedelta(hours=4)
@@ -540,7 +540,7 @@ class ResultQuerySet(models.QuerySet):
         """Return the list of `Result` sent during the last 24 hours."""
         today = timezone.now()
         yesterday = today - timezone.timedelta(days=1)
-        # TODO XXX - Objects are created / modified always after time
+        # XXX TODO - Objects are created / modified always after time
         # T.  If the send process is slow, the error margin can be
         # bigger than the one used here.
         yesterday += timezone.timedelta(hours=4)
@@ -556,6 +556,21 @@ class ResultQuerySet(models.QuerySet):
     def sent_last_24hs(self, user, subscription=None):
         """Return the number of `Result` sent during the last 24 hours."""
         return self._sent_last_24hs(user, subscription).count()
+
+    def create_if_new(self, issue, user, status):
+        """Create `Result` if is new with a status."""
+        # XXX TODO - The semantic is not very clear, and maybe the
+        # place is not correct.  This method is used when we have an
+        # issue and a user, and we want to create / move a Result with
+        # a specific status.  Basically is used in the scrape, convert
+        # or send of an issue.
+        subscription = Subscription.objects.get(
+            manga=issue.manga, user=user)
+        result, _ = Result.objects.get_or_create(
+            issue=issue,
+            subscription=subscription,
+            defaults={'status': status})
+        return result
 
     def pending(self):
         return self.latests(status=Result.PENDING)
@@ -600,6 +615,12 @@ class Result(TimeStampedModel):
 
     def get_absolute_url(self):
         return reverse('result-detail', kwargs={'pk': self.pk})
+
+    def set_status(self, status):
+        self.status = status
+        if status == Result.SENT:
+            self.send_date = timezone.now()
+        self.save()
 
     def is_pending(self):
         return self.status == Result.PENDING

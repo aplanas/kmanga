@@ -6,8 +6,8 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 from .clean import *
+from .collector import *
 from .updatedb import *
-from .mobicontainer import *
 
 # class ScraperPipeline(object):
 #     def process_item(self, item, spider):

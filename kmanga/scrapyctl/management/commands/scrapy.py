@@ -2,17 +2,20 @@ from __future__ import absolute_import
 
 import datetime
 import logging
+import logging.handlers
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 from django.db import connection
+from django.db.models import Q
 
 from core.models import Manga
 from core.models import Result
 from core.models import Source
 from core.models import Subscription
 from registration.models import UserProfile
+from scrapyctl.mobictl import create_mobi_and_send
+from scrapyctl.scrapyctl import scrape_issues
 from scrapyctl.scrapyctl import ScrapyCtl
 
 logger = logging.getLogger(__name__)
@@ -64,13 +67,7 @@ class Command(BaseCommand):
             help='Avoid the send of the manga, but register the send.')
         parser.add_argument(
             '--user', action='store', dest='user', default=None,
-            help='User name for the subscription (<user>).')
-        parser.add_argument(
-            '--from', action='store', dest='from', default=None,
-            help='Email address from where to send the issue (<email>).')
-        parser.add_argument(
-            '--to', action='store', dest='to', default=None,
-            help='Email address or user to send the issue (<email|user>).')
+            help='User name or email address (<user|email>).')
 
         # General parameters
         parser.add_argument(
@@ -172,6 +169,21 @@ class Command(BaseCommand):
 
         return _issues
 
+    def _get_user_profile(self, username):
+        """Get an User object from the email or the username."""
+        user_profile = UserProfile.objects.filter(
+            Q(user__username=username) |
+            Q(user__email=username) |
+            Q(email_kindle=username)
+        )
+
+        if not user_profile.exists():
+            raise CommandError('User not found for %s' % username)
+        elif user_profile.count() > 1:
+            raise CommandError('Multiple users found for %s' % username)
+
+        return user_profile.first()
+
     def handle(self, *args, **options):
         command = options['command']
 
@@ -223,28 +235,26 @@ class Command(BaseCommand):
             manga = options['manga']
             url = options['url']
             lang = options['lang']
-            _from = options['from']
-            to = options['to']
+            username = options['user']
             do_not_send = options['do-not-send']
 
             # The URL can point to a manga or an issue, so we can use
             # safely in both calls
             manga = self._get_manga(spiders, manga, url)
             issues = self._get_issues(manga, issues, url, lang)
-            self.send(scrapy, spiders, manga, issues, _from, to,
-                      do_not_send)
+            user_profile = self._get_user_profile(username)
+            self.send(issues, user_profile, accounts, loglevel, do_not_send)
         elif command == 'sendsub':
             if options['user']:
                 username = options['user']
-                user_profile = UserProfile.objects.get(user__username=username)
+                user_profile = self._get_user_profile(username)
                 user_profiles = [user_profile]
             else:
                 user_profiles = UserProfile.objects.filter(
                     user__subscription__id__gt=0).distinct()
             do_not_send = options['do-not-send']
             for user_profile in user_profiles:
-                self.prepare_sendsub(scrapy, user_profile, do_not_send)
-            self.sendsub(scrapy)
+                self.sendsub(user_profile, accounts, loglevel, do_not_send)
         else:
             raise CommandError('Not valid command value.')
 
@@ -308,46 +318,31 @@ class Command(BaseCommand):
 
         manga.subscribe(user_profile.user, lang, issues_per_day)
 
-    def send(self, scrapy, spiders, manga, issues, _from, to,
-             do_not_send):
+    def send(self, issues, user_profile, accounts, loglevel, do_not_send):
         """Send a list of issues to an user."""
-        if isinstance(issues, list):
-            numbers, urls = zip(*[(i.number, i.url) for i in issues])
-        else:
-            numbers, urls = zip(*issues.values_list('number', 'url'))
 
-        _from = _from if _from else settings.KMANGA_EMAIL
-        if not to:
-            raise CommandError("Parameter 'to' is not optional")
-
-        user_profile = None
-        if '@' in to:
-            user_profile = UserProfile.objects.get(email_kindle=to)
-        else:
-            user_profile = UserProfile.objects.get(user__username=to)
-
-        if not user_profile:
-            raise CommandError('User not found for %s' % to)
-
+        user = user_profile.user
         if do_not_send:
-            # If the user have a subscription, mark the issues as sent
-            user = user_profile.user
+            # If the user have a subscription but we are not sending
+            # issues, mark them as sent
             try:
-                subscription = user.subscription_set.get(manga=manga)
-            except:
-                msg = 'The user %s do not have a subscription to %s' % (user,
-                                                                        manga)
-                self.stdout.write(msg)
-            else:
                 for issue in issues:
-                    # TODO XXX - Remove `unicode` in Python 3
-                    self.stdout.write("Marked '%s' as sent" % unicode(issue))
+                    subscription = Subscription.actives.get(
+                        user=user, manga=issue.manga)
+                    self.stdout.write("Marking '%s' as sent" % issue)
                     subscription.add_sent(issue)
-        else:
-            scrapy._send(spiders[0], manga.name, numbers, urls, _from,
-                         user_profile.email_kindle)
+            except:
+                msg = 'The user %s does not have a '\
+                      'subscription to %s' % (user, issue.manga)
+                self.stdout.write(msg)
+        elif issues:
+            for issue in issues:
+                Result.objects.create_if_new(issue, user, Result.PROCESSING)
+            scrape_job = scrape_issues.delay(issues, accounts, loglevel)
+            # This job also update the Result status
+            create_mobi_and_send.delay(issues, user, depends_on=scrape_job)
 
-    def prepare_sendsub(self, scrapy, user_profile, do_not_send):
+    def sendsub(self, user_profile, accounts, loglevel, do_not_send):
         """Prepare the daily subscriptions to an user."""
         user = user_profile.user
 
@@ -378,27 +373,4 @@ class Command(BaseCommand):
                 issues.append(issue)
                 remains -= 1
 
-        # Reverse the order of issues to send. This will help when the
-        # MOBI arrives to the Kindle for ordering.
-        issues.reverse()
-
-        if do_not_send:
-            # If the user have a subscription but we are not sending
-            # issues, mark them as sent
-            user = user_profile.user
-            try:
-                for issue in issues:
-                    subscription = Subscription.actives.get(
-                        user=user, manga=issue.manga)
-                    self.stdout.write("Marking '%s' as sent" % issue)
-                    subscription.add_sent(issue)
-            except:
-                msg = 'The user %s do not have a '\
-                      'subscription to %s' % (user, issue.manga)
-                self.stdout.write(msg)
-        elif issues:
-            scrapy.prepare_send(issues, user)
-
-    def sendsub(self, scrapy):
-        """Send daily subscriptions prepared in `prepare_sendsub`."""
-        scrapy.send()
+        self.send(issues, user_profile, accounts, loglevel, do_not_send)
