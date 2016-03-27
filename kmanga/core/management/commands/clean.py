@@ -9,12 +9,12 @@ from django.db.models import Max
 from django.db.models import Q
 from django.utils import timezone
 
-from mobi.cache import MobiCache
-
 from core.models import Issue
 from core.models import Manga
 from core.models import Result
 from core.models import Source
+from mobi.cache import IssueCache
+from mobi.cache import MobiCache
 from registration.models import UserProfile
 
 
@@ -46,6 +46,7 @@ class Command(BaseCommand):
             'manga',
             'user',
             'image-cache',
+            'issue-cache',
             'mobi-cache',
             'cover',
             'result-processing',
@@ -116,7 +117,10 @@ class Command(BaseCommand):
             self._clean_image_cache(days, cache, list_)
         elif command == 'mobi-cache':
             cache = MobiCache(settings.MOBI_STORE)
-            self._clean_mobi_cache(days, cache, list_)
+            self._clean_cache(days, cache, list_)
+        elif command == 'issue-cache':
+            cache = IssueCache(settings.ISSUES_STORE, settings.IMAGES_STORE)
+            self._clean_cache(days, cache, list_)
         elif command == 'cover':
             self._clean_cover(sources, list_)
         elif command == 'result-processing':
@@ -236,8 +240,8 @@ class Command(BaseCommand):
         if list_:
             print_table(title, header, body)
 
-    def _clean_mobi_cache(self, days, cache, list_):
-        """Remove old cached mobi."""
+    def _clean_cache(self, days, cache, list_):
+        """Remove old cached mobi or issues."""
         today = timezone.now()
 
         if list_:
