@@ -121,7 +121,8 @@ class SmartProxy(object):
                                      request.url, redirect,
                                      response.status))
                     # If valid, re-enable redirection
-                    del request.meta['dont_redirect']
+                    if 'dont_redirect' in request.meta:
+                        del request.meta['dont_redirect']
                 else:
                     # If the status is one of the error codes that is
                     # not in the retry error code, we need to map as
