@@ -19,6 +19,7 @@
 
 from datetime import date
 import logging
+import sys
 
 import scrapy
 
@@ -67,13 +68,6 @@ class MangaSpider(scrapy.Spider):
         #
         # - url:        (OPTIONAL) Initial URL for the spider.
         #
-        # - from:       (OPTIONAL) Email address set in the FROM
-        #               field. The real `from` is taken from the
-        #               settings configuration, but this is used in
-        #               the mail header.
-        #
-        # - to:         (OPTIONAL) Email address set in the TO field.
-        #
         # - dry_run:    (OPTIONAL) If True, the pipelines will ignore
         #               the items that comes from this spider.
         #
@@ -102,11 +96,6 @@ class MangaSpider(scrapy.Spider):
         elif _manga and _issue:
             self.start_urls = [self.url] if _url \
                 else [self.get_manga_url(self.manga, self.issue)]
-            self.from_email = kwargs.get('from', None)
-            try:
-                self.to_email = kwargs['to']
-            except:
-                error_msg = True
             self._operation = 'manga'
         else:
             # To allow the check of the spider using scrapy, we need
@@ -141,11 +130,10 @@ class MangaSpider(scrapy.Spider):
                             '[-a user=USER -a password=PASSWD'
                             ' -a latest=DD-MM-YYYY -a url=URL]',
                             '[-a user=USER -a password=PASSWD'
-                            ' -a manga=name -a issue=number -a url=URL'
-                            ' -a from=email -a to=email]',
+                            ' -a manga=name -a issue=number -a url=URL]',
                             '[-a dry_run=1]'))
             print 'scrapy crawl %s SPIDER' % msg
-            exit(1)
+            sys.exit(1)
 
     def parse(self, response):
         if self._login:
