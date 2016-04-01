@@ -176,7 +176,9 @@ class TestIssueCache(unittest.TestCase):
         self.cache['url1'] = [{'images': [{'path': 'width-large.jpg'}]}]
         self.cache['url2'] = [
             {'images': [{'path': 'width-large.jpg'}]},
-            {'images': [{'path': 'width-small.jpg'}]}
+            {'images': [{'path': 'width-small.jpg'}]},
+            # Repressent a missing image
+            {'images': []}
         ]
         self.cache['url3'] = [{'images': [{'path': 'width-small.jpg'}]}]
         self.assertTrue(len(self.cache) == 3)
@@ -190,12 +192,26 @@ class TestIssueCache(unittest.TestCase):
             if key in ('url1', 'url3'):
                 self.assertTrue(len(v[0]) == 1)
             else:
-                self.assertTrue(len(v[0]) == 2)
+                self.assertTrue(len(v[0]) == 3)
         del self.cache['url1']
         self.assertTrue(len(self.cache) == 2)
         self.assertTrue('url1' not in self.cache)
         self.assertTrue('url2' in self.cache)
         self.assertTrue('url3' in self.cache)
+
+    def test_is_valid(self):
+        self.cache['url1'] = [
+            {'images': [{'path': 'width-large.jpg'}]},
+            {'images': []}
+        ]
+        # Create a temporal image
+        open('tests/fixtures/images/missing-image.jpg', 'a').close()
+        self.cache['url2'] = [{'images': [{'path': 'missing-image.jpg'}]}]
+        # Remove temporal image
+        os.unlink('tests/fixtures/images/missing-image.jpg')
+        self.assertTrue(self.cache.is_valid('url1'))
+        self.assertFalse(self.cache.is_valid('url2'))
+        self.assertFalse(self.cache.is_valid('url3'))
 
 
 class TestMobiCache(unittest.TestCase):
@@ -232,6 +248,57 @@ class TestMobiCache(unittest.TestCase):
         self.assertTrue(len(self.cache) == 2)
         self.assertTrue('url1' not in self.cache)
         self.assertTrue('url2' in self.cache)
+        self.assertTrue('url3' in self.cache)
+
+        # Test that the store directory is not wipeout
+        cache = MobiCache(self.cache.store)
+        self.assertTrue(len(self.cache) == 2)
+        self.assertTrue(len(cache) == 2)
+
+    def test_clean(self):
+        self.cache['url1'] = ['tests/fixtures/cache/mobi1.mobi']
+        self.cache['url2'] = ['tests/fixtures/cache/mobi2.1.mobi']
+        time.sleep(2)
+        self.assertTrue(len(self.cache) == 2)
+        self.cache['url3'] = ['tests/fixtures/cache/mobi3.mobi']
+        self.assertTrue(len(self.cache) == 3)
+        self.cache.clean(ttl=1)
+        self.assertTrue(len(self.cache) == 1)
+        self.assertTrue('url1' not in self.cache)
+        self.assertTrue('url2' not in self.cache)
+        self.assertTrue('url3' in self.cache)
+
+        del self.cache['url3']
+        self.assertTrue(len(self.cache) == 0)
+
+        self.cache['url1'] = ['tests/fixtures/cache/mobi1.mobi']
+        self.cache['url2'] = ['tests/fixtures/cache/mobi2.1.mobi']
+        time.sleep(2)
+        self.assertTrue(len(self.cache) == 2)
+        self.cache['url2'] = ['tests/fixtures/cache/mobi2.2.mobi']
+        self.cache['url3'] = ['tests/fixtures/cache/mobi3.mobi']
+        self.assertTrue(len(self.cache) == 3)
+        self.cache.clean(ttl=1)
+        self.assertTrue(len(self.cache) == 2)
+        self.assertTrue('url1' not in self.cache)
+        self.assertTrue('url2' in self.cache)
+        self.assertTrue('url3' in self.cache)
+
+    def test_free(self):
+        self.cache.slots = 3
+        self.cache.nclean = 2
+        self.cache['url1'] = ['tests/fixtures/cache/mobi1.mobi']
+        self.cache['url2.1'] = ['tests/fixtures/cache/mobi2.1.mobi']
+        self.cache.free()
+        self.assertTrue(len(self.cache) == 2)
+
+        self.cache['url2.2'] = ['tests/fixtures/cache/mobi2.2.mobi']
+        self.cache['url3'] = ['tests/fixtures/cache/mobi3.mobi']
+        self.cache.free()
+        self.assertTrue(len(self.cache) == 2)
+        self.assertTrue('url1' not in self.cache)
+        self.assertTrue('url2.1' not in self.cache)
+        self.assertTrue('url2.2' in self.cache)
         self.assertTrue('url3' in self.cache)
 
 
