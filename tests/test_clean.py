@@ -80,6 +80,8 @@ class TestCleanBasePipeline(unittest.TestCase):
                          yesterday)
         self.assertEqual(convert_to_date('01 Jan 2015'), today)
         self.assertEqual(convert_to_date('31 Dec 2014'), yesterday)
+        self.assertEqual(convert_to_date('Jan 01, 2015 10:00AM'), today)
+        self.assertEqual(convert_to_date('Dec 31, 2014 10:00AM'), yesterday)
         self.assertEqual(convert_to_date('Jan 1, 2015'), today)
         self.assertEqual(convert_to_date('Dec 31, 2014'), yesterday)
         self.assertEqual(convert_to_date('01/01/2015'), today)
@@ -134,3 +136,56 @@ class TestCleanBasePipeline(unittest.TestCase):
         self.assertEqual(self.clean._as_str([u' ', u'a']), u'a')
         self.assertEqual(self.clean._as_str([u' 5', u' 0'], separator=''),
                          u'50')
+        self.assertEqual(self.clean._as_str(u' '), u'')
+        self.assertEqual(self.clean._as_str(10), u'10')
+
+    def test_as_list(self):
+        self.assertEqual(self.clean._as_list([u' 1', u' ']), [u' 1', u' '])
+        self.assertEqual(self.clean._as_list(['1', ('a', 'b'), '2']),
+                         ['1', 'a', 'b', '2'])
+        self.assertEqual(self.clean._as_list(1), [1])
+
+    def test_clean_field_str(self):
+        self.assertEqual(
+            self.clean._clean_field_str(['1234567890', '1234567890']),
+            '1234567890 1234567890')
+        self.assertEqual(
+            self.clean._clean_field_str(['<p>1234567890</p>', '1234567890']),
+            '<p>1234567890</p> 1234567890')
+        self.assertEqual(
+            self.clean._clean_field_str(['<p>1234567890</p>', '1234567890'],
+                                        clean_html=True),
+            '1234567890 1234567890')
+        self.assertEqual(
+            self.clean._clean_field_str(['1234567890', '1234567890'],
+                                        max_length=15),
+            '1234567890 1234')
+        self.assertEqual(self.clean._clean_field_str(' ', optional=True), '')
+        with self.assertRaises(ValueError):
+            self.clean._clean_field_str(' ')
+
+    def test_clean_field_int(self):
+        self.assertEqual(self.clean._clean_field_int('10'), 10)
+        self.assertEqual(self.clean._clean_field_int('0'), 0)
+        self.assertEqual(self.clean._clean_field_int('err', optional=True), 0)
+        self.assertEqual(self.clean._clean_field_int('err', optional=True,
+                                                     default=1), 1)
+        # XXX TODO - the optional semantic is wrong
+        self.assertEqual(self.clean._clean_field_int('', optional=True,
+                                                     default='err'), 'err')
+        with self.assertRaises(ValueError):
+            self.clean._clean_field_int('', default='err')
+
+    def test_clean_field_float(self):
+        self.assertEqual(self.clean._clean_field_float('10.1'), 10.1)
+        self.assertEqual(self.clean._clean_field_float('0'), 0.0)
+        self.assertEqual(
+            self.clean._clean_field_float('err', optional=True), 0.0)
+        self.assertEqual(
+            self.clean._clean_field_float('err', optional=True, default=1.0),
+            1.0)
+        # XXX TODO - the optional semantic is wrong
+        self.assertEqual(self.clean._clean_field_float('', optional=True,
+                                                       default='err'), 'err')
+        # with self.assertRaises(ValueError):
+        #     self.clean._clean_field_float('', default='err')

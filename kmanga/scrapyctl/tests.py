@@ -19,8 +19,8 @@ class CommandTestCase(TestCase):
         self.scrapy = ScrapyCtl(accounts={}, loglevel='ERROR')
         self.command = Command()
         self.command.stdout = mock.MagicMock()
-        self.all_spiders = ['batoto', 'mangareader',
-                            'submangacom', 'mangafox']
+        self.all_spiders = ['mangareader', 'submanga', 'batoto',
+                            'mangahere', 'submangacom', 'mangafox']
 
     def test_get_spiders(self):
         """Test recovering the list of scrapy spiders."""
@@ -108,7 +108,7 @@ class CommandTestCase(TestCase):
     def test_handle_no_params(self):
         """Test handle when there are not parameters."""
         with self.assertRaises(CommandError):
-            self.command.handle()
+            self.command.handle(command=None)
 
     def test_handle_wrong_param(self):
         """Test handle when the parameter is wrong."""
@@ -120,7 +120,7 @@ class CommandTestCase(TestCase):
         }
 
         with self.assertRaises(CommandError):
-            self.command.handle('bad-parameter', **options)
+            self.command.handle(command='bad-parameter', **options)
 
     @mock.patch.object(Command, 'list_spiders')
     def test_handle_list(self, list_spiders):
@@ -134,7 +134,7 @@ class CommandTestCase(TestCase):
         }
 
         c = Command()
-        c.handle('list', **options)
+        c.handle(command='list', **options)
         list_spiders.assert_called_once_with(self.all_spiders)
 
     @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
@@ -151,7 +151,7 @@ class CommandTestCase(TestCase):
         scrapyctl.return_value = scrapyctl
         scrapyctl.spider_list.return_value = self.all_spiders
         c = Command()
-        c.handle('update-genres', **options)
+        c.handle(command='update-genres', **options)
         scrapyctl.update_genres.assert_called_once_with(self.all_spiders,
                                                         False)
 
@@ -169,7 +169,7 @@ class CommandTestCase(TestCase):
         scrapyctl.return_value = scrapyctl
         scrapyctl.spider_list.return_value = self.all_spiders
         c = Command()
-        c.handle('update-catalog', **options)
+        c.handle(command='update-catalog', **options)
         scrapyctl.update_catalog.assert_called_once_with(self.all_spiders,
                                                          False)
 
@@ -190,7 +190,7 @@ class CommandTestCase(TestCase):
         scrapyctl.return_value = scrapyctl
         get_spiders.return_value = ['source1']
         c = Command()
-        c.handle('update-collection', **options)
+        c.handle(command='update-collection', **options)
         scrapyctl.update_collection.assert_called_once_with(
             ['source1'], 'Manga 1', 'http://source1.com/manga1', False)
 
@@ -210,7 +210,7 @@ class CommandTestCase(TestCase):
         scrapyctl.return_value = scrapyctl
         scrapyctl.spider_list.return_value = self.all_spiders
         c = Command()
-        c.handle('update-latest', **options)
+        c.handle(command='update-latest', **options)
         scrapyctl.update_latest.assert_called_once_with(
             self.all_spiders, until, False)
 
@@ -218,7 +218,7 @@ class CommandTestCase(TestCase):
 
         options['until'] = until
         c = Command()
-        c.handle('update-latest', **options)
+        c.handle(command='update-latest', **options)
         scrapyctl.update_latest.assert_called_once_with(
             self.all_spiders, until, False)
 
@@ -237,7 +237,7 @@ class CommandTestCase(TestCase):
         }
 
         c = Command()
-        c.handle('search', **options)
+        c.handle(command='search', **options)
         search.assert_called_once_with(self.all_spiders, 'Manga 1',
                                        'EN', False)
 
@@ -264,7 +264,7 @@ class CommandTestCase(TestCase):
         scrapyctl.return_value = scrapyctl
         get_spiders.return_value = ['source1']
         c = Command()
-        c.handle('subscribe', **options)
+        c.handle(command='subscribe', **options)
         subscribe.assert_called_once_with('user1', manga, 'EN', 4)
 
     @mock.patch.object(Command, 'send')
@@ -297,7 +297,7 @@ class CommandTestCase(TestCase):
         get_issues.return_value = ['issues']
         get_manga.return_value = ['manga']
         c = Command()
-        c.handle('send', **options)
+        c.handle(command='send', **options)
         send.assert_called_once_with(scrapyctl, ['source1'], manga,
                                      ['issues'], 'from@example.com',
                                      'to@example.com', False)
@@ -321,7 +321,7 @@ class CommandTestCase(TestCase):
 
         scrapyctl.return_value = scrapyctl
         c = Command()
-        c.handle('sendsub', **options)
+        c.handle(command='sendsub', **options)
         prepare_sendsub.assert_called_once_with(scrapyctl, user_profile,
                                                 False)
         sendsub.assert_called_once_with(scrapyctl)
@@ -331,7 +331,7 @@ class CommandTestCase(TestCase):
 
         options['user'] = None
         c = Command()
-        c.handle('sendsub', **options)
+        c.handle(command='sendsub', **options)
         for user_profile in user_profiles:
             prepare_sendsub.assert_any_call(scrapyctl, user_profile, False)
         sendsub.assert_called_once_with(scrapyctl)

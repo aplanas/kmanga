@@ -34,28 +34,27 @@ class Info(object):
         self.__dict__.update(info)
 
 
-class TestMangaMobi(unittest.TestCase):
+class TestContainer(unittest.TestCase):
 
     def setUp(self):
         shutil.copytree('tests/fixtures/container01', 'tests/fixtures/dummy')
         self.container = Container('tests/fixtures/dummy')
         # Count the number of current pages as a side effect
         self.container.npages()
-        self.info = Info(title='title', language='en', publisher='publisher',
-                         author='author', reading_direction='horizontal-rl')
-        self.mangamobi = MangaMobi(self.container, self.info)
+        # There is a cover.jpg in the container
+        self.container.has_cover = True
 
     def tearDown(self):
         self.container.clean()
 
-    def test_container_create(self):
+    def test_create(self):
         with self.assertRaises(ValueError):
             self.container.create(clean=False)
         self.assertTrue(os.path.exists('tests/fixtures/dummy/cover.jpg'))
         self.container.create(clean=True)
         self.assertFalse(os.path.exists('tests/fixtures/dummy/cover.jpg'))
 
-    def test_container_add_image(self):
+    def test_add_image(self):
         self.container.add_image('tests/fixtures/images/width-small.jpg')
         self.assertTrue(
             os.path.exists('tests/fixtures/dummy/html/images/006.jpg'))
@@ -78,7 +77,10 @@ class TestMangaMobi(unittest.TestCase):
         self.assertEqual(self.container._npages, 10)
         self.assertEqual(self.container.npages(), 10)
 
-    def test_container_set_cover(self):
+    def test_add_images(self):
+        pass
+
+    def test_set_cover(self):
         os.unlink('tests/fixtures/dummy/cover.jpg')
         self.container.set_cover('tests/fixtures/images/width-small.jpg')
         self.assertTrue(
@@ -102,7 +104,7 @@ class TestMangaMobi(unittest.TestCase):
         self.assertTrue(
             os.path.exists('tests/fixtures/dummy/cover.jpg'))
 
-    def test_container_get_image_info(self):
+    def test_get_image_info(self):
         info = self.container.get_image_info()
         self.assertEqual(len(info), 6)
         e1 = ('images/000.jpg', (800, 1280), 12547)
@@ -110,7 +112,7 @@ class TestMangaMobi(unittest.TestCase):
         e5 = ('images/005.jpg', (800, 1280), 12547)
         self.assertEqual(info[-1], e5)
 
-    def test_container_get_X_path(self):
+    def test_container_get_path(self):
         with self.assertRaises(ValueError):
             self.container.get_image_path(10)
 
@@ -135,31 +137,8 @@ class TestMangaMobi(unittest.TestCase):
         self.assertEqual(self.container.get_toc_ncx_path(),
                          'tests/fixtures/dummy/toc.ncx')
 
-    def test_mangamobi_content_opf(self):
-        self.mangamobi.content_opf(identifier='id')
-        with open('tests/fixtures/dummy/content.opf') as f1:
-            with open('tests/fixtures/dummy/content.opf.reference') as f2:
-                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
-
-    def test_mangamobi_toc_ncx(self):
-        self.mangamobi.toc_ncx()
-        with open('tests/fixtures/dummy/toc.ncx') as f1:
-            with open('tests/fixtures/dummy/toc.ncx.reference') as f2:
-                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
-
-    def test_img_style(self):
-        style = self.mangamobi._img_style((900, 1276))
-        self.assertTrue('width:800px;height:1134px;' in style)
-        self.assertTrue('margin-top:73px;margin-bottom:73px;' in style)
-        self.assertTrue('margin-left:0px;margin-right:0px;' in style)
-        style = self.mangamobi._img_style((1000, 702))
-        self.assertTrue('width:800px;height:562px;' in style)
-        self.assertTrue('margin-top:359px;margin-bottom:359px;' in style)
-        self.assertTrue('margin-left:0px;margin-right:0px;' in style)
-        style = self.mangamobi._img_style((800, 1280))
-        self.assertTrue('width:800px;height:1280px;' in style)
-        self.assertTrue('margin-top:0px;margin-bottom:0px;' in style)
-        self.assertTrue('margin-left:0px;margin-right:0px;' in style)
+    def test_get_size(self):
+        self.assertTrue(self.container.get_size(), 75282)
 
     def test_adjust_image(self):
         for name in ('width-small.jpg', 'width-large.jpg',
@@ -180,10 +159,8 @@ class TestMangaMobi(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.container.adjust_image(img_path, 'ERROR')
 
-    def test_size(self):
-        self.assertTrue(self.container.get_size(), 75282)
-
-    def test_split(self):
+    def _test_container_split(self, has_cover):
+        self.container.has_cover = has_cover
         containers = self.container.split(12547*2)
         self.assertTrue(len(containers) == 3)
         for c in containers:
@@ -191,6 +168,76 @@ class TestMangaMobi(unittest.TestCase):
             self.assertTrue(len(c.get_image_info()) == 2)
             self.assertTrue(c.get_cover_path())
             c.clean()
+
+    def test_split_with_cover(self):
+        self._test_container_split(has_cover=True)
+
+    def test_split_without_cover(self):
+        self._test_container_split(has_cover=False)
+
+
+class TestMangaMobi(unittest.TestCase):
+
+    def setUp(self):
+        pass
+        shutil.copytree('tests/fixtures/container01', 'tests/fixtures/dummy')
+        self.container = Container('tests/fixtures/dummy')
+        # Count the number of current pages as a side effect
+        self.container.npages()
+        # There is a cover.jpg in the container
+        self.container.has_cover = True
+        self.info = Info(title='title', language='en', publisher='publisher',
+                         author='author', reading_direction='horizontal-rl')
+        self.mangamobi = MangaMobi(self.container, self.info,
+                                   kindlegen='bin/kindlegen')
+
+    def tearDown(self):
+        self.container.clean()
+
+    def _test_create(self, has_cover):
+        self.container.has_cover = has_cover
+        full_path = self.mangamobi.create()
+        self.assertEqual(full_path, 'tests/fixtures/dummy/title.mobi')
+        self.assertTrue(os.path.exists(full_path))
+
+    def test_create_with_cover(self):
+        self._test_create(has_cover=True)
+
+    def test_create_without_cover(self):
+        self._test_create(has_cover=False)
+
+    def test_content_opf(self):
+        self.mangamobi.content_opf(identifier='id')
+        with open('tests/fixtures/dummy/content.opf') as f1:
+            with open('tests/fixtures/dummy/content.opf.reference') as f2:
+                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
+
+    def test_page(self):
+        self.mangamobi.page(0)
+        page = 'tests/fixtures/dummy/html/page-000.html'
+        with open(page) as f1:
+            with open(page+'.reference') as f2:
+                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
+        
+    def test_toc_ncx(self):
+        self.mangamobi.toc_ncx()
+        with open('tests/fixtures/dummy/toc.ncx') as f1:
+            with open('tests/fixtures/dummy/toc.ncx.reference') as f2:
+                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
+
+    def test_img_style(self):
+        style = self.mangamobi._img_style((900, 1276))
+        self.assertTrue('width:800px;height:1134px;' in style)
+        self.assertTrue('margin-top:73px;margin-bottom:73px;' in style)
+        self.assertTrue('margin-left:0px;margin-right:0px;' in style)
+        style = self.mangamobi._img_style((1000, 702))
+        self.assertTrue('width:800px;height:562px;' in style)
+        self.assertTrue('margin-top:359px;margin-bottom:359px;' in style)
+        self.assertTrue('margin-left:0px;margin-right:0px;' in style)
+        style = self.mangamobi._img_style((800, 1280))
+        self.assertTrue('width:800px;height:1280px;' in style)
+        self.assertTrue('margin-top:0px;margin-bottom:0px;' in style)
+        self.assertTrue('margin-left:0px;margin-right:0px;' in style)
 
 
 if __name__ == '__main__':
