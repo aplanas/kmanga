@@ -58,8 +58,9 @@ class Container(object):
         """Remove the container directoy and all the content."""
         shutil.rmtree(self.path)
 
-    def add_image(self, image, order, adjust=None, as_link=False):
+    def add_image(self, image, adjust=None, as_link=False):
         """Add an image into the container."""
+        order = self._npages
         img_dir = os.path.join(self.path, 'html/images')
         img_name = '%03d%s' % (order, os.path.splitext(image)[1])
         img_dst = os.path.join(img_dir, img_name)
@@ -77,8 +78,8 @@ class Container(object):
 
     def add_images(self, images, adjust=None, as_link=False):
         """Add a list of images into the container."""
-        for order, image in enumerate(images):
-            self.add_image(image, order, adjust, as_link)
+        for image in images:
+            self.add_image(image, adjust, as_link)
 
     def set_cover(self, image, adjust=None, as_link=False):
         """Add an image as image cover."""
@@ -121,7 +122,7 @@ class Container(object):
         return self._image_info
 
     def _get_image_path(self, number, ext, relative=False):
-        """Get the path an image."""
+        """Get the path of an image."""
         image_path = os.path.join('html', 'images',
                                   '%03d.%s' % (number, ext))
         if not relative:
@@ -129,12 +130,15 @@ class Container(object):
         return image_path
 
     def get_image_path(self, number, relative=False):
-        """Get the path an image."""
-        # First try with the JPG extension, if not, is a PNG
-        image_path = self._get_image_path(number, 'jpg', relative)
-        if not os.path.isfile(image_path):
-            image_path = self._get_image_path(number, 'png', relative)
-        return image_path
+        """Get the path of an image."""
+        if number > self.npages():
+            raise ValueError('Page number not found')
+        # First try with the JPG extension, if not, try PNG
+        for ext in ('jpg', 'png'):
+            image_path = self._get_image_path(number, ext)
+            if os.path.isfile(image_path):
+                return self._get_image_path(number, ext, relative)
+        raise ValueError('Page number not found in JPG or PNG format')
 
     def get_cover_path(self, relative=False):
         """Get the path of the cover image."""
@@ -209,6 +213,8 @@ class Container(object):
                 img = img.transpose(Image.ROTATE_270)
         # elif adjust == Container.SPLIT:
         #     pass
+        else:
+            raise ValueError('Value for adjust not found')
 
         return img
 

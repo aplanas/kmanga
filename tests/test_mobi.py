@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import unittest
 import shutil
 import xml.dom.minidom
@@ -38,12 +39,68 @@ class TestMangaMobi(unittest.TestCase):
     def setUp(self):
         shutil.copytree('tests/fixtures/container01', 'tests/fixtures/dummy')
         self.container = Container('tests/fixtures/dummy')
+        # Count the number of current pages as a side effect
+        self.container.npages()
         self.info = Info(title='title', language='en', publisher='publisher',
                          author='author', reading_direction='horizontal-rl')
         self.mangamobi = MangaMobi(self.container, self.info)
 
     def tearDown(self):
         self.container.clean()
+
+    def test_container_create(self):
+        with self.assertRaises(ValueError):
+            self.container.create(clean=False)
+        self.assertTrue(os.path.exists('tests/fixtures/dummy/cover.jpg'))
+        self.container.create(clean=True)
+        self.assertFalse(os.path.exists('tests/fixtures/dummy/cover.jpg'))
+
+    def test_container_add_image(self):
+        self.container.add_image('tests/fixtures/images/width-small.jpg')
+        self.assertTrue(
+            os.path.exists('tests/fixtures/dummy/html/images/006.jpg'))
+
+        self.container.add_image('tests/fixtures/images/width-small.jpg',
+                                 as_link=True)
+        self.assertTrue(
+            os.path.exists('tests/fixtures/dummy/html/images/007.jpg'))
+
+        self.container.add_image('tests/fixtures/images/width-small.jpg',
+                                 adjust=Container.ROTATE)
+        self.assertTrue(
+            os.path.exists('tests/fixtures/dummy/html/images/008.jpg'))
+
+        self.container.add_image('tests/fixtures/images/width-small-bw.jpg',
+                                 adjust=Container.ROTATE)
+        self.assertTrue(
+            os.path.exists('tests/fixtures/dummy/html/images/009.jpg'))
+
+        self.assertEqual(self.container._npages, 10)
+        self.assertEqual(self.container.npages(), 10)
+
+    def test_container_set_cover(self):
+        os.unlink('tests/fixtures/dummy/cover.jpg')
+        self.container.set_cover('tests/fixtures/images/width-small.jpg')
+        self.assertTrue(
+            os.path.exists('tests/fixtures/dummy/cover.jpg'))
+
+        os.unlink('tests/fixtures/dummy/cover.jpg')
+        self.container.set_cover('tests/fixtures/images/width-small.jpg',
+                                 as_link=True)
+        self.assertTrue(
+            os.path.exists('tests/fixtures/dummy/cover.jpg'))
+
+        os.unlink('tests/fixtures/dummy/cover.jpg')
+        self.container.set_cover('tests/fixtures/images/width-small.jpg',
+                                 adjust=Container.ROTATE)
+        self.assertTrue(
+            os.path.exists('tests/fixtures/dummy/cover.jpg'))
+
+        os.unlink('tests/fixtures/dummy/cover.jpg')
+        self.container.set_cover('tests/fixtures/images/width-small-bw.jpg',
+                                 adjust=Container.ROTATE)
+        self.assertTrue(
+            os.path.exists('tests/fixtures/dummy/cover.jpg'))
 
     def test_container_get_image_info(self):
         info = self.container.get_image_info()
@@ -54,6 +111,23 @@ class TestMangaMobi(unittest.TestCase):
         self.assertEqual(info[-1], e5)
 
     def test_container_get_X_path(self):
+        with self.assertRaises(ValueError):
+            self.container.get_image_path(10)
+
+        self.assertEqual(self.container.get_image_path(1),
+                         'tests/fixtures/dummy/html/images/001.jpg')
+        self.assertEqual(self.container.get_image_path(1, relative=True),
+                         'html/images/001.jpg')
+        # Remove the third image
+        os.unlink('tests/fixtures/dummy/html/images/002.jpg')
+        with self.assertRaises(ValueError):
+            self.container.get_image_path(2)
+
+        self.assertEqual(self.container.get_cover_path(),
+                         'tests/fixtures/dummy/cover.jpg')
+        self.assertEqual(self.container.get_cover_path(relative=True),
+                         'cover.jpg')
+
         self.assertEqual(self.container.get_content_opf_path(),
                          'tests/fixtures/dummy/content.opf')
         self.assertEqual(self.container.get_page_path(1),
@@ -102,6 +176,9 @@ class TestMangaMobi(unittest.TestCase):
 
             img = self.container.adjust_image(img_path, Container.ROTATE)
             self.assertTrue(img.size[0] < img.size[1])
+
+            with self.assertRaises(ValueError):
+                self.container.adjust_image(img_path, 'ERROR')
 
     def test_size(self):
         self.assertTrue(self.container.get_size(), 75282)
