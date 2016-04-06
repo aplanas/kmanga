@@ -61,21 +61,21 @@ class TestLockFile(unittest.TestCase):
 
     def test_multilocks(self):
         self.lock.lock()
-        self.assertEqual(LockFile.lockers, 1)
+        self.assertEqual(self.lock.lockers, 1)
         self.lock.lock()
-        self.assertEqual(LockFile.lockers, 2)
+        self.assertEqual(self.lock.lockers, 2)
         self.lock.unlock()
-        self.assertEqual(LockFile.lockers, 1)
+        self.assertEqual(self.lock.lockers, 1)
         self.lock.unlock()
-        self.assertEqual(LockFile.lockers, 0)
+        self.assertEqual(self.lock.lockers, 0)
         with self.assertRaises(Exception):
             self.lock.unlock()
 
     def test_context(self):
         with self.lock as lock:
             self.assertEqual(lock.lockers, 1)
-            self.assertEqual(LockFile.lockers, 1)
-        self.assertEqual(LockFile.lockers, 0)
+            self.assertEqual(LockFile._local.lockers, 1)
+        self.assertEqual(lock.lockers, 0)
 
     def test_lock(self):
         p = Process(target=write_file,

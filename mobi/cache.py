@@ -23,36 +23,53 @@ import fcntl
 import hashlib
 import os
 import shelve
+import threading
 
 
 class LockFile(object):
     """Class to create a POSIX lock based on a file."""
 
     # Store the number for locks for the same process
-    lockers = 0
+    _local = threading.local()
 
     def __init__(self, filename):
         self.filename = filename
         self._lck = None
 
+    @property
+    def lockers(self):
+        try:
+            return LockFile._local.lockers
+        except AttributeError:
+            LockFile._local.lockers = 0
+            return LockFile._local.lockers
+
+    @lockers.setter
+    def lockers(self, value):
+        LockFile._local.lockers = value
+
+    # @lockers.deleter
+    # def lockers(self):
+    #     del LockFile._local.lockers
+
     def lock(self):
         # The lock is adquired per process.  If one process get two
         # times the lock, the first unlock will not release the lock,
         # but will do the second one.
-        if not LockFile.lockers:
+        if not self.lockers:
             self._lck = open(self.filename, 'w')
             fcntl.flock(self._lck.fileno(), fcntl.LOCK_EX)
-        LockFile.lockers += 1
+        self.lockers += 1
         return self
 
     def unlock(self):
-        if not LockFile.lockers:
+        if not self.lockers:
             raise Exception('Unlock without lock')
-        if LockFile.lockers == 1:
+        if self.lockers == 1:
             fcntl.flock(self._lck.fileno(), fcntl.LOCK_UN)
             self._lck.close()
             self._lck = None
-        LockFile.lockers -= 1
+        self.lockers -= 1
 
     def __enter__(self):
         return self.lock()
@@ -65,33 +82,66 @@ class DB(object):
     """Small wrapper over a Shelve to use the LockFile."""
 
     # Store the number of times that was open
-    openers = 0
-    db = None
+    _local = threading.local()
+    _local.openers = 0
+    _local.db = None
 
     def __init__(self, dbname):
         self.dbname = dbname
         self.lck = dbname + '.lck'
 
+    @property
+    def openers(self):
+        try:
+            return DB._local.openers
+        except AttributeError:
+            DB._local.openers = 0
+            return DB._local.openers
+
+    @openers.setter
+    def openers(self, value):
+        DB._local.openers = value
+
+    # @openers.deleter
+    # def openers(self):
+    #     del DB._local.openers
+
+    @property
+    def db(self):
+        try:
+            return DB._local.db
+        except AttributeError:
+            DB._local.db = None
+            return DB._local.db
+
+    @db.setter
+    def db(self, value):
+        DB._local.db = value
+
+    # @db.deleter
+    # def db(self):
+    #     del DB._local.db
+
     def open(self):
         # In a similar way that happends with LockFile, openers is
         # unique per process (unless comes from a fork after this was
         # initialized)
-        if not DB.openers:
+        if not self.openers:
             self._lck = LockFile(self.lck)
             self._lck.lock()
-            DB.db = shelve.open(self.dbname, 'c')
-        DB.openers += 1
-        return DB.db
+            self.db = shelve.open(self.dbname, 'c')
+        self.openers += 1
+        return self.db
 
     def close(self):
-        if not DB.openers:
+        if not self.openers:
             raise Exception('Close without open')
-        if DB.openers == 1:
+        if self.openers == 1:
             self.db.close()
             self._lck.unlock()
             self._lck = None
-            DB.db = None
-        DB.openers -= 1
+            self.db = None
+        self.openers -= 1
 
     def __enter__(self):
         return self.open()
