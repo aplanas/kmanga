@@ -6,7 +6,6 @@ from django.core.urlresolvers import reverse_lazy
 from django.http import Http404
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
-# from django.shortcuts import render
 from django.views.generic import CreateView
 from django.views.generic import DeleteView
 from django.views.generic import DetailView
@@ -14,9 +13,11 @@ from django.views.generic import FormView
 from django.views.generic import ListView
 from django.views.generic import TemplateView
 from django.views.generic import UpdateView
+from django.views.generic.edit import BaseFormView
 from django.views.generic.list import MultipleObjectMixin
 
 from .forms import ContactForm
+from .forms import IssueActionForm
 from .models import Issue
 from .models import Manga
 from .models import Result
@@ -242,6 +243,51 @@ class ResultUpdateView(LoginRequiredMixin, ResultOwnerMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy('subscription-read',
                             args=[self.object.subscription.pk])
+
+
+class ResultMultipleUpdateView(LoginRequiredMixin, BaseFormView):
+    form_class = IssueActionForm
+
+    def get(self, request, *args, **kwargs):
+        """Redirect to `post` to avoid the render logic."""
+        return self.post(request, *args, **kwargs)
+
+    def get_initial(self):
+        """Add the `user` into the initial values for the form."""
+        initial = super(ResultMultipleUpdateView, self).get_initial()
+        initial['user'] = self.request.user
+        return initial
+
+    def form_valid(self, form):
+        # Check that the owner of the `subscription` is the current
+        # user.  Usually this is not necessary, because of the
+        # validation of the form.
+        self.subscription = form.cleaned_data['subscription']
+        if self.subscription.user != self.request.user:
+            return HttpResponseForbidden()
+
+        action = form.cleaned_data['action']
+        if action:
+            for issue in form.cleaned_data['issues']:
+                result = Result.objects.create_if_new(
+                    issue=issue,
+                    user=self.subscription.user,
+                    status=action
+                )
+                if result.status != action:
+                    result.set_status(status=action)
+        return super(ResultMultipleUpdateView, self).form_valid(form)
+
+    def form_invalid(self, form):
+        success_url = self.get_success_url()
+        return HttpResponseRedirect(success_url)
+
+    def get_success_url(self):
+        if hasattr(self, 'subscription'):
+            return reverse_lazy('subscription-read',
+                                args=[self.subscription.pk])
+        else:
+            return reverse_lazy('subscription-list')
 
 
 class ResultDeleteView(LoginRequiredMixin, ResultOwnerMixin, DeleteView):

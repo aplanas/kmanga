@@ -10,8 +10,9 @@ from .views import MangaDetailView
 # from .views import ResultListView
 # from .views import ResultDetailView
 from .views import ResultCreateView
-from .views import ResultUpdateView
+# from .views import ResultUpdateView
 # from .views import ResultDeleteView
+from .views import ResultMultipleUpdateView
 from .views import SubscriptionListView
 from .views import SubscriptionDetailView
 from .views import SubscriptionCreateView
@@ -50,10 +51,12 @@ urlpatterns = [
     # url(r'^result/(?P<pk>\d+)$', ResultDetailView.as_view(),
     #     name='result-read'),
     url(r'^result/new/$', ResultCreateView.as_view(), name='result-create'),
-    url(r'^result/(?P<pk>\d+)/edit$', ResultUpdateView.as_view(),
-        name='result-update'),
+    # url(r'^result/(?P<pk>\d+)/edit$', ResultUpdateView.as_view(),
+    #     name='result-update'),
     # url(r'^result/(?P<pk>\d+)/delete$', ResultDeleteView.as_view(),
     #     name='result-delete'),
+    url(r'^result/edit$', ResultMultipleUpdateView.as_view(),
+        name='result-multiple-update'),
 
     # Others
     url(r'^about/$', AboutTemplateView.as_view(), name='about-view'),
