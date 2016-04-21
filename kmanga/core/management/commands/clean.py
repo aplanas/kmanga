@@ -270,7 +270,7 @@ class Command(BaseCommand):
 
     def _clean_cover(self, sources, list_):
         """Remove unused cover images."""
-        media = settings.MEDIA_ROOT
+        media = os.path.abspath(settings.MEDIA_ROOT)
 
         if list_:
             title = 'Cover to clean'
@@ -286,7 +286,7 @@ class Command(BaseCommand):
 
             # Get current covers from the database
             mangas = Manga.objects.filter(source=source)
-            covers = {i.cover.path for i in mangas if i.cover}
+            covers = {os.path.abspath(i.cover.path) for i in mangas if i.cover}
 
             for cover in images - covers:
                 if list_:
