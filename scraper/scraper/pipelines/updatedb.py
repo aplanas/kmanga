@@ -230,9 +230,10 @@ class UpdateDBPipeline(object):
             name = os.path.basename(path)
             image_path = os.path.join(self.images_store,
                                       item['images'][0]['path'])
-            if not manga.cover or os.path.basename(manga.cover.name) != name:
-                manga.cover.delete(save=False)
-                manga.cover.save(name, File(open(image_path, 'rb')))
+            # Update the cover always, so if we remove the image in
+            # the MEDIA directory, this will be recreated.
+            manga.cover.delete(save=False)
+            manga.cover.save(name, File(open(image_path, 'rb')))
         elif manga.cover:
             manga.cover.delete()
 
