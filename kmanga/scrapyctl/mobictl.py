@@ -32,17 +32,17 @@ class MobiCtl(object):
         self.mobi_store = settings.MOBI_STORE
         self.volume_max_size = settings.VOLUME_MAX_SIZE
 
-    def _normalize(self, number):
-        """Normalize the string that represent a `number`."""
-        number = [i if i.isalnum() else '_' for i in number.lower()]
-        return ''.join(number)
+    def _normalize(self, name):
+        """Normalize the string that represent a directory."""
+        name = [i if i.isalnum() else '_' for i in name.lower()]
+        return ''.join(name)
 
     def _create_mobi(self):
         """Create the MOBI file and return a list of files and containers."""
         name = self.issue.name
         number = self.issue.number
 
-        dir_name = '%s_%s' % (name, self._normalize(number))
+        dir_name = self._normalize('%s_%s' % (name, number))
         container = Container(os.path.join(self.mobi_store, dir_name))
         container.create(clean=True)
         images = sorted(self.images, key=lambda x: x['number'])
