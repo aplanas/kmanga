@@ -51,6 +51,21 @@ class SafeDeleteView(DeleteView):
         return HttpResponseRedirect(success_url)
 
 
+class SafeCreateView(CreateView):
+    """View that provide the ability to recover deleted objects."""
+
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            success_url = self.get_success_url()
+            self.object.deleted = False
+            self.object.save()
+            return HttpResponseRedirect(success_url)
+        except:
+            pass
+        return super(CreateView, self).post(request, *args, **kwargs)
+
+
 class AboutTemplateView(TemplateView):
     template_name = 'core/about.html'
 
@@ -194,9 +209,23 @@ class SubscriptionDetailView(LoginRequiredMixin, SubscriptionOwnerMixin,
         return (index / self.paginate_by) + 1
 
 
-class SubscriptionCreateView(LoginRequiredMixin, CreateView):
+class SubscriptionCreateView(LoginRequiredMixin, SafeCreateView):
     model = Subscription
     fields = ['manga', 'user', 'language']
+
+    def get_object(self):
+        """Return the deleted object using secondary keys."""
+        # For this method is OK to fail, because the exception is
+        # captured in the SafeCreateView side.  In this case this
+        # means that the object is new and needs to be created.
+        form = self.get_form()
+        # Validate the form, so we have cleaned_data
+        form.is_valid()
+        return Subscription.all_objects.get(
+            manga=form.cleaned_data['manga'],
+            user=self.request.user,
+            deleted=True
+        )
 
     def get_success_url(self):
         return reverse_lazy('subscription-read',
