@@ -131,7 +131,7 @@ class Command(BaseCommand):
             raise CommandError('Not valid command value.')
 
     def _clean_manga(self, days, sources, list_):
-        """Remove old mangas."""
+        """Remove old mangas not updated (deleted)."""
         today = timezone.now()
         since = today - timezone.timedelta(days=days)
         mangas = Manga.objects.filter(modified__lt=since)
@@ -255,9 +255,14 @@ class Command(BaseCommand):
         to_delete = ((k, o) for k, o in to_delete if o >= days)
 
         for key, old in to_delete:
-            issue = Issue.objects.get(url=key)
-            manga = issue.manga
-            spider = manga.source.spider
+            try:
+                issue = Issue.objects.get(url=key)
+                manga = issue.manga
+                spider = manga.source.spider
+            except:
+                issue = key
+                manga = '<UNKNOWN>'
+                spider = '<UNKNOWN>'
             if list_:
                 body.append((manga, issue, spider, old))
             else:
