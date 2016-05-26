@@ -21,7 +21,7 @@ PROXY_MAP = {
         URL: 'http://mangafox.me/manga/sailor_moon/v01/c001/1.html',
         VALID: [
             '<select onchange="change_page(this)" class="m">',
-            'http://z.mfcdn.net/store/manga/203/01-001.0/compressed/f000.jpg',
+            'http://t.mfcdn.net/store/manga/203/01-001.0/compressed/f000.jpg',
         ],
         INVALID: None
     },
