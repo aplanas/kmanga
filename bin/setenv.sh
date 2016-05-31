@@ -6,7 +6,7 @@ fi
 source bin/kmanga.conf
 
 if [ ! -d $VENV ]; then
-    echo "Virtual environment not $VENV found."
+    echo "Virtual environment $VENV not found."
     exit 1
 fi
 
