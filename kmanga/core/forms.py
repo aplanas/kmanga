@@ -21,9 +21,14 @@ class ContactForm(forms.Form):
 
 
 class IssueActionForm(forms.Form):
+    SEND_NOW = 'SN'
+    ACTION_CHOICES = Result.STATUS_CHOICES + (
+        (SEND_NOW, 'Send now'),
+    )
+
     subscription = forms.ModelChoiceField(queryset=None)
     action = forms.ChoiceField(
-        choices=Result.STATUS_CHOICES,
+        choices=ACTION_CHOICES,
         required=False)
     issues = forms.ModelMultipleChoiceField(queryset=None)
 
