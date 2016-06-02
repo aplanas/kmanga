@@ -296,7 +296,7 @@ class ResultMultipleUpdateView(LoginRequiredMixin, BaseFormView):
             return HttpResponseForbidden()
 
         action = form.cleaned_data['action']
-        if action:
+        if action in (Result.PENDING, Result.SENT):
             for issue in form.cleaned_data['issues']:
                 result = Result.objects.create_if_new(
                     issue=issue,
@@ -305,6 +305,10 @@ class ResultMultipleUpdateView(LoginRequiredMixin, BaseFormView):
                 )
                 if result.status != action:
                     result.set_status(status=action)
+        elif action == IssueActionForm.SEND_NOW:
+            # XXX TODO - Send the issue
+            pass
+
         return super(ResultMultipleUpdateView, self).form_valid(form)
 
     def form_invalid(self, form):
