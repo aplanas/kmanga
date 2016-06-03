@@ -297,17 +297,9 @@ class ResultMultipleUpdateView(LoginRequiredMixin, BaseFormView):
 
         action = form.cleaned_data['action']
         if action in (Result.PENDING, Result.SENT):
-            for issue in form.cleaned_data['issues']:
-                result = Result.objects.create_if_new(
-                    issue=issue,
-                    user=self.subscription.user,
-                    status=action
-                )
-                if result.status != action:
-                    result.set_status(status=action)
+            form.mark()
         elif action == IssueActionForm.SEND_NOW:
-            # XXX TODO - Send the issue
-            pass
+            form.send()
 
         return super(ResultMultipleUpdateView, self).form_valid(form)
 

@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from .models import Issue
 from .models import Result
 from .models import Subscription
+from scrapyctl.utils import send
 
 
 class ContactForm(forms.Form):
@@ -43,3 +44,33 @@ class IssueActionForm(forms.Form):
             issues = Issue.objects.all()
         self.fields['subscription'].queryset = subscription
         self.fields['issues'].queryset = issues
+
+    def mark(self):
+        """Mark issues with a specific status."""
+        subscription = self.cleaned_data['subscription']
+        action = self.cleaned_data['action']
+        for issue in self.cleaned_data['issues']:
+            result = Result.objects.create_if_new(
+                issue=issue,
+                user=subscription.user,
+                status=action
+            )
+            if result.status != action:
+                result.set_status(status=action)
+
+    def send(self):
+        """Send issues to the user."""
+        # Basic algorithm is similar to the one for `sendsub`
+        #
+        #   * Get the number of issues sent during the last 24hs for
+        #     an user, and calculate the remaining number of issues to
+        #     send to this user.
+        #
+        #   * Get the list Issues to send in order.
+        #
+        #   * From the list, send the Issues that are allowed.
+        user = self.cleaned_data['subscription'].user
+        already_sent = Result.objects.sent_last_24hs(user)
+        remains = max(0, user.userprofile.issues_per_day-already_sent)
+        issues = self.cleaned_data['issues']
+        send(issues[:remains], user)
