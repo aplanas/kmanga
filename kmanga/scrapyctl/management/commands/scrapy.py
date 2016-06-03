@@ -14,9 +14,8 @@ from core.models import Result
 from core.models import Source
 from core.models import Subscription
 from registration.models import UserProfile
-from scrapyctl.mobictl import create_mobi_and_send
-from scrapyctl.scrapyctl import scrape_issues
 from scrapyctl.scrapyctl import ScrapyCtl
+from scrapyctl.utils import send
 
 logger = logging.getLogger(__name__)
 
@@ -335,12 +334,8 @@ class Command(BaseCommand):
                 msg = 'The user %s does not have a '\
                       'subscription to %s' % (user, issue.manga)
                 self.stdout.write(msg)
-        elif issues:
-            for issue in issues:
-                Result.objects.create_if_new(issue, user, Result.PROCESSING)
-            scrape_job = scrape_issues.delay(issues, accounts, loglevel)
-            # This job also update the Result status
-            create_mobi_and_send.delay(issues, user, depends_on=scrape_job)
+        else:
+            send(issues, user, accounts, loglevel)
 
     def sendsub(self, user_profile, accounts, loglevel, do_not_send):
         """Prepare the daily subscriptions to an user."""
