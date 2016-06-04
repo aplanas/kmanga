@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import logging
 import os
+import re
 
 from django.conf import settings
 from django_rq import job
@@ -17,6 +18,74 @@ from mobi.cache import MobiCache
 EMPTY = 'empty.png'
 
 logger = logging.getLogger(__name__)
+
+
+class MobiInfo(object):
+    """Basic container to store Issue information."""
+    def __init__(self, issue, multi_vol=False, vol=None):
+        self.title = self._title(issue.manga.name, issue.name, issue.number,
+                                 multi_vol, vol)
+        self.language = issue.language.lower()
+        self.author = issue.manga.author
+        self.publisher = issue.manga.source.name
+        reading_direction = issue.manga.reading_direction.lower()
+        self.reading_direction = 'horizontal-%s' % reading_direction
+
+    def is_int(self, number):
+        try:
+            int(number)
+        except ValueError:
+            return False
+        else:
+            return True
+
+    def is_float(self, number):
+        try:
+            float(number)
+        except ValueError:
+            return False
+        else:
+            return True
+
+    def split_number_letter(self, number):
+        """Try to split a number in a number and letters."""
+        number, letter = re.match(r'([\d.]*)(.)*', number).groups()
+        number = number if number else 0
+        letter = letter if letter else ''
+        return number, letter
+
+    def _title(self, manga_name, issue_name, number, multi_vol, vol):
+        """Generate a title for the MOBI."""
+        # Try to extract the name of the issue
+        remove = (r'Vol\.?\s*[\d.]+',
+                  r'Ch\.?\s*[\d.]+',
+                  ':', '-',
+                  manga_name,
+                  number)
+        pattern = '|'.join(r'(?:^\s*%s\s*)' % i for i in remove)
+        _issue_name = ''
+        while issue_name != _issue_name:
+            _issue_name = issue_name
+            issue_name = re.sub(pattern, '', _issue_name, flags=re.IGNORECASE)
+
+        num, lett = self.split_number_letter(number)
+        # Prefix the issue number with zero
+        if number and self.is_int(num):
+            title = '%s %03d%s' % (manga_name, int(num), lett)
+        elif number and self.is_float(num):
+            title = '%s %05.1f%s' % (manga_name, float(num), lett)
+        elif number:
+            title = '%s %s' % (manga_name, number)
+        else:
+            title = manga_name
+        # Add volume information
+        if multi_vol:
+            title = '%s/%02d' % (title, vol)
+
+        if issue_name:
+            title = '%s: %s' % (title, issue_name)
+
+        return title
 
 
 class MobiCtl(object):
@@ -61,25 +130,10 @@ class MobiCtl(object):
         else:
             containers = [container]
 
-        # Basic container to store issue information
-        class Info(object):
-            def __init__(self, issue, multi_vol=False, vol=None):
-                if multi_vol:
-                    self.title = '%s %s/%02d' % (issue.manga.name,
-                                                 issue.number, vol)
-                else:
-                    self.title = '%s %s' % (issue.manga.name,
-                                            issue.number)
-                self.language = issue.language.lower()
-                self.author = issue.manga.author
-                self.publisher = issue.manga.source.name
-                reading_direction = issue.manga.reading_direction.lower()
-                self.reading_direction = 'horizontal-%s' % reading_direction
-
         mobi_and_containers = []
         for volume, container in enumerate(containers):
             multi_vol, vol = len(containers) > 1, volume + 1
-            info = Info(self.issue, multi_vol, vol)
+            info = MobiInfo(self.issue, multi_vol, vol)
 
             mobi = MangaMobi(container, info, kindlegen=self.kindlegen)
             mobi_file = mobi.create()

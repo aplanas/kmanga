@@ -9,6 +9,7 @@ from core.models import Manga
 from core.models import Source
 from registration.models import UserProfile
 from scrapyctl.management.commands.scrapy import Command
+from scrapyctl.mobictl import MobiInfo
 from scrapyctl.scrapyctl import ScrapyCtl
 
 
@@ -335,3 +336,45 @@ class CommandTestCase(TestCase):
         for user_profile in user_profiles:
             prepare_sendsub.assert_any_call(scrapyctl, user_profile, False)
         sendsub.assert_called_once_with(scrapyctl)
+
+
+class MobiCtlTestCase(TestCase):
+
+    def test_info_title(self):
+        """Test the Info._title() method."""
+        issue = mock.Mock()
+        issue.configure_mock(**{
+            'name': '',
+            'number': '',
+            'manga.name': '',
+        })
+        info = MobiInfo(issue)
+
+        tests = (
+            (('Manga', 'Manga 1 - title', '1', False, 0), 'Manga 001: title'),
+            (('Manga', 'manga 1 - title', '1', False, 0), 'Manga 001: title'),
+            (('Manga', 'title', '1', False, 0), 'Manga 001: title'),
+            (('Manga', 'Manga 1', '1', False, 0), 'Manga 001'),
+            (('Manga', 'Manga 1: title', '1', False, 0), 'Manga 001: title'),
+            (('Manga', 'manga 1 Vol.1 title', '1', False, 0),
+             'Manga 001: title'),
+            (('Manga', 'manga 1 vol.1 title', '1', False, 0),
+             'Manga 001: title'),
+            (('Manga', 'Manga 1 Ch.1 title', '1', False, 0),
+             'Manga 001: title'),
+            (('Manga', 'Manga 1 Ch1 Vol 1 title', '1', False, 0),
+             'Manga 001: title'),
+            (('Manga', 'Manga 1 Ch.1 title', '1', True, 1),
+             'Manga 001/01: title'),
+            (('Manga', 'Manga 1 Ch.1', '1', True, 1),
+             'Manga 001/01'),
+            (('Manga', 'Manga 1a - title', '1a', False, 0),
+             'Manga 001a: title'),
+            (('Manga', 'Manga 1.1a - title', '1.1a', False, 0),
+             'Manga 001.1a: title'),
+            (('Manga', 'Manga a - title', 'a', False, 0), 'Manga 000a: title'),
+            (('Manga', 'Manga - title', '', False, 0), 'Manga: title'),
+            (('Manga', 'title', '', False, 0), 'Manga: title'),
+        )
+        for params, result in tests:
+            self.assertEqual(info._title(*params), result)
