@@ -162,9 +162,15 @@ class SubscriptionDetailView(LoginRequiredMixin, SubscriptionOwnerMixin,
         context = super(SubscriptionDetailView, self).get_context_data(
             **kwargs)
 
+        paginate_by = self.kwargs.get('by') or self.request.GET.get('by')
+        try:
+            paginate_by = int(paginate_by)
+        except (ValueError, TypeError):
+            paginate_by = self.paginate_by
+
         paginator = Paginator(
             self.object.issues(),
-            self.paginate_by,
+            paginate_by,
             orphans=0,
             allow_empty_first_page=True
         )

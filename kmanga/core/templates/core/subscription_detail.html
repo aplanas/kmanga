@@ -102,16 +102,30 @@
   </div>
 </div>
 
+<div class="row">
+  <div class="col-xs-12">
+    <div class="btn-group" role="group">
+      {% with per_page=page_obj.paginator.per_page %}
+      <a type="button" class={% if per_page == 25 %}"btn btn-default active"{% else %}"btn btn-default"{% endif %} href="?page=1&by=25">25</a>
+      <a type="button" class={% if per_page == 50 %}"btn btn-default active"{% else %}"btn btn-default"{% endif %} href="?page=1&by=50">50</a>
+      <a type="button" class={% if per_page == 100 %}"btn btn-default active"{% else %}"btn btn-default"{% endif %} href="?page=1&by=100">100</a>
+      <a type="button" class={% if per_page == 200 %}"btn btn-default active"{% else %}"btn btn-default"{% endif %} href="?page=1&by=200">200</a>
+      <a type="button" class={% if per_page == 400 %}"btn btn-default active"{% else %}"btn btn-default"{% endif %} href="?page=1&by=400">400</a>
+      {% endwith %}
+    </div>
+  </div>
+</div>
+
 <nav>
   <ul class="pager">
     {% if page_obj.has_previous %}
-    <li><a {% if q %}href="?page={{ page_obj.previous_page_number }}&q={{ q }}"{% else %}href="?page={{ page_obj.previous_page_number }}"{% endif %}>Previous</a>
+    <li><a href="?page={{ page_obj.previous_page_number }}&by={{ page_obj.paginator.per_page }}">Previous</a>
     </li>
     {% else %}
     <li class="disabled"><a href="#" onclick="javascript:return false;">Previous</a></li>
     {% endif %}
     {% if page_obj.has_next %}
-    <li><a {% if q %}href="?page={{ page_obj.next_page_number }}&q={{ q }}"{% else %}href="?page={{ page_obj.next_page_number }}"{% endif %}>Next</a>
+    <li><a href="?page={{ page_obj.next_page_number }}&by={{ page_obj.paginator.per_page }}">Next</a>
     </li>
     {% else %}
     <li class="disabled"><a href="#" onclick="javascript:return false;">Next</a></li>
