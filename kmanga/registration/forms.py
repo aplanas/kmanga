@@ -23,6 +23,8 @@ class UserCreateForm(UserCreationForm):
 
 class UserUpdateForm(UserChangeForm):
     language = forms.CharField()
+    time_zone = forms.IntegerField()
+    send_at = forms.IntegerField()
     email_kindle = forms.EmailField()
 
     class Meta:
@@ -32,6 +34,8 @@ class UserUpdateForm(UserChangeForm):
     def save(self, *args, **kwargs):
         userprofile = self.instance.userprofile
         userprofile.language = self.cleaned_data['language']
+        userprofile.time_zone = self.cleaned_data['time_zone']
+        userprofile.send_at = self.cleaned_data['send_at']
         userprofile.email_kindle = self.cleaned_data['email_kindle']
         userprofile.save()
         return super(UserUpdateForm, self).save(*args, **kwargs)

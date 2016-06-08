@@ -28,6 +28,25 @@
     {% if form.language.errors %}<span class="help-block">{{ form.language.errors.as_text }}</span>{% endif %}
   </div>
   <div class="form-group">
+    <label for="time_zone">Time zone</label>
+    <select id="time_zone" name="time_zone" class="form-control">
+      {% for time_zone in object.userprofile.TIME_ZONE_CHOICES %}
+      <option value="{{ time_zone.0 }}" {% if object.userprofile.time_zone == time_zone.0 %}selected="1"{% endif %}>{{ time_zone.1}}</option>
+      {% endfor %}
+    </select>
+    <span class="help-block">Time zone that applies to the send subscription time.</span>
+    {% if form.time_zone.errors %}<span class="help-block">{{ form.time_zone.errors.as_text }}</span>{% endif %}
+  </div>
+  <div class="form-group">
+    <label for="send_at">Time when send daily subscription</label>
+    <select id="send_at" name="send_at" class="form-control">
+      {% for hour in object.userprofile.HOUR_CHOICES %}
+      <option value="{{ hour.0 }}" {% if object.userprofile.send_at == hour.0 %}selected="1"{% endif %}>{{ hour.1}}</option>
+      {% endfor %}
+    </select>
+    {% if form.send_at.errors %}<span class="help-block">{{ form.send_at.errors.as_text }}</span>{% endif %}
+  </div>
+  <div class="form-group">
     <label for="email_kindle">Kindle email</label>
     <input type="email" class="form-control" id="email_kindle" name="email_kindle" placeholder="Email Kindle" value="{{ object.userprofile.email_kindle }}">
     {% if form.email_kindle.errors %}<span class="help-block">{{ form.email_kindle.errors.as_text }}</span>{% endif %}

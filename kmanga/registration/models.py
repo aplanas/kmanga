@@ -27,6 +27,12 @@ class UserProfile(models.Model):
         (ITALIAN, 'Italian'),
         (RUSSIAN, 'Russian'),
     )
+    TIME_ZONE_CHOICES = [
+        (i, 'UTC%+03d:00' % i) for i in range(-12, 15)
+    ]
+    HOUR_CHOICES = [
+        (i, '%02d:00' % i) for i in range(0, 25)
+    ]
     ISSUES_PER_DAY = {
         FREE: 10,
         PAY: 50,
@@ -38,6 +44,8 @@ class UserProfile(models.Model):
                             default=FREE)
     language = models.CharField(max_length=2,
                                 choices=LANGUAGE_CHOICES)
+    time_zone = models.IntegerField(choices=TIME_ZONE_CHOICES, default=0)
+    send_at = models.IntegerField(choices=HOUR_CHOICES, default=0)
     issues_per_day = models.IntegerField(default=ISSUES_PER_DAY[FREE])
     email_kindle = models.EmailField(unique=True)
 
