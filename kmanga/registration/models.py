@@ -31,7 +31,7 @@ class UserProfile(models.Model):
         (i, 'UTC%+03d:00' % i) for i in range(-12, 15)
     ]
     HOUR_CHOICES = [
-        (i, '%02d:00' % i) for i in range(0, 25)
+        (i, '%02d:00' % i) for i in range(0, 24)
     ]
     ISSUES_PER_DAY = {
         FREE: 20,
