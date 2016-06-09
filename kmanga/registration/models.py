@@ -34,7 +34,7 @@ class UserProfile(models.Model):
         (i, '%02d:00' % i) for i in range(0, 25)
     ]
     ISSUES_PER_DAY = {
-        FREE: 10,
+        FREE: 20,
         PAY: 50,
     }
 
