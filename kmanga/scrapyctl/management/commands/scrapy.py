@@ -7,7 +7,9 @@ import logging.handlers
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 from django.db import connection
+from django.db.models import F
 from django.db.models import Q
+from django.utils import timezone
 
 from core.models import Manga
 from core.models import Result
@@ -67,6 +69,10 @@ class Command(BaseCommand):
         parser.add_argument(
             '--user', action='store', dest='user', default=None,
             help='User name or email address (<user|email>).')
+        parser.add_argument(
+            '--ignore-time', action='store_true', dest='ignore-time',
+            default=False,
+            help='Send subscription to all users (ignore subscription time).')
 
         # General parameters
         parser.add_argument(
@@ -244,13 +250,24 @@ class Command(BaseCommand):
             user_profile = self._get_user_profile(username)
             self.send(issues, user_profile, accounts, loglevel, do_not_send)
         elif command == 'sendsub':
+            utc_hour = timezone.now().hour
+            user_profiles = []
+
+            ignore_time = options['ignore-time']
             if options['user']:
                 username = options['user']
                 user_profile = self._get_user_profile(username)
-                user_profiles = [user_profile]
+                hour = user_profile.send_at - user_profile.time_zone
+                if ignore_time or utc_hour == hour:
+                    user_profiles = [user_profile]
             else:
                 user_profiles = UserProfile.objects.filter(
                     user__subscription__id__gt=0).distinct()
+                if not ignore_time:
+                    user_profiles = user_profiles.annotate(
+                        hour=F('send_at')-F('time_zone')
+                    ).filter(hour=utc_hour)
+
             do_not_send = options['do-not-send']
             for user_profile in user_profiles:
                 self.sendsub(user_profile, accounts, loglevel, do_not_send)
