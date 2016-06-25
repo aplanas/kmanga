@@ -183,6 +183,28 @@ class Container(object):
         for image in images:
             self.add_image(image, adjust, as_link)
 
+    def set_image_adjust(self, number, adjust):
+        """Set the adjustment postfix in a image."""
+        if adjust:
+            images = self.get_image_info()
+            current_adjust = images[number][-1]
+            if current_adjust:
+                msg = 'Image %s already contains an adjustment'
+                raise ValueError(msg % number)
+
+            # `get_image_info` provides relative path, to get the
+            # absolute path we can call `get_image_path` or build the
+            # full path using the container path
+            img_path = images[number][0]
+            img_path = os.path.join(self.path, img_path)
+            img_dst, img_dst_ext = os.path.splitext(img_path)
+            img_dst = '%s_%s%s' % (img_dst, adjust, img_dst_ext)
+            # Rename the file to attach the new adjustment mark
+            os.rename(img_path, img_dst)
+
+            # We just change the adjustment, disable the cache
+            self._image_info = []
+
     def set_cover(self, image, adjust=None, as_link=False):
         """Add an image as image cover."""
         cover_path = self.get_cover_path()
@@ -373,6 +395,10 @@ class Container(object):
             image_slice = [self.get_image_path(i) for i in range(begin, end)]
             container.create(clean)
             container.add_images(image_slice, as_link=True)
+            # Transmit the adjustment from the original container
+            for i in range(begin, end):
+                i = i - begin
+                container.set_image_adjust(i, images[i][-1])
             if self.has_cover:
                 container.set_cover(self.get_cover_path(), as_link=True)
             containers_used += 1
