@@ -540,15 +540,13 @@ class MangaMobi(object):
                 'href': href,
                 'media-type': media_type,
             })
-        # XXX TODO - We do not add it in the table to avoid to appear
-        # as a normal page
         # Add the cover image item
-        # ET.SubElement(manifest, 'item', {
-        #     'id': 'cover-image',
-        #     'href': self.container.get_cover_path(relative=True),
-        #     'media-type': 'image/jpeg',
-        #     'properties': 'cover-image',
-        # })
+        ET.SubElement(manifest, 'item', {
+            'id': 'cover-image',
+            'href': self.container.get_cover_path(relative=True),
+            'media-type': 'image/jpeg',
+            'properties': 'cover-image',
+        })
         # Add image items
         images = [(self.container.get_image_path(n, relative=True),
                    'image-%03d' % n, self.container.get_image_mime_type(n))
