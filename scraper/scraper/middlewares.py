@@ -19,6 +19,7 @@
 
 import logging
 import os.path
+import re
 from urlparse import urlparse
 
 # https://docs.djangoproject.com/en/dev/releases/1.9/#standalone-scripts
@@ -180,3 +181,28 @@ class SmartProxy(object):
             return False
 
         return True
+
+
+class VHost(object):
+    """Middleware to replace the host name with the IP."""
+
+    def process_request(self, request, spider):
+        """Replace the host name with the IP."""
+        if hasattr(spider, 'vhost_ip'):
+            domain = spider.allowed_domains[0]
+            ip = spider.vhost_ip
+            url = re.sub(r'(www.)?%s' % domain, ip, request.url)
+            # During the second pass, both URL are the same (there is
+            # not replacement)
+            if request.url != url:
+                request = request.replace(url=url, headers={'Host': domain})
+                return request
+
+    def process_response(self, request, response, spider):
+        """Replace back the IP with the host name."""
+        if hasattr(spider, 'vhost_ip'):
+            domain = spider.allowed_domains[0]
+            ip = spider.vhost_ip
+            url = re.sub(ip, domain, response.url)
+            response = response.replace(url=url)
+        return response

@@ -100,6 +100,9 @@ SMART_PROXY_ERROR_CODES = [301, 302, 504]
 
 DOWNLOADER_MIDDLEWARES = {
     # Engine side
+    # Add the VHost middleware at the beginning to avoid re-run all
+    # the middleware list every time that the URL change.
+    'scraper.middlewares.VHost': 50,
     # We need to put SmartProxy between RetryMiddleware (500) and
     # HttpProxyMiddleware (750).  Note that RedirectMiddleware (600)
     # can influence if the response is seem by SmartProxy.
