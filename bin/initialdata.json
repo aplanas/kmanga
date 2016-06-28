@@ -57,6 +57,17 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "name": "KissManga",
+            "spider": "kissmanga",
+            "url": "http://kissmanga.com/"
+        },
+        "model": "core.source",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
             "language": "EN",
             "modified": "2014-10-25T00:00:00.000Z",
             "source": 1
@@ -113,5 +124,15 @@
         },
         "model": "core.sourcelanguage",
         "pk": 6
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "EN",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 6
+        },
+        "model": "core.sourcelanguage",
+        "pk": 7
     }
 ]
