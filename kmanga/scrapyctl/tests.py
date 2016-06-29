@@ -21,7 +21,7 @@ class CommandTestCase(TestCase):
         self.command = Command()
         self.command.stdout = mock.MagicMock()
         self.all_spiders = ['mangareader', 'kissmanga', 'batoto',
-                            'mangahere', 'submangacom', 'mangafox']
+                            'mangahere', 'mangafox']
 
     def test_get_spiders(self):
         """Test recovering the list of scrapy spiders."""

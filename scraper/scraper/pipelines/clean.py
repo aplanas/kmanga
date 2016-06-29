@@ -415,14 +415,6 @@ class CleanPipeline(CleanBasePipeline):
         }
         return self._clean_field_set(field, lang.values(), translator=lang)
 
-    # -- Submanga fields
-    def clean_field_submanga_manga_genres(self, field):
-        values = [genre.title() for genre in field]
-        return self._clean_field_list(values, optional=True)
-
-    def clean_field_submanga_issue_release(self, field):
-        return self._clean_field_date(field, dmy=True)
-
     # -- Mangafox fields
     def clean_field_mangafox_manga_name(self, field):
         # Remove the postfix Manga | Manhwa | Manhua
