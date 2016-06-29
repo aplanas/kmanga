@@ -74,7 +74,7 @@ def convert_to_date(str_, dmy=False):
         return datetime.strptime(str_, '%b %d, %Y %H:%M%p').date()
     elif re.match(r'\w{3} \d{1,2}, \d{4}', str_):
         return datetime.strptime(str_, '%b %d, %Y').date()
-    elif re.match(r'\d{2}/\d{2}/\d{4}', str_):
+    elif re.match(r'\d{1,2}/\d{1,2}/\d{4}', str_):
         if dmy:
             return datetime.strptime(str_, '%d/%m/%Y').date()
         else:
