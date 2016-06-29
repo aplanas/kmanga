@@ -365,7 +365,7 @@ class Issue(TimeStampedModel):
     language = models.CharField(max_length=2,
                                 choices=SourceLanguage.LANGUAGE_CHOICES)
     release = models.DateField()
-    url = models.URLField(unique=True)
+    url = models.URLField(unique=True, max_length=255)
     manga = models.ForeignKey(Manga)
 
     class Meta:
