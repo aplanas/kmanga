@@ -25,9 +25,9 @@
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
             "modified": "2014-10-25T00:00:00.000Z",
-            "name": "SubmangaCom",
-            "spider": "submangacom",
-            "url": "http://submanga.com/"
+            "name": "SubmangaOrg",
+            "spider": "submangaorg",
+            "url": "http://submanga.org/"
         },
         "model": "core.source",
         "pk": 3
@@ -110,7 +110,7 @@
             "created": "2014-10-25T00:00:00.000Z",
             "language": "EN",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 4
+            "source": 3
         },
         "model": "core.sourcelanguage",
         "pk": 5
@@ -120,7 +120,7 @@
             "created": "2014-10-25T00:00:00.000Z",
             "language": "EN",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 5
+            "source": 4
         },
         "model": "core.sourcelanguage",
         "pk": 6
@@ -130,9 +130,19 @@
             "created": "2014-10-25T00:00:00.000Z",
             "language": "EN",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 6
+            "source": 5
         },
         "model": "core.sourcelanguage",
         "pk": 7
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "EN",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 6
+        },
+        "model": "core.sourcelanguage",
+        "pk": 8
     }
 ]
