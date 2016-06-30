@@ -159,7 +159,8 @@ class SmartProxy(object):
         try:
             proxy = Proxy.objects.get(proxy=proxy, source__spider=spider.name)
             logger.warning('Removing failed proxy <%s>, %d proxies left' % (
-                proxy, Proxy.objects.count()))
+                proxy, Proxy.objects.filter(
+                    source__spider=spider.name).count()))
             proxy.delete()
         except Proxy.DoesNotExist:
             pass
