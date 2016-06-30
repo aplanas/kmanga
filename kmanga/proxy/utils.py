@@ -1,9 +1,11 @@
 import gzip
+import itertools
 import logging
 from multiprocessing.pool import ThreadPool
 import re
 import StringIO
 import urllib2
+import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +14,11 @@ VALID = 'VALID'
 INVALID = 'INVALID'
 
 TIMEOUT = 5
+
+# Virtual Host table
+VHOST = {
+    # 'spider_name': 'real_ip',
+}
 
 # To be a valid proxy, all the text in the VALID array needs to be in
 # the body, and not one of the INVALID text needs to be present (if
@@ -63,7 +70,8 @@ def update_proxy():
 def check_proxy(proxies):
     """Return validation array for a list of proxies."""
     pool = ThreadPool(processes=512)
-    return [p for p in pool.imap(_is_valid_proxy, proxies) if p]
+    proxy_source = itertools.product(proxies, PROXY_MAP)
+    return [p for p in pool.imap(_is_valid_proxy, proxy_source) if p]
 
 
 def needs_proxy(spider):
@@ -85,32 +93,43 @@ def _collect_proxies():
     return list(set(proxies)-set(('127.0.0.1',)))
 
 
-def _is_valid_proxy(proxy):
+def _is_valid_proxy(proxy_source):
     """Check if is a valid proxy for a specific Source."""
+    proxy, source = proxy_source
+
     _proxy = urllib2.ProxyHandler({'http': proxy})
     opener = urllib2.build_opener(_proxy)
-    for source, test in PROXY_MAP.items():
-        url = test[URL]
-        valid = test[VALID]
-        invalid = test[INVALID]
-        try:
-            response = opener.open(url, timeout=TIMEOUT)
-            if response.info().get('Content-Encoding') == 'gzip':
-                body = StringIO.StringIO(response.read())
-                body = gzip.GzipFile(fileobj=body).read()
-            else:
-                body = response.read()
-        except Exception:
-            return None
 
-        if valid and invalid:
-            is_valid = all(i in body for i in valid)
-            is_valid = is_valid and not any(i in body for i in invalid)
-        elif valid:
-            is_valid = all(i in body for i in valid)
-        elif invalid:
-            is_valid = not any(i in body for i in invalid)
+    test = PROXY_MAP[source]
+    url, valid, invalid = test[URL], test[VALID], test[INVALID]
+
+    if source in VHOST:
+        parse = urlparse.urlparse(url)
+        netloc = parse.netloc
+        url = parse._replace(netloc=VHOST[source]).geturl()
+        req = urllib2.Request(url)
+        req.add_unredirected_header('Host', netloc)
+    else:
+        req = urllib2.Request(url)
+
+    try:
+        response = opener.open(req, timeout=TIMEOUT)
+        if response.info().get('Content-Encoding') == 'gzip':
+            body = StringIO.StringIO(response.read())
+            body = gzip.GzipFile(fileobj=body).read()
         else:
-            is_valid = False
-        if is_valid:
-            return (proxy, source)
+            body = response.read()
+    except Exception:
+        return None
+
+    if valid and invalid:
+        is_valid = all(i in body for i in valid)
+        is_valid = is_valid and not any(i in body for i in invalid)
+    elif valid:
+        is_valid = all(i in body for i in valid)
+    elif invalid:
+        is_valid = not any(i in body for i in invalid)
+    else:
+        is_valid = False
+    if is_valid:
+        return (proxy, source)
