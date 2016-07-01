@@ -144,7 +144,7 @@ class MobiCtl(object):
         """Create the MOBI file and return a list of files and names."""
         cache = MobiCache(settings.MOBI_STORE)
 
-        url = str(self.issue.url)
+        url = self.issue.url.encode('utf-8')
         if url not in cache:
             mobi_and_containers = self._create_mobi()
             # XXX TODO - We are not storing stats in the cache anymore (is
@@ -164,7 +164,7 @@ def _create_mobi(issue, result=None):
     """RQ job to create a single MOBI document."""
     issue_cache = IssueCache(settings.ISSUES_STORE, settings.IMAGES_STORE)
 
-    url = str(issue.url)
+    url = issue.url.encode('utf-8')
     if url not in issue_cache:
         logger.error('Issue not found in issue cache (%s)' % issue)
         if result:

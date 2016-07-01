@@ -171,7 +171,7 @@ class ScrapyCtl(object):
                 issue.number,
                 issue.url,
                 dry_run
-            ) for issue in issues if str(issue.url) not in cache
+            ) for issue in issues if issue.url.encode('utf-8') not in cache
         ]
         process_control = ProcessControl(crawlers, self.process)
         process_control.run()

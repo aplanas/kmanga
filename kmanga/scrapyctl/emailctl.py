@@ -17,7 +17,7 @@ def send_mobi(issue, user):
 
     result = Result.objects.create_if_new(issue, user, Result.PROCESSING)
 
-    url = str(issue.url)
+    url = issue.url.encode('utf-8')
     if url not in mobi_cache:
         logger.error('Issue not found in mobi cache (%s)' % issue)
         result.set_status(Result.FAILED)
