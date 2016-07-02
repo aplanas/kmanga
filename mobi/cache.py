@@ -170,17 +170,26 @@ class Cache(collections.MutableMapping):
 
     def __getitem__(self, key):
         with DB(self.cache) as db:
+            # BerkeleyDB only accept str (not unicode)
+            if isinstance(key, unicode):
+                key = key.encode('utf-8')
             # The value is composed of two components:
             #   (value, creation_date)
             return db[key]
 
     def __setitem__(self, key, value):
         with DB(self.cache) as db:
+            # BerkeleyDB only accept str (not unicode)
+            if isinstance(key, unicode):
+                key = key.encode('utf-8')
             now = datetime.utcnow()
             db[key] = (value, now)
 
     def __delitem__(self, key):
         with DB(self.cache) as db:
+            # BerkeleyDB only accept str (not unicode)
+            if isinstance(key, unicode):
+                key = key.encode('utf-8')
             del db[key]
 
     def __iter__(self):
@@ -290,7 +299,7 @@ class MobiCache(Cache):
         return os.path.join(self.data, name)
 
     def __setitem__(self, key, value):
-        with DB(self.cache) as db:
+        with DB(self.cache):
             # Makes sure that the element is not there anymore.
             if key in self:
                 del self[key]
@@ -309,11 +318,10 @@ class MobiCache(Cache):
             # composed by the list of the mobi names and the paths of
             # the mobi file in the data cache directory, and the UTC
             # time when was stored.
-            now = datetime.utcnow()
-            db[key] = (value_cache, now)
+            super(MobiCache, self).__setitem__(key, value_cache)
 
     def __delitem__(self, key):
-        with DB(self.cache) as db:
+        with DB(self.cache):
             for _, data_file in self[key][0]:
                 os.unlink(data_file)
-            del db[key]
+            super(MobiCache, self).__delitem__(key)
