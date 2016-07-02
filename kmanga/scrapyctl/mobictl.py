@@ -144,18 +144,17 @@ class MobiCtl(object):
         """Create the MOBI file and return a list of files and names."""
         cache = MobiCache(settings.MOBI_STORE)
 
-        url = self.issue.url.encode('utf-8')
-        if url not in cache:
+        if self.issue.url not in cache:
             mobi_and_containers = self._create_mobi()
             # XXX TODO - We are not storing stats in the cache anymore (is
             # not the place), so we need to store it in a different place.
             # Maybe in the database?
-            cache[url] = [m[0] for m in mobi_and_containers]
+            cache[self.issue.url] = [m[0] for m in mobi_and_containers]
             # The containers need to be cleaned here.
             for _, container in mobi_and_containers:
                 container.clean()
 
-        mobi_info, _ = cache[url]
+        mobi_info, _ = cache[self.issue.url]
         return mobi_info
 
 
@@ -164,18 +163,17 @@ def _create_mobi(issue, result=None):
     """RQ job to create a single MOBI document."""
     issue_cache = IssueCache(settings.ISSUES_STORE, settings.IMAGES_STORE)
 
-    url = issue.url.encode('utf-8')
-    if url not in issue_cache:
+    if issue.url not in issue_cache:
         logger.error('Issue not found in issue cache (%s)' % issue)
         if result:
             result.set_status(Result.FAILED)
-    elif not issue_cache.is_valid(url):
+    elif not issue_cache.is_valid(issue.url):
         logger.error('Issue in issue cache is not valid (%s)' % issue)
         if result:
             result.set_status(Result.FAILED)
-        del issue_cache[url]
+        del issue_cache[issue.url]
     else:
-        images, _ = issue_cache[url]
+        images, _ = issue_cache[issue.url]
         mobictl = MobiCtl(issue, images, settings.IMAGES_STORE)
         mobictl.create_mobi()
 

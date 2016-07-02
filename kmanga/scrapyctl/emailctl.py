@@ -17,13 +17,12 @@ def send_mobi(issue, user):
 
     result = Result.objects.create_if_new(issue, user, Result.PROCESSING)
 
-    url = issue.url.encode('utf-8')
-    if url not in mobi_cache:
+    if issue.url not in mobi_cache:
         logger.error('Issue not found in mobi cache (%s)' % issue)
         result.set_status(Result.FAILED)
         return
     # Ignore the creation date from the cache.
-    mobi_info, _ = mobi_cache[url]
+    mobi_info, _ = mobi_cache[issue.url]
 
     email = user.userprofile.email_kindle
     for mobi_name, mobi_file in mobi_info:
