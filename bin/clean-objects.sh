@@ -26,19 +26,19 @@ fi
 # bin/check-log.sh $LOG
 
 # Clean cache of images
-DAYS=5
+DAYS=3
 LOG=$LOG_PATH/clean-image-cache-$(date "+%Y-%m-%d-%T").log
 kmanga/manage.py clean image-cache --force -d $DAYS &> $LOG
 bin/check-log.sh $LOG
 
 # Clean cache of issues
-DAYS=5
+DAYS=3
 LOG=$LOG_PATH/clean-issue-cache-$(date "+%Y-%m-%d-%T").log
 kmanga/manage.py clean issue-cache --force -d $DAYS &> $LOG
 bin/check-log.sh $LOG
 
 # Clean cache of MOBI
-DAYS=5
+DAYS=3
 LOG=$LOG_PATH/clean-mobi-cache-$(date "+%Y-%m-%d-%T").log
 kmanga/manage.py clean mobi-cache --force -d $DAYS &> $LOG
 bin/check-log.sh $LOG
