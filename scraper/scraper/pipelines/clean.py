@@ -74,6 +74,8 @@ def convert_to_date(str_, dmy=False):
         return datetime.strptime(str_, '%b %d, %Y %H:%M%p').date()
     elif re.match(r'\w{3} \d{1,2}, \d{4}', str_):
         return datetime.strptime(str_, '%b %d, %Y').date()
+    elif re.match(r'\d{1,2}-\d{1,2}-\d{4}', str_):
+        return datetime.strptime(str_, '%d-%m-%Y').date()
     elif re.match(r'\d{1,2}/\d{1,2}/\d{4}', str_):
         if dmy:
             return datetime.strptime(str_, '%d/%m/%Y').date()
@@ -435,3 +437,11 @@ class CleanPipeline(CleanBasePipeline):
         # it with the equivalent ones, but with different URL)
         url = self._clean_field_str(field)
         return urlparse.urljoin(url, '1.html')
+
+    # -- SubmangaOrg fields
+    def clean_field_submangaorg_manga_status(self, field):
+        status = {
+            'En curso': 'O',
+            'Finalizado': 'C',
+        }
+        return self._clean_field_set(field, status.values(), translator=status)
