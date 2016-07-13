@@ -10,8 +10,7 @@ fi
 . $VENV/bin/activate
 
 # Database backup
-BACKUP=$BACKUP_PATH/kmanga-$(date "+%Y-%m-%d-%T").sql.gz
-pg_dump kmanga | gzip > $BACKUP
+bin/backup.sh
 
 # Update genres
 LOG=$LOG_PATH/genres-$(date "+%Y-%m-%d-%T").log
