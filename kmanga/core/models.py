@@ -27,7 +27,7 @@ class Source(TimeStampedModel):
     url = models.URLField(unique=True)
 
     def __str__(self):
-        return '%s (%s)' % (self.name, self.url)
+        return self.name
 
 
 @python_2_unicode_compatible
