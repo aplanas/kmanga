@@ -257,7 +257,7 @@ class Command(BaseCommand):
             if options['user']:
                 username = options['user']
                 user_profile = self._get_user_profile(username)
-                hour = user_profile.send_at - user_profile.time_zone
+                hour = (user_profile.send_at - user_profile.time_zone) % 24
                 if ignore_time or utc_hour == hour:
                     user_profiles = [user_profile]
             else:
@@ -265,7 +265,7 @@ class Command(BaseCommand):
                     user__subscription__id__gt=0).distinct()
                 if not ignore_time:
                     user_profiles = user_profiles.annotate(
-                        hour=F('send_at')-F('time_zone')
+                        hour=(24+F('send_at')-F('time_zone')) % 24
                     ).filter(hour=utc_hour)
 
             do_not_send = options['do-not-send']
