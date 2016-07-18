@@ -295,6 +295,10 @@ class MobiCache(Cache):
 
     def __data_file(self, key):
         """Return the full path of the data file."""
+        # hashlib.md5 do not accept unicode
+        if isinstance(key, unicode):
+            key = key.encode('utf-8')
+
         name = hashlib.md5(key).hexdigest()
         return os.path.join(self.data, name)
 
