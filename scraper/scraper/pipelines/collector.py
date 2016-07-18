@@ -66,6 +66,4 @@ class CollectorPipeline(object):
 
         cache = IssueCache(self.issues_store, self.images_store)
         for url, images in self.items.items():
-            # URL can be unicode, convert it as a string before using
-            # it as a key for the cache.
-            cache[str(url)] = images
+            cache[url] = images
