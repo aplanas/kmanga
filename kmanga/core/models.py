@@ -508,6 +508,8 @@ class Subscription(TimeStampedModel):
 
 
 class ResultQuerySet(models.QuerySet):
+    TIME_DELTA = 4
+
     def latests(self, status=None):
         query = self
         if status:
@@ -521,7 +523,7 @@ class ResultQuerySet(models.QuerySet):
         # XXX TODO - Objects are created / modified always after time
         # T.  If the send process is slow, the error margin can be
         # bigger than the one used here.
-        yesterday += timezone.timedelta(hours=4)
+        yesterday += timezone.timedelta(hours=ResultQuerySet.TIME_DELTA)
         query = self.filter(
             subscription__user=user,
             modified__range=[yesterday, today],
@@ -543,7 +545,7 @@ class ResultQuerySet(models.QuerySet):
         # XXX TODO - Objects are created / modified always after time
         # T.  If the send process is slow, the error margin can be
         # bigger than the one used here.
-        yesterday += timezone.timedelta(hours=4)
+        yesterday += timezone.timedelta(hours=ResultQuerySet.TIME_DELTA)
         query = self.filter(
             subscription__user=user,
             send_date__range=[yesterday, today],
