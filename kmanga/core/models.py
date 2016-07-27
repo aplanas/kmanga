@@ -516,28 +516,6 @@ class ResultQuerySet(models.QuerySet):
             query = query.filter(status=status)
         return query.order_by('-modified')
 
-    def _modified_last_24hs(self, user, subscription=None, status=None):
-        """Return the list of `Result` modified during the last 24 hours."""
-        today = timezone.now()
-        yesterday = today - timezone.timedelta(days=1)
-        # XXX TODO - Objects are created / modified always after time
-        # T.  If the send process is slow, the error margin can be
-        # bigger than the one used here.
-        yesterday += timezone.timedelta(hours=ResultQuerySet.TIME_DELTA)
-        query = self.filter(
-            subscription__user=user,
-            modified__range=[yesterday, today],
-        )
-        if subscription:
-            query = query.filter(subscription=subscription)
-        if status:
-            query = query.filter(status=status)
-        return query
-
-    def modified_last_24hs(self, user, subscription=None, status=None):
-        """Return the number of `Result` modified during the last 24 hours."""
-        return self._modified_last_24hs(user, subscription, status).count()
-
     def _sent_last_24hs(self, user, subscription=None):
         """Return the list of `Result` sent during the last 24 hours."""
         today = timezone.now()

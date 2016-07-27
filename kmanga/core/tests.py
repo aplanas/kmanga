@@ -345,32 +345,6 @@ class ResultTestCase(TestCase):
 
         self.assertFalse(Result.objects.latests(status=Result.SENT).exists())
 
-    def test_modified_last_24hs(self):
-        """Test the method to detect last modified instances."""
-        user1 = UserProfile.objects.get(pk=1).user
-        self.assertEqual(Result.objects.modified_last_24hs(user1), 0)
-
-        Result.objects.all().delete()
-        self.assertEqual(Result.objects.modified_last_24hs(user1), 0)
-
-        for i, subs in enumerate(Subscription.actives.filter(user=user1)):
-            issue = subs.manga.issue_set.all()[0]
-            subs.add_sent(issue)
-            self.assertEqual(Result.objects.modified_last_24hs(user1), i+1)
-            self.assertEqual(
-                Result.objects.modified_last_24hs(user1,
-                                                  subscription=subs), 1)
-            self.assertEqual(
-                Result.objects.modified_last_24hs(
-                    user1,
-                    subscription=subs,
-                    status=Result.SENT), 1)
-            self.assertEqual(
-                Result.objects.modified_last_24hs(
-                    user1,
-                    subscription=subs,
-                    status=Result.FAILED), 0)
-
     def test_sent_last_24hs(self):
         """Test the method to detect last sent instances."""
         user1 = UserProfile.objects.get(pk=1).user
