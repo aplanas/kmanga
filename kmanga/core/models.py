@@ -508,7 +508,7 @@ class Subscription(TimeStampedModel):
 
 
 class ResultQuerySet(models.QuerySet):
-    TIME_DELTA = 4
+    TIME_DELTA = 2
 
     def latests(self, status=None):
         query = self
