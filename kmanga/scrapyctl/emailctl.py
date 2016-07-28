@@ -15,7 +15,7 @@ def send_mobi(issue, user):
     """RQ job to send MOBI documents."""
     mobi_cache = MobiCache(settings.MOBI_STORE)
 
-    result = Result.objects.create_if_new(issue, user, Result.PROCESSING)
+    result = issue.create_result_if_needed(user, Result.PROCESSING)
 
     if issue.url not in mobi_cache:
         logger.error('Issue not found in mobi cache (%s)' % issue)

@@ -378,6 +378,20 @@ class Issue(TimeStampedModel):
         """Check if an user has received this issue."""
         return self.result(user, status=Result.SENT).exists()
 
+    def create_result_if_needed(self, user, status, set_send_date=True):
+        """Create `Result` if is new with a status."""
+        defaults = {'status': status}
+        if set_send_date:
+            defaults['send_date'] = timezone.now()
+
+        subscription = Subscription.objects.get(
+            manga=self.manga, user=user)
+        result, _ = Result.objects.update_or_create(
+            issue=self,
+            subscription=subscription,
+            defaults=defaults)
+        return result
+
     def result(self, user, status=None):
         """Return the Result for an user for this issue."""
         # XXX TODO - Avoid filtering by subscription__deleted using
@@ -475,8 +489,8 @@ class Subscription(TimeStampedModel):
 
     def issues_to_send(self):
         """Return the list of issues to send, ordered by number."""
-        already_sent = Result.objects.sent_last_24hs(self.user,
-                                                     subscription=self)
+        already_sent = Result.objects.processed_last_24hs(self.user,
+                                                          subscription=self)
         remains = max(0, self.issues_per_day-already_sent)
         return self.manga.issue_set.filter(
             language=self.language
@@ -490,12 +504,15 @@ class Subscription(TimeStampedModel):
 
     def add_sent(self, issue):
         """Add or update a Result to a Subscription."""
+        # XXX TODO - add_sent is deprecated, use
+        # Issue.create_result_if_needed, or extend the features inside
+        # Subscription.
         return Result.objects.update_or_create(
             issue=issue,
             subscription=self,
             defaults={
-                'send_date': timezone.now(),
                 'status': Result.SENT,
+                'send_date': timezone.now(),
             })
 
     def latest_issues(self):
@@ -516,8 +533,8 @@ class ResultQuerySet(models.QuerySet):
             query = query.filter(status=status)
         return query.order_by('-modified')
 
-    def _sent_last_24hs(self, user, subscription=None):
-        """Return the list of `Result` sent during the last 24 hours."""
+    def _processed_last_24hs(self, user, subscription=None):
+        """Return the list of `Result` processed during the last 24 hours."""
         today = timezone.now()
         yesterday = today - timezone.timedelta(days=1)
         # XXX TODO - Objects are created / modified always after time
@@ -527,30 +544,14 @@ class ResultQuerySet(models.QuerySet):
         query = self.filter(
             subscription__user=user,
             send_date__range=[yesterday, today],
-            status=Result.SENT,
         )
         if subscription:
             query = query.filter(subscription=subscription)
         return query
 
-    def sent_last_24hs(self, user, subscription=None):
-        """Return the number of `Result` sent during the last 24 hours."""
-        return self._sent_last_24hs(user, subscription).count()
-
-    def create_if_new(self, issue, user, status):
-        """Create `Result` if is new with a status."""
-        # XXX TODO - The semantic is not very clear, and maybe the
-        # place is not correct.  This method is used when we have an
-        # issue and a user, and we want to create / move a Result with
-        # a specific status.  Basically is used in the scrape, convert
-        # or send of an issue.
-        subscription = Subscription.objects.get(
-            manga=issue.manga, user=user)
-        result, _ = Result.objects.get_or_create(
-            issue=issue,
-            subscription=subscription,
-            defaults={'status': status})
-        return result
+    def processed_last_24hs(self, user, subscription=None):
+        """Return the number of `Result` processed during the last 24 hours."""
+        return self._processed_last_24hs(user, subscription).count()
 
     def pending(self):
         return self.latests(status=Result.PENDING)
@@ -598,8 +599,12 @@ class Result(TimeStampedModel):
 
     def set_status(self, status):
         self.status = status
-        if status == Result.SENT:
-            self.send_date = timezone.now()
+        # If the result is marked as FAILED, unset the `send_date`.
+        # In this way, if the result is moved to PENDING is not
+        # counted as SENT.  Also if is not moved, the user can have
+        # one more issue for this day.
+        if status == Result.FAILED:
+            self.send_date = None
         self.save()
 
     def is_pending(self):

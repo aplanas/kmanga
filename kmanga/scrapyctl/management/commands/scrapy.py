@@ -360,19 +360,18 @@ class Command(BaseCommand):
 
         # Basic algorithm:
         #
-        #   * Get the number of issues sent during the last 24hs for
-        #     an user, and calculate the remaining number of issues to
-        #     send to this user.
+        #   * Get the number of issues processed during the last 24hs
+        #     for an user, and calculate the remaining number of
+        #     issues to send to this user.
         #
         #   * Get the list of subscriptions for this user in random
         #     order.
         #
-        #   * For each subcription, get the number of issues sent
-        #     during the last 24hs, and calculate the number of issues
-        #     that can be sent for this user today. This calculation
-        #     is done in `Subscription.issues_to_send()`
-
-        already_sent = Result.objects.sent_last_24hs(user)
+        #   * For each subcription, get the list of issues that can be
+        #     sent for this user today. This calculation is done in
+        #     `Subscription.issues_to_send()`
+        #
+        already_sent = Result.objects.processed_last_24hs(user)
         remains = max(0, user_profile.issues_per_day-already_sent)
 
         issues = []

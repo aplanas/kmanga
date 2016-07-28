@@ -12,7 +12,7 @@ def send(issues, user, accounts=None, loglevel=logging.WARNING):
 
     if issues:
         for issue in issues:
-            Result.objects.create_if_new(issue, user, Result.PROCESSING)
+            issue.create_result_if_needed(user, Result.PROCESSING)
         scrape_job = scrape_issues.delay(issues, accounts, loglevel)
         # This job also update the Result status
         create_mobi_and_send.delay(issues, user, depends_on=scrape_job)

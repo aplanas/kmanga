@@ -345,20 +345,21 @@ class ResultTestCase(TestCase):
 
         self.assertFalse(Result.objects.latests(status=Result.SENT).exists())
 
-    def test_sent_last_24hs(self):
-        """Test the method to detect last sent instances."""
+    def test_processed_last_24hs(self):
+        """Test the method to detect last processed issues."""
         user1 = UserProfile.objects.get(pk=1).user
-        self.assertEqual(Result.objects.sent_last_24hs(user1), 0)
+        self.assertEqual(Result.objects.processed_last_24hs(user1), 0)
 
         Result.objects.all().delete()
-        self.assertEqual(Result.objects.sent_last_24hs(user1), 0)
+        self.assertEqual(Result.objects.processed_last_24hs(user1), 0)
 
         for i, subs in enumerate(Subscription.actives.filter(user=user1)):
             issue = subs.manga.issue_set.all()[0]
             subs.add_sent(issue)
-            self.assertEqual(Result.objects.sent_last_24hs(user1), i+1)
+            self.assertEqual(Result.objects.processed_last_24hs(user1), i+1)
             self.assertEqual(
-                Result.objects.sent_last_24hs(user1, subscription=subs), 1)
+                Result.objects.processed_last_24hs(user1, subscription=subs),
+                1)
 
     def test_status(self):
         """Test recovery latest results instances with some status."""

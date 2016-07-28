@@ -50,10 +50,10 @@ class IssueActionForm(forms.Form):
         subscription = self.cleaned_data['subscription']
         action = self.cleaned_data['action']
         for issue in self.cleaned_data['issues']:
-            result = Result.objects.create_if_new(
-                issue=issue,
+            result = issue.create_result_if_needed(
                 user=subscription.user,
-                status=action
+                status=action,
+                set_send_date=False
             )
             if result.status != action:
                 result.set_status(status=action)
@@ -62,15 +62,16 @@ class IssueActionForm(forms.Form):
         """Send issues to the user."""
         # Basic algorithm is similar to the one for `sendsub`
         #
-        #   * Get the number of issues sent during the last 24hs for
-        #     an user, and calculate the remaining number of issues to
-        #     send to this user.
+        #   * Get the number of issues processed during the last 24hs
+        #     for an user, and calculate the remaining number of
+        #     issues to send to this user.
         #
         #   * Get the list Issues to send in order.
         #
         #   * From the list, send the Issues that are allowed.
+        #
         user = self.cleaned_data['subscription'].user
-        already_sent = Result.objects.sent_last_24hs(user)
+        already_sent = Result.objects.processed_last_24hs(user)
         remains = max(0, user.userprofile.issues_per_day-already_sent)
         issues = self.cleaned_data['issues']
         send(issues[:remains], user)

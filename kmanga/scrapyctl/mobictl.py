@@ -189,7 +189,7 @@ def create_mobi(issues):
 def create_mobi_and_send(issues, user):
     """RQ job to create MOBI documents and send it to the user."""
     for issue in issues:
-        result = Result.objects.create_if_new(issue, user, Result.PROCESSING)
+        result = issue.create_result_if_needed(user, Result.PROCESSING)
 
         # These jobs also update the Result status
         mobi_job = _create_mobi.delay(issue, result=result)
