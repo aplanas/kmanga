@@ -71,7 +71,6 @@ class IssueActionForm(forms.Form):
         #   * From the list, send the Issues that are allowed.
         #
         user = self.cleaned_data['subscription'].user
-        already_sent = Result.objects.processed_last_24hs(user)
-        remains = max(0, user.userprofile.issues_per_day-already_sent)
+        remains = user.userprofile.remains()
         issues = self.cleaned_data['issues']
         send(issues[:remains], user)

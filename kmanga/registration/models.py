@@ -4,6 +4,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
+from core.models import Result
+
 
 @python_2_unicode_compatible
 class UserProfile(models.Model):
@@ -51,3 +53,9 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+    def remains(self):
+        """Calculate remaining issues per day."""
+        already_sent = Result.objects.processed_last_24hs(self.user)
+        remains = max(0, self.issues_per_day-already_sent)
+        return remains
