@@ -5,6 +5,7 @@ from django.core.mail import EmailMessage
 from django_rq import job
 
 from core.models import Result
+from core.models import Subscription
 from mobi.cache import MobiCache
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,14 @@ def send_mobi(issue, user):
     """RQ job to send MOBI documents."""
     mobi_cache = MobiCache(settings.MOBI_STORE)
 
-    result = issue.create_result_if_needed(user, Result.PROCESSING)
+    try:
+        result = issue.create_result_if_needed(user, Result.PROCESSING)
+    except Subscription.DoesNotExist:
+        # Results in PROCESSING status are cleaned during the
+        # subscription removal
+        msg = 'Subscription removed for user %s (%s)' % (user, issue)
+        logger.warning(msg)
+        return
 
     if issue.url not in mobi_cache:
         logger.error('Issue not found in mobi cache (%s)' % issue)
