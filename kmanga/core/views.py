@@ -253,6 +253,13 @@ class SubscriptionDeleteView(LoginRequiredMixin, SubscriptionOwnerMixin,
     model = Subscription
     success_url = reverse_lazy('subscription-list')
 
+    def delete(self, request, *args, **kwargs):
+        # Remove pending Result that are in PROCESSING status
+        self.object = self.get_object()
+        self.object.result_set.filter(status=Result.PROCESSING).delete()
+        return super(SubscriptionDeleteView, self).delete(request, *args,
+                                                          **kwargs)
+
 
 class ResultListView(LoginRequiredMixin, ListView):
     model = Result
