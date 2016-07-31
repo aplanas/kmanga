@@ -2,6 +2,27 @@
 {% load kmanga %}
 {% load thumbnail %}
 
+{% block alert %}
+{% with issues_per_day=user.userprofile.issues_per_day remains=user.userprofile.remains %}
+  {% if remains == 0 %}
+<div class="alert alert-danger alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <strong>Warning!</strong> You can't send anymore issues today. Your limit is {{ issues_per_day }} issues per day. Contact the administrator if you need more.
+</div>
+  {% elif remains <= 10 %}
+<div class="alert alert-warning alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <strong>Warning!</strong> You still can send {{ remains }} of {{ issues_per_day }} issues today.
+</div>
+  {% else %}
+<div class="alert alert-info alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <strong>Note!</strong> You still can send {{ remains }} of {{ issues_per_day }} issues today.
+</div>
+  {% endif %}
+{% endwith %}
+{% endblock alert %}
+
 {% block page_title %}{{ object.manga.name }} <a href="{{ object.manga.url }}" class="label label-default">{{ object.manga.source.name }}</a>{% endblock page_title %}
 {% block content %}
 <div class="row">
