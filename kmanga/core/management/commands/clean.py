@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 def print_table(title, header, body):
     """Pretty print a table with constrains."""
+    print
     print title
     print '=' * len(title)
     print
@@ -139,7 +140,7 @@ class Command(BaseCommand):
             mangas = mangas.filter(source__in=sources)
 
         if list_:
-            title = 'Mangas to clean (days: %d)' % days
+            title = 'Mangas to remove (days: %d)' % days
             header = (('name', 35), ('url', 50), ('source', 11), ('days', 3))
             body = []
 
@@ -172,7 +173,7 @@ class Command(BaseCommand):
         )
 
         if list_:
-            title = 'Users to clean (days: %d)' % days
+            title = 'Users to remove (days: %d)' % days
             header = (('username', 20), ('email', 30),
                       ('last login', 10), ('last sent', 10))
             body = []
@@ -222,7 +223,7 @@ class Command(BaseCommand):
         today = timezone.now()
 
         if list_:
-            title = 'Image cache to clean (days: %d)' % days
+            title = 'Image from the cache to remove (days: %d)' % days
             header = (('image', 100), ('days', 3))
             body = []
 
@@ -245,7 +246,7 @@ class Command(BaseCommand):
         today = timezone.now()
 
         if list_:
-            title = 'Manga cache to clean (days: %d)' % days
+            title = 'Items from the cache to remove (days: %d)' % days
             header = (('manga', 35), ('issue', 5), ('source', 11), ('days', 3))
             body = []
 
@@ -278,7 +279,7 @@ class Command(BaseCommand):
         media = os.path.abspath(settings.MEDIA_ROOT)
 
         if list_:
-            title = 'Cover to clean'
+            title = 'Covers to remove'
             header = (('image', 100), ('source', 11))
             body = []
 
@@ -310,7 +311,7 @@ class Command(BaseCommand):
         results = Result.objects.filter(modified__lt=since, status=status)
 
         if list_:
-            title = 'Results to clean (days: %d)' % days
+            title = 'Results to remove (days: %d)' % days
             header = (('manga', 35), ('issue', 5), ('source', 11), ('user', 8),
                       ('days', 3))
             body = []
