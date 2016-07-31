@@ -122,6 +122,8 @@ class Command(BaseCommand):
         elif command == 'issue-cache':
             cache = IssueCache(settings.ISSUES_STORE, settings.IMAGES_STORE)
             self._clean_cache(days, cache, list_)
+            mobi_cache = MobiCache(settings.MOBI_STORE)
+            self._clean_broken_issue_cache(cache, mobi_cache, list_)
         elif command == 'cover':
             self._clean_cover(sources, list_)
         elif command == 'result-processing':
@@ -270,6 +272,39 @@ class Command(BaseCommand):
                 logger.info('Removing %s %s - %s [%d].' % (manga, issue,
                                                            spider, old))
                 del cache[key]
+
+        if list_:
+            print_table(title, header, body)
+
+    def _missing_pages(self, images):
+        """Check if there is a missing page."""
+        return not all(i['images'] for i in images)
+
+    def _clean_broken_issue_cache(self, issue_cache, mobi_cache, list_):
+        """Remove old mobi and issues with missing pages."""
+
+        if list_:
+            title = 'Issues with missing pages'
+            header = (('manga', 35), ('issue', 5), ('source', 11))
+            body = []
+
+        to_delete = [k for k, v in issue_cache.iteritems()
+                     if self._missing_pages(v[0])]
+        for key in to_delete:
+            try:
+                issue = Issue.objects.get(url=key)
+                manga = issue.manga
+                spider = manga.source.spider
+            except:
+                issue = key
+                manga = '<UNKNOWN>'
+                spider = '<UNKNOWN>'
+            if list_:
+                body.append((manga, issue, spider))
+            else:
+                logger.info('Removing %s %s - %s.' % (manga, issue, spider))
+                del mobi_cache[key]
+                del issue_cache[key]
 
         if list_:
             print_table(title, header, body)
