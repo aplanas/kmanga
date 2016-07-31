@@ -36,8 +36,8 @@ class UserProfile(models.Model):
         (i, '%02d:00' % i) for i in range(0, 24)
     ]
     ISSUES_PER_DAY = {
-        FREE: 20,
-        PAY: 50,
+        FREE: 30,
+        PAY: 60,
     }
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL,
