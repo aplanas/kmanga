@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import logging
 import os
 import re
+import tempfile
 
 from django.conf import settings
 from django_rq import job
@@ -101,18 +102,10 @@ class MobiCtl(object):
         self.mobi_store = settings.MOBI_STORE
         self.volume_max_size = settings.VOLUME_MAX_SIZE
 
-    def _normalize(self, name):
-        """Normalize the string that represent a directory."""
-        name = [i if i.isalnum() else '_' for i in name.lower()]
-        return ''.join(name)
-
     def _create_mobi(self):
         """Create the MOBI file and return a list of files and containers."""
-        name = self.issue.name
-        number = self.issue.number
-
-        dir_name = self._normalize('%s_%s' % (name, number))
-        container = Container(os.path.join(self.mobi_store, dir_name))
+        dir_name = tempfile.mkdtemp(dir=self.mobi_store)
+        container = Container(dir_name)
         container.create(clean=True)
         images = sorted(self.images, key=lambda x: x['number'])
         _images = []
