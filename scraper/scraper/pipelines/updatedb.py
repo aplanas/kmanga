@@ -24,7 +24,6 @@ import urlparse
 from django.core.files import File
 from django.db import transaction
 
-# https://docs.djangoproject.com/en/dev/releases/1.9/#standalone-scripts
 import django
 django.setup()
 

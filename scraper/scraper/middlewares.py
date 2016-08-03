@@ -22,7 +22,6 @@ import os.path
 import re
 from urlparse import urlparse
 
-# https://docs.djangoproject.com/en/dev/releases/1.9/#standalone-scripts
 import django
 django.setup()
 
