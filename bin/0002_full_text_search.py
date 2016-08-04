@@ -20,6 +20,8 @@ CREATE MATERIALIZED VIEW core_manga_fts_view AS
                          setweight(to_tsvector(core_manga.name), 'A') ||
                          to_tsvector(core_source.name) ||
                          to_tsvector(core_source.spider) ||
+                         to_tsvector(core_manga.author) ||
+                         to_tsvector(core_manga.artist) ||
                          to_tsvector(core_manga.description) ||
                          to_tsvector(
                            coalesce(string_agg(core_altname.name, ' '), '')
