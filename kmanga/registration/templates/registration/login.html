@@ -1,12 +1,17 @@
 {% extends "base.html" %}
 
-{% block page_header%}{% endblock page_header %}
-{% block content %}
-
+{% block alert %}
 {% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
+<div class="alert alert-warning alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <strong>Warning!</strong> Your username and password didn't match. Please try again.
+</div>
 {% endif %}
+{% endblock alert %}
 
+{% block page_header%}{% endblock page_header %}
+
+{% block content %}
 <div class="col-md-4 col-md-offset-4">
   <div class="panel panel-default">
     <div class="panel-heading">

@@ -3,22 +3,28 @@
 {% block page_title %}User profile{% endblock page_title %}
 {% block content %}
 <form method="post" action="">{% csrf_token %}
-  <div class="form-group">
+  <div class="form-group{% if form.first_name.errors %} has-error has-feedback{% endif %}">
     <label for="first_name">First name</label>
-    <input type="text" class="form-control" id="first_name" name="first_name" placeholder="First name" value="{{ object.first_name }}">
+    <input type="text" class="form-control" id="first_name" name="first_name" placeholder="First name" value="{{ object.first_name }}" aria-describedby="first_name_error">
+    <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+    <span id="first_name_error" class="sr-only">(error)</span>
     {% if form.first_name.errors %}<span class="help-block">{{ form.first_name.errors.as_text }}</span>{% endif %}
   </div>
-  <div class="form-group">
+  <div class="form-group{% if form.last_name.errors %} has-error has-feedback{% endif %}">
     <label for="last_name">Last name</label>
-    <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last name" value="{{ object.last_name }}">
+    <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last name" value="{{ object.last_name }}" aria-describedby="last_name_error">
+    <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+    <span id="last_name_error" class="sr-only">(error)</span>
     {% if form.last_name.errors %}<span class="help-block">{{ form.last_name.errors.as_text }}</span>{% endif %}
   </div>
-  <div class="form-group">
-    <label for="last_name">Email address</label>
-    <input type="email" class="form-control" id="email" name="email" placeholder="Email address" value="{{ object.email }}">
+  <div class="form-group{% if form.email.errors %} has-error has-feedback{% endif %}">
+    <label for="email">Email address</label>
+    <input type="email" class="form-control" id="email" name="email" placeholder="Email address" value="{{ object.email }}" aria-describedby="email_error">
+    <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+    <span id="email_error" class="sr-only">(error)</span>
     {% if form.email.errors %}<span class="help-block">{{ form.email.errors.as_text }}</span>{% endif %}
   </div>
-  <div class="form-group">
+  <div class="form-group{% if form.language.errors %} has-error{% endif %}">
     <label for="language">Preferred language</label>
     <select id="language" name="language" class="form-control">
       {% for language in object.userprofile.LANGUAGE_CHOICES %}
@@ -27,7 +33,7 @@
     </select>
     {% if form.language.errors %}<span class="help-block">{{ form.language.errors.as_text }}</span>{% endif %}
   </div>
-  <div class="form-group">
+  <div class="form-group{% if form.time_zone.errors %} has-error{% endif %}">
     <label for="time_zone">Time zone</label>
     <select id="time_zone" name="time_zone" class="form-control">
       {% for time_zone in object.userprofile.TIME_ZONE_CHOICES %}
@@ -37,7 +43,7 @@
     <span class="help-block">Time zone that applies to the send subscription time.</span>
     {% if form.time_zone.errors %}<span class="help-block">{{ form.time_zone.errors.as_text }}</span>{% endif %}
   </div>
-  <div class="form-group">
+  <div class="form-group{% if form.send_at.errors %} has-error{% endif %}">
     <label for="send_at">Time when send daily subscription</label>
     <select id="send_at" name="send_at" class="form-control">
       {% for hour in object.userprofile.HOUR_CHOICES %}
@@ -46,9 +52,11 @@
     </select>
     {% if form.send_at.errors %}<span class="help-block">{{ form.send_at.errors.as_text }}</span>{% endif %}
   </div>
-  <div class="form-group">
+  <div class="form-group{% if form.email_kindle.errors %} has-error has-feedback{% endif %}">
     <label for="email_kindle">Kindle email</label>
-    <input type="email" class="form-control" id="email_kindle" name="email_kindle" placeholder="Email Kindle" value="{{ object.userprofile.email_kindle }}">
+    <input type="email" class="form-control" id="email_kindle" name="email_kindle" placeholder="Email Kindle" value="{{ object.userprofile.email_kindle }}" aria-describedby="email_kindle_error">
+    <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+    <span id="email_kindle_error" class="sr-only">(error)</span>
     {% if form.email_kindle.errors %}<span class="help-block">{{ form.email_kindle.errors.as_text }}</span>{% endif %}
   </div>
   <div class="form-group">

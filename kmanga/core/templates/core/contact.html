@@ -3,12 +3,14 @@
 {% block page_title %}Contact{% endblock page_title %}
 {% block content %}
 <form method="post" action="">{% csrf_token %}
-  <div class="form-group">
+  <div class="form-group{% if form.username.errors %} has-error has-feedback{% endif %}">
     <label for="email">Email address</label>
-    <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+    <input type="email" class="form-control" id="email" name="email" placeholder="Email" aria-describedby="email_error">
+    <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+    <span id="email_error" class="sr-only">(error)</span>
     {% if form.email.errors %}<span class="help-block">{{ form.email.errors.as_text }}</span>{% endif %}
   </div>
-  <div class="form-group">
+  <div class="form-group{% if form.username.errors %} has-error{% endif %}">
     <label for="message">Message</label>
     <textarea class="form-control" id="message" name="message" placeholder="Message" rows="3"></textarea>
     {% if form.message.errors %}<span class="help-block">{{ form.message.errors.as_text }}</span>{% endif %}
