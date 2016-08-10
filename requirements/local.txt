@@ -1,6 +1,8 @@
 # Local development dependencies go here
 -r base.txt
 
-coverage==4.0.3
-django-debug-toolbar==1.4
-Sphinx==1.2.2
+coverage==4.2
+django-debug-toolbar==1.5
+mock==2.0.0
+
+# selenium==2.53.6

@@ -1,33 +1,10 @@
-cffi==1.3.1
-characteristic==14.3.0
-click==6.2
-cryptography==1.1.1
-cssselect==0.9.1
-Django==1.9
-django-rq==0.8.0
-easy-thumbnails==2.2.1
-enum34==1.1.1
-idna==2.0
-ipaddress==1.0.15
-lxml==3.5.0
-Pillow==3.0.0
-psycopg2==2.6.1
-pyasn1==0.1.9
-pyasn1-modules==0.0.8
-pycparser==2.14
-pyOpenSSL==0.15.1
-queuelib==1.4.2
-redis==2.10.5
-rq==0.5.6
-Scrapy==1.0.3
-service-identity==14.0.0
-six==1.10.0
-Twisted==15.5.0
-w3lib==1.13.0
-wheel==0.24.0
-zope.interface==4.1.3
+Django==1.9.9
+django-rq==0.9.2
+easy-thumbnails==2.3
+psycopg2==2.6.2
+Scrapy==1.1.1
 
-# bpython==0.14.1
-# django-braces==1.4.0
-# django-model-utils==2.2
+# bpython==0.15.0
+# django-braces==1.9.0
+# django-model-utils==2.5.2
 # logutils==0.3.3
