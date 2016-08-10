@@ -1,0 +1,51 @@
+# Local settings for KManga
+from settings import INSTALLED_APPS
+
+DEBUG = True
+
+# ADMINS = [('admin', 'admin@kmanga.net')]
+
+# ALLOWED_HOSTS = [
+#     '.example.com',   # Allow domain and subdomains
+#     '.example.com.',  # Also allow FQDN and subdomains
+# ]
+
+# STATIC_ROOT = '/full/path/static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/tmp/media/'
+
+CONTACT_EMAIL = 'admin@kmanga.net'
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'kmanga',
+        'HOST': 'localhost',
+    }
+}
+
+# RQ_QUEUES = {
+#     'default': {
+#         'HOST': 'localhost',
+#         'PORT': 6379,
+#         'DB': 0,
+#         'PASSWORD': 'password',
+#     },
+#     'high': {
+#         'HOST': 'localhost',
+#         'PORT': 6379,
+#         'DB': 0,
+#         'PASSWORD': 'password',
+#     },
+#     'low': {
+#         'HOST': 'localhost',
+#         'PORT': 6379,
+#         'DB': 0,
+#         'PASSWORD': 'password',
+#     }
+# }
+
+# SCRAPY_ACCOUNTS = {
+#     'spider': ('username', 'password'),
+# }
