@@ -20,8 +20,8 @@ class CommandTestCase(TestCase):
         self.scrapy = ScrapyCtl(accounts={}, loglevel='ERROR')
         self.command = Command()
         self.command.stdout = mock.MagicMock()
-        self.all_spiders = ['mangareader', 'kissmanga', 'batoto',
-                            'mangahere', 'mangafox']
+        self.all_spiders = ['mangareader', 'kissmanga', 'submangaorg',
+                            'batoto', 'mangahere', 'mangafox']
 
     def test_get_spiders(self):
         """Test recovering the list of scrapy spiders."""
@@ -108,14 +108,21 @@ class CommandTestCase(TestCase):
 
     def test_handle_no_params(self):
         """Test handle when there are not parameters."""
+        options = {
+            'spiders': 'all',
+            'accounts': [],
+            'loglevel': 'ERROR',
+            'dry_run': False,
+        }
+
         with self.assertRaises(CommandError):
-            self.command.handle(command=None)
+            self.command.handle(command=None, **options)
 
     def test_handle_wrong_param(self):
         """Test handle when the parameter is wrong."""
         options = {
             'spiders': 'all',
-            'accounts': {},
+            'accounts': [],
             'loglevel': 'ERROR',
             'dry_run': False,
         }
@@ -129,7 +136,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
-            'accounts': {},
+            'accounts': [],
             'loglevel': 'ERROR',
             'dry_run': False,
         }
@@ -144,7 +151,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
-            'accounts': {},
+            'accounts': [],
             'loglevel': 'ERROR',
             'dry_run': False,
         }
@@ -162,7 +169,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
-            'accounts': {},
+            'accounts': [],
             'loglevel': 'ERROR',
             'dry_run': False,
         }
@@ -181,7 +188,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
-            'accounts': {},
+            'accounts': [],
             'loglevel': 'ERROR',
             'dry_run': False,
             'manga': 'Manga 1',
@@ -201,7 +208,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
-            'accounts': {},
+            'accounts': [],
             'loglevel': 'ERROR',
             'dry_run': False,
             'until': '01-01-2015',
@@ -229,7 +236,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
-            'accounts': {},
+            'accounts': [],
             'loglevel': 'ERROR',
             'dry_run': False,
             'manga': 'Manga 1',
@@ -250,7 +257,7 @@ class CommandTestCase(TestCase):
 
         options = {
             'spiders': 'all',
-            'accounts': {},
+            'accounts': [],
             'loglevel': 'ERROR',
             'dry_run': False,
             'user': 'user1',
@@ -269,73 +276,75 @@ class CommandTestCase(TestCase):
         subscribe.assert_called_once_with('user1', manga, 'EN', 4)
 
     @mock.patch.object(Command, 'send')
-    @mock.patch.object(Command, 'subscribe')
+    @mock.patch.object(Command, '_get_manga')
     @mock.patch.object(Command, '_get_issues')
+    @mock.patch.object(Command, '_get_user_profile')
     @mock.patch.object(Command, '_get_spiders')
     @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
-    def test_handle_send(self, scrapyctl, get_spiders, get_issues,
-                         get_manga, send):
+    def test_handle_send(self, scrapyctl, get_spiders, get_user_profile,
+                         get_issues, get_manga, send):
         """Test the `send` handle method."""
 
         options = {
             'spiders': 'all',
-            'accounts': {},
+            'accounts': [],
             'loglevel': 'ERROR',
             'dry_run': False,
             'issues': [1, 2, 3],
             'manga': 'Manga 1',
             'url': None,
             'lang': 'EN',
-            'from': 'from@example.com',
-            'to': 'to@example.com',
-            'do-not-send': False,
-        }
-
-        manga = Manga.objects.get(name='Manga 1')
-
-        scrapyctl.return_value = scrapyctl
-        get_spiders.return_value = ['source1']
-        get_issues.return_value = ['issues']
-        get_manga.return_value = ['manga']
-        c = Command()
-        c.handle(command='send', **options)
-        send.assert_called_once_with(scrapyctl, ['source1'], manga,
-                                     ['issues'], 'from@example.com',
-                                     'to@example.com', False)
-
-    @mock.patch.object(Command, 'sendsub')
-    @mock.patch.object(Command, 'prepare_sendsub')
-    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
-    def test_handle_sendsub(self, scrapyctl, prepare_sendsub, sendsub):
-        """Test the `sendsub` handle method."""
-
-        options = {
-            'spiders': 'all',
-            'accounts': {},
-            'loglevel': 'ERROR',
-            'dry_run': False,
             'user': 'user1',
             'do-not-send': False,
         }
 
-        user_profile = UserProfile.objects.get(user__username='user1')
-
-        scrapyctl.return_value = scrapyctl
+        get_spiders.return_value = ['source1']
+        get_user_profile.return_value = ['user_profile']
+        get_issues.return_value = ['issues']
+        get_manga.return_value = ['manga']
         c = Command()
-        c.handle(command='sendsub', **options)
-        prepare_sendsub.assert_called_once_with(scrapyctl, user_profile,
-                                                False)
-        sendsub.assert_called_once_with(scrapyctl)
+        c.handle(command='send', **options)
+        send.assert_called_once_with(['issues'], ['user_profile'], {},
+                                     options['loglevel'],
+                                     options['do-not-send'])
 
-        sendsub.reset_mock()
-        user_profiles = UserProfile.objects.all()
+    # XXX TODO - Split in different tests
+    # @mock.patch.object(Command, 'sendsub')
+    # @mock.patch.object(Command, '_get_user_profile')
+    # def test_handle_sendsub(self, get_user_profile, sendsub):
+    #     """Test the `sendsub` handle method."""
 
-        options['user'] = None
-        c = Command()
-        c.handle(command='sendsub', **options)
-        for user_profile in user_profiles:
-            prepare_sendsub.assert_any_call(scrapyctl, user_profile, False)
-        sendsub.assert_called_once_with(scrapyctl)
+    #     options = {
+    #         'spiders': 'all',
+    #         'accounts': [],
+    #         'loglevel': 'ERROR',
+    #         'dry_run': False,
+    #         'user': 'user1',
+    #         'do-not-send': False,
+    #         'ignore-time': False,
+    #     }
+
+    #     user_profile = UserProfile.objects.get(user__username='user1')
+
+    #     c = Command()
+    #     c.handle(command='sendsub', **options)
+    #     sendsub.assert_called_once_with(user_profile, {},
+    #                                     options['loglevel'],
+    #                                     options['do-not-send'])
+
+    #     sendsub.reset_mock()
+    #     user_profiles = UserProfile.objects.all()
+
+    #     options['ignore-time'] = True
+
+    #     options['user'] = None
+    #     c = Command()
+    #     c.handle(command='sendsub', **options)
+    #     for user_profile in user_profiles:
+    #         sendsub.assert_any_call(user_profile,
+    #                                 options['accounts'],
+    #                                 options['loglevel'],
+    #                                 options['do-not-send'])
 
 
 class MobiCtlTestCase(TestCase):

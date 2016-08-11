@@ -41,7 +41,9 @@
             "email_kindle": "user1@free.kindle.com",
             "issues_per_day": 4,
             "language": "EN",
-            "mode": "F"
+            "mode": "F",
+	    "send_at": 1,
+	    "time_zone": 0
         },
         "model": "registration.userprofile",
         "pk": 1
@@ -51,7 +53,9 @@
             "email_kindle": "user2@free.kindle.com",
             "issues_per_day": 8,
             "language": "EN",
-            "mode": "P"
+            "mode": "P",
+	    "send_at": 0,
+	    "time_zone": 1
         },
         "model": "registration.userprofile",
         "pk": 2
