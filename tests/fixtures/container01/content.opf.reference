@@ -34,6 +34,7 @@
     <item href="html/page-003.html" id="page-003" media-type="application/xhtml+xml"/>
     <item href="html/page-004.html" id="page-004" media-type="application/xhtml+xml"/>
     <item href="html/page-005.html" id="page-005" media-type="application/xhtml+xml"/>
+    <item href="cover.jpg" id="cover-image" media-type="image/jpeg" properties="cover-image"/>
     <item href="images/000.jpg" id="image-000" media-type="image/jpeg"/>
     <item href="images/001.jpg" id="image-001" media-type="image/jpeg"/>
     <item href="images/002.jpg" id="image-002" media-type="image/jpeg"/>
