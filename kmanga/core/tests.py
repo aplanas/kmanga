@@ -17,7 +17,7 @@ class SourceTestCase(TestCase):
     def test_str(self):
         """Test source representation."""
         self.assertEqual(str(Source.objects.get(pk=1)),
-                         'Source 1 (http://source1.com)')
+                         'Source 1')
 
 
 class SourceLanguageTestCase(TestCase):
