@@ -60,7 +60,7 @@ class KissManga(MangaSpider):
 
         @url http://kissmanga.com/MangaList?page=200
         @returns items 0 0
-        @returns request 30 40
+        @returns request 25 30
         """
 
         xp = '//table[@class="listing"]/tr/td[1]'
@@ -157,8 +157,8 @@ class KissManga(MangaSpider):
         """Generate the list of new mangas until a date
 
         @url http://kissmanga.com/
-        @returns items 1 20
-        @returns request 0 1
+        @returns items 0 0
+        @returns request 5 10
         @scrapes url name issues
         """
 
@@ -170,7 +170,7 @@ class KissManga(MangaSpider):
 
         # XXX TODO - we ignore the `until` date, and make a full parse
         # of the initial scroll panel (that contain old entries)
-        xp = '//div[@class="items"]'
+        xp = '//div[@class="items"]/div'
         for update in response.xpath(xp):
             manga = Manga()
             # Name

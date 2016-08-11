@@ -58,8 +58,8 @@ class MangaHere(MangaSpider):
         """Generate the catalog (list of mangas) of the site.
 
         @url http://www.mangahere.co/mangalist/
-        @returns items 1000 10000
-        @returns request 0 0
+        @returns items 0 0
+        @returns request 15000 20000
         """
 
         xp = '//a[@class="manga_info"]'
@@ -82,7 +82,7 @@ class MangaHere(MangaSpider):
         @url http://www.mangahere.co/manga/angel_densetsu/
         @returns items 1 1
         @returns request 0 0
-        @scrapes url name alt_name author artist reading_direction
+        @scrapes url alt_name author artist reading_direction
         @scrapes status genres description issues
         """
 

@@ -88,7 +88,7 @@ class Mangafox(MangaSpider):
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
 
-        @url http://mangafox.me/manga/shingeki_no_kyojin/
+        @url http://mangafox.me/manga/a_bias_girl/
         @returns items 1 1
         @returns request 0 0
         @scrapes url name alt_name author artist reading_direction

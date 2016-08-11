@@ -106,8 +106,8 @@ class SubMangaOrg(MangaSpider):
 
         @url http://submanga.org/bloody-cross
         @returns items 1 1
-        @returns request 1 1
-        @scrapes url name alt_name author artist reading_direction
+        @returns request 0 0
+        @scrapes url alt_name author artist reading_direction
         @scrapes status genres description issues
         """
 
@@ -164,14 +164,14 @@ class SubMangaOrg(MangaSpider):
                 url = line.xpath(xp).extract()[0]
                 issue['url'] = '%s/%s' % (url, lang)
                 manga['issues'].append(issue)
-        yield manga
+        return manga
 
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
         @url http://submanga.org
-        @returns items 1 100
-        @returns request 0 1
+        @returns items 0 0
+        @returns request 5 10
         @scrapes url name issues
         """
 
