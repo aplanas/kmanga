@@ -40,6 +40,7 @@ while [ "$1" != "" ]; do
 done
 
 # External tests
+echo "Testing external components (mobi, scraper)"
 if [ $run_coverage -eq 0 ]; then
     DJANGO_SETTINGS_MODULE=kmanga.settings \
 			  python -m unittest discover -s ./tests
@@ -57,6 +58,7 @@ fi
 cd scraper
 spiders=$(DJANGO_SETTINGS_MODULE=kmanga.settings scrapy list)
 for spider in $spiders; do
+    echo "Testing $spider spider"
     if [ $run_coverage -eq 0 ]; then
 	DJANGO_SETTINGS_MODULE=kmanga.settings scrapy check $spider
     else
@@ -75,6 +77,7 @@ cd ..
 
 # Django tests
 cd kmanga
+echo "Testing Django applications"
 if [ $run_coverage -eq 0 ]; then
     ./manage.py test
 else
