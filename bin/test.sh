@@ -26,7 +26,7 @@ while [ "$1" != "" ]; do
 	-c)
 	    run_coverage=1
 	    ;;
- 
+
 	-h | --help)
 	    usage $0
 	    exit 0
@@ -66,11 +66,13 @@ for spider in $spiders; do
 	DJANGO_SETTINGS_MODULE=kmanga.settings \
 			      coverage run -a --branch --source=scraper \
 			      $VENV/bin/scrapy check $spider
-	mv .coverage ../
     fi
     if [ $? -ne 0 ]; then
 	echo "Error in spider $spider test "
 	error_code=1
+    fi
+    if [ $run_coverage -eq 1 ]; then
+	mv .coverage ../
     fi
 done
 cd ..
@@ -83,11 +85,13 @@ if [ $run_coverage -eq 0 ]; then
 else
     mv ../.coverage .
     coverage run -a --branch --source='.' manage.py test
-    mv .coverage ../
 fi
 if [ $? -ne 0 ]; then
     echo "Error in django tests"
     error_code=1
+fi
+if [ $run_coverage -eq 1 ]; then
+    mv .coverage ../
 fi
 cd ..
 
