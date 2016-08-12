@@ -9,6 +9,7 @@ from django.conf import settings
 from django_rq import job
 
 from core.models import Result
+from core.models import Subscription
 from scrapyctl.emailctl import send_mobi
 from mobi import Container
 from mobi import MangaMobi
@@ -182,7 +183,14 @@ def create_mobi(issues):
 def create_mobi_and_send(issues, user):
     """RQ job to create MOBI documents and send it to the user."""
     for issue in issues:
-        result = issue.create_result_if_needed(user, Result.PROCESSING)
+        try:
+            result = issue.create_result_if_needed(user, Result.PROCESSING)
+        except Subscription.DoesNotExist:
+            # Results in PROCESSING status are cleaned during the
+            # subscription removal
+            msg = 'Subscription removed for user %s (%s)' % (user, issue)
+            logger.warning(msg)
+            continue
 
         # These jobs also update the Result status
         mobi_job = _create_mobi.delay(issue, result=result)
