@@ -138,9 +138,10 @@ class KissManga(MangaSpider):
             issue['name'] = line.xpath(xp).extract()
             # Number
             xp = './/a/text()'
-            issue['number'] = line.xpath(xp).re(
+            number = line.xpath(xp).re(
                 r'(?:[Vv]ol.[.\d]+)?\s*'
                 r'(?:[Cc]h.|[Ee]p.|[Cc]haper|[Pp]art.)?(\d[.\d]+)')
+            issue['number'] = number[0] if len(number) > 1 else number
             # Order
             issue['order'] = len(lines) - len(manga['issues'])
             # Release
