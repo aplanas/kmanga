@@ -585,6 +585,7 @@ class Result(TimeStampedModel):
                               default=PENDING)
     missing_pages = models.IntegerField(default=0)
     send_date = models.DateTimeField(null=True, blank=True)
+    retry = models.IntegerField(default=0)
 
     objects = ResultQuerySet.as_manager()
 
