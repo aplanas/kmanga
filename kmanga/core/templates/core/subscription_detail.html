@@ -110,7 +110,7 @@
 	      {% elif result.is_sent %}
 	      <span class="label label-success">sent</span>
 	      {% elif result.is_failed %}
-	      <span class="label label-danger">failed</span>
+	      <span class="label label-danger">failed ({{ result.retry }})</span>
 	      {% endif %}
 	    </td>
 	    <td>{{ result.modified|date:"d/m/Y" }}</td>
