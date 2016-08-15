@@ -379,6 +379,8 @@ class Command(BaseCommand):
                 # Exit if we reach the limit for today
                 if remains <= 0:
                     break
+                # Increment the retry counter if the result was FAILED
+                issue.retry_if_failed(user)
                 issues.append(issue)
                 remains -= 1
 

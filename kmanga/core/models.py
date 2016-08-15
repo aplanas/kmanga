@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.db import connection
 from django.db import models
 from django.db.models import Count
+from django.db.models import F
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
@@ -403,6 +404,10 @@ class Issue(TimeStampedModel):
             query = query.filter(status=status)
         return query
 
+    def retry_if_failed(self, user):
+        """Increment the retry field of `Result` is status is FAIL."""
+        self.result(user, status=Result.FAILED).update(retry=F('retry') + 1)
+
 
 class SubscriptionQuerySet(models.QuerySet):
     def latests(self, user):
@@ -487,7 +492,7 @@ class Subscription(TimeStampedModel):
         """Return the list of issues in the language of the Subscription."""
         return self.manga.issue_set.filter(language=self.language)
 
-    def issues_to_send(self):
+    def issues_to_send(self, retry=3):
         """Return the list of issues to send, ordered by number."""
         already_sent = Result.objects.processed_last_24hs(self.user,
                                                           subscription=self)
@@ -495,11 +500,10 @@ class Subscription(TimeStampedModel):
         return self.manga.issue_set.filter(
             language=self.language
         ).exclude(
-            pk__in=self.result_set.filter(status__in=(
-                Result.PROCESSING,
-                Result.SENT,
-                Result.FAILED,
-            )).values('issue__id')
+            pk__in=self.result_set.filter(
+                Q(status__in=(Result.PROCESSING, Result.SENT)) |
+                (Q(status=Result.FAILED) & Q(retry__gt=retry))
+            ).values('issue__id')
         ).order_by('order')[:remains]
 
     def add_sent(self, issue):
