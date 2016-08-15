@@ -55,7 +55,8 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(Result)
 class ResultAdmin(admin.ModelAdmin):
-    list_display = ('issue', 'subscription', 'user', 'status', 'created')
+    list_display = ('issue', 'subscription', 'user', 'status', 'retry',
+                    'created')
     list_filter = ('status',)
     raw_id_fields = ('issue', 'subscription')
     date_hierarchy = 'modified'
