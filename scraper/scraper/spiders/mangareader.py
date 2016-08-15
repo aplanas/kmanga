@@ -158,7 +158,7 @@ class MangaReader(MangaSpider):
         """Generate the list of new mangas until a date
 
         @url http://www.mangareader.net/latest
-        @returns items 1 20
+        @returns items 1 30
         @returns request 0 1
         @scrapes url name issues
         """
