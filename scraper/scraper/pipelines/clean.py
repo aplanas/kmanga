@@ -438,6 +438,11 @@ class CleanPipeline(CleanBasePipeline):
         url = self._clean_field_str(field)
         return urlparse.urljoin(url, '1.html')
 
+    # -- KissManga fields
+    def clean_field_kissmanga_issue_number(self, field):
+        field = self._clean_field_str(field, optional=True, max_length=10)
+        return re.sub(r'\b00?', '', field)
+
     # -- SubmangaOrg fields
     def clean_field_submangaorg_manga_status(self, field):
         status = {
