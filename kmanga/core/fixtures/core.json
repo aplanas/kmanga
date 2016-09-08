@@ -2,6 +2,7 @@
     {
         "fields": {
             "created": "2015-08-01T00:00:00.000Z",
+            "has_footer": false,
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "Source 1",
             "spider": "source1",
@@ -13,6 +14,7 @@
     {
         "fields": {
             "created": "2015-08-01T00:00:00.000Z",
+            "has_footer": false,
             "modified": "2015-08-01T00:00:00.000Z",
             "name": "Source 2",
             "spider": "source2",
