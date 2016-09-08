@@ -26,6 +26,8 @@ import uuid
 import xml.etree.cElementTree as ET
 
 from PIL import Image
+from PIL import ImageFilter
+from PIL import ImageOps
 
 KINDLEGEN = '../bin/kindlegen'
 GENERATOR = 'kmanga'
@@ -129,6 +131,13 @@ class Container(object):
     ROTATE = 'rotate'
     # SPLIT = 'split'
 
+    # Bit mask for filter parameter
+    FILTER_MARGIN = 0b01
+    FILTER_FOOTER = 0b10
+
+    MIN_MARGIN = 0.01
+    MAX_MARGIN = 0.2
+
     def __init__(self, path):
         self.path = path
         self.has_cover = False
@@ -154,34 +163,41 @@ class Container(object):
         """Remove the container directoy and all the content."""
         shutil.rmtree(self.path)
 
-    def add_image(self, image, adjust=None, as_link=False):
+    def add_image(self, image, adjust=None, _filter=None, as_link=False):
         """Add an image into the container."""
         order = self._npages
         img_dir = os.path.join(self.path, 'images')
         img_name = '%03d%s' % (order, os.path.splitext(image)[1])
         img_dst = os.path.join(img_dir, img_name)
 
-        img_adjusted = self.adjust_image(image, adjust)
+        img, adjusted = self.adjust_image(image, adjust)
 
-        # Add the last part of the name, that descibe the kind of
+        # Add the last part of the name, that describe the kind of
         # transformation
-        if img_adjusted:
+        if adjusted:
             img_dst, img_dst_ext = os.path.splitext(img_dst)
             img_dst = '%s_%s%s' % (img_dst, adjust, img_dst_ext)
 
-        if as_link and not img_adjusted:
+        # Remove the margin and/or the footer.  First we check for the
+        # footer filter, and we apply the margin filter to the result.
+        if _filter and _filter & Container.FILTER_FOOTER:
+            img = self.filter_footer(img)
+        if _filter and _filter & Container.FILTER_MARGIN:
+            img = self.filter_margin(img)
+
+        if as_link and not adjusted:
             os.link(image, img_dst)
-        elif img_adjusted:
-            img_adjusted.save(img_dst)
+        elif adjusted:
+            img.save(img_dst)
         else:
             shutil.copyfile(image, img_dst)
         self._npages += 1
         self._image_info = []
 
-    def add_images(self, images, adjust=None, as_link=False):
+    def add_images(self, images, adjust=None, _filter=None, as_link=False):
         """Add a list of images into the container."""
         for image in images:
-            self.add_image(image, adjust, as_link)
+            self.add_image(image, adjust, _filter, as_link)
 
     def set_image_adjust(self, number, adjust):
         """Set the adjustment postfix in a image."""
@@ -209,18 +225,19 @@ class Container(object):
         """Add an image as image cover."""
         cover_path = self.get_cover_path()
 
-        img_adjusted = self.adjust_image(image, adjust)
-        if not img_adjusted and image.endswith('.png'):
+        img, adjusted = self.adjust_image(image, adjust)
+        if not adjusted and image.endswith('.png'):
             # If the image is a PNG, we read it to store it in JPG
             # format in the next section.
-            img_adjusted = Image.open(image)
+            img = Image.open(image)
+            adjusted = True
 
-        if as_link and not img_adjusted:
+        if as_link and not adjusted:
             os.link(image, cover_path)
-        elif img_adjusted:
-            if img_adjusted.mode != 'RGB':
-                img_adjusted = img_adjusted.convert('RGB')
-            img_adjusted.save(cover_path)
+        elif adjusted:
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            img.save(cover_path)
         else:
             shutil.copyfile(image, cover_path)
         self.has_cover = True
@@ -319,8 +336,7 @@ class Container(object):
 
     def adjust_image(self, image, adjust):
         """Adjust an image and return None or an Image instance."""
-        if not adjust:
-            return None
+        adjusted = False
 
         img = Image.open(image)
         if adjust == Container.RESIZE:
@@ -335,6 +351,7 @@ class Container(object):
             width, height = int(ratio*width+0.5), int(ratio*height+0.5)
             resample = Image.BICUBIC if ratio > 1 else Image.ANTIALIAS
             img = img.resize((width, height), resample)
+            adjusted = True
         elif adjust == Container.RESIZE_CROP:
             # RESIZE_CROP resize first the image as RESIZE, and create
             # a new white image of page size, and paste the image in
@@ -354,6 +371,7 @@ class Container(object):
             x, y = (WIDTH - width) / 2, (HEIGHT - height) / 2
             img = Image.new(mode, (WIDTH, HEIGHT), '#ffffff')
             img.paste(resized_img, (x, y))
+            adjusted = True
         elif adjust == Container.ROTATE:
             # ROTATE check first if the image is widther than heigher,
             # and rotate the image in this case.  Used for double page
@@ -361,16 +379,76 @@ class Container(object):
             width, height = img.size
             if float(width) / float(height) > 1.0:
                 img = img.transpose(Image.ROTATE_270)
-            else:
-                # If ROTATE is not done, signalize it and return None
-                # (no transformation)
-                img = None
+                adjusted = True
         # elif adjust == Container.SPLIT:
         #     pass
-        else:
+        elif adjust:
             raise ValueError('Value for adjust not found')
 
-        return img
+        return img, adjusted
+
+    def bbox(self, img):
+        """Return the bounding box of an image inside some ranges."""
+        margin = Container.MIN_MARGIN / 2
+        min_margin = [int(margin*i+0.5) for i in img.size]
+
+        margin = Container.MAX_MARGIN / 2
+        max_margin = [int(margin*i+0.5) for i in img.size]
+
+        bbox = img.getbbox()
+        bbox = (
+            max(0, min(max_margin[0], bbox[0]-min_margin[0])),
+            max(0, min(max_margin[1], bbox[1]-min_margin[1])),
+            min(img.size[0],
+                max(img.size[0]-max_margin[0], bbox[2]+min_margin[0])),
+            min(img.size[1],
+                max(img.size[1]-max_margin[1], bbox[3]+min_margin[1])),
+        )
+        return bbox
+
+    def filter_footer(self, img):
+        """Filter to remove the hight quality footer for an image."""
+        # Some sites like MangaFox add an extra footer in the original
+        # image.  This footer remove importan space in the Kindle, and
+        # we need to remove it.
+        #
+        # The algorithm use as a leverage the normal noise present in
+        # an scanned image, that is higher than the one in the footer.
+        # This means that this filter will only work in medium quality
+        # scanners, but possibly not in high quality ones.
+        #
+        # The process is like this:
+        #
+        #   1.- Equalize the image, giving much more weight to noise
+        #       pixels.
+        #
+        #   2.- Binarize the image to normalize different thresholds.
+        #
+        #   3.- Use a MinFilter of size 3 to a big mass of pixels that
+        #       containg high frequency data.  That usually means
+        #       pixels surrounded with blanks.
+        #
+        #   4.- Do a Gaussian filter to lower more the high frequency
+        #       data, moving the mass close arround the pixel.  This
+        #       will lower more the pixels surrounded with gaps.
+        #
+        #   5.- Discard the pixels with low mass.
+        #
+        _img = ImageOps.invert(img.convert(mode='L'))
+        _img = ImageOps.equalize(_img)
+        _img = _img.point(lambda x: (x >= 16) and 255)
+        _img = _img.filter(ImageFilter.MinFilter(size=3))
+        _img = _img.filter(ImageFilter.GaussianBlur(radius=5))
+        _img = _img.point(lambda x: (x >= 48) and x)
+        return img.crop(_img.getbbox())
+
+    def filter_margin(self, img):
+        """Filter to remove empty margins in an image."""
+        # This filter is based on a simple Gaussian with a threshold
+        _img = ImageOps.invert(img.convert(mode='L'))
+        _img = _img.filter(ImageFilter.GaussianBlur(radius=3))
+        _img = _img.point(lambda x: (x >= 16) and x)
+        return img.crop(self.bbox(_img))
 
     def split(self, size, clean=False):
         """Split the container in volumes of same size."""

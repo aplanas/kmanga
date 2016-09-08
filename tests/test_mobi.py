@@ -17,10 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
+import hashlib
 import os
 import unittest
 import shutil
 import xml.dom.minidom
+
+from PIL import Image
+from PIL import ImageOps
 
 from mobi import Container, MangaMobi
 from mobi.mobi import WIDTH, HEIGHT
@@ -200,21 +204,111 @@ class TestContainer(unittest.TestCase):
                      'height-small-horizontal.jpg',
                      'height-large-horizontal.jpg'):
             img_path = 'tests/fixtures/images/%s' % name
-            img = self.container.adjust_image(img_path, Container.RESIZE)
+            img, adjusted = self.container.adjust_image(img_path,
+                                                        Container.RESIZE)
+            self.assertTrue(adjusted)
             self.assertTrue(img.size[0] <= WIDTH and img.size[1] <= HEIGHT)
             self.assertTrue(img.size[0] == WIDTH or img.size[1] == HEIGHT)
 
-            img = self.container.adjust_image(img_path, Container.RESIZE_CROP)
+            img, adjusted = self.container.adjust_image(img_path,
+                                                        Container.RESIZE_CROP)
+            self.assertTrue(adjusted)
             self.assertTrue(img.size[0] == WIDTH and img.size[1] == HEIGHT)
 
-            img = self.container.adjust_image(img_path, Container.ROTATE)
+            img, adjusted = self.container.adjust_image(img_path,
+                                                        Container.ROTATE)
             if name.endswith('horizontal.jpg'):
+                self.assertTrue(adjusted)
                 self.assertTrue(img.size[0] < img.size[1])
             else:
-                self.assertEqual(img, None)
+                self.assertFalse(adjusted)
 
             with self.assertRaises(ValueError):
                 self.container.adjust_image(img_path, 'ERROR')
+
+    def test_bbox(self):
+        images = (
+            ('width-small.jpg', (68, 192, 732, 1728)),
+            ('width-large.jpg', (106, 128, 1094, 1152)),
+            ('height-small.jpg', (30, 96, 370, 864)),
+            ('height-large.jpg', (68, 192, 732, 1728)),
+            ('height-small-horizontal.jpg', (96, 30, 864, 370)),
+            ('height-large-horizontal.jpg', (192, 68, 1728, 732)),
+            ('text-small.jpg', (0, 0, 800, 1858)),
+            ('width-small-noise.jpg', (0, 0, 800, 1920)),
+            ('width-large-noise.jpg', (10, 0, 1200, 1280)),
+            ('height-large-noise.jpg', (4, 6, 796, 1728)),
+            ('height-large-horizontal-noise.jpg', (16, 28, 1919, 788)),
+        )
+        for name, bbox in images:
+            img_path = 'tests/fixtures/images/%s' % name
+            img = Image.open(img_path)
+            img = ImageOps.invert(img.convert(mode='L'))
+            self.assertEqual(self.container.bbox(img), bbox)
+
+    def test_filter_footer(self):
+        images = (
+            ('width-small.jpg', (648, 763),
+             'd6ff04c9afeefa6f7b5fb1cf577e1a61'),
+            ('width-large.jpg', (964, 503),
+             '28cbf1700856063b657a532504efcb98'),
+            ('height-small.jpg', (400, 960),
+             'a1a08286b17d2935f346e53ed0675445'),
+            ('height-large.jpg', (647, 758),
+             '451a474981384d0030bf616c7452600c'),
+            ('height-small-horizontal.jpg', (960, 400),
+             'f2b3b2c73e5f8003167f1adfc657c5dc'),
+            ('height-large-horizontal.jpg', (759, 648),
+             '20d9dfaeed99c28f5c00bf9bec3019f2'),
+            ('text-small.jpg', (799, 1760),
+             '6d50fe4dd14c8fb3fe4d96e21abbef43'),
+            ('width-small-noise.jpg', (800, 1914),
+             'ca4a3eec0479b0de3c52014564310f29'),
+            ('width-large-noise.jpg', (1186, 1280),
+             '822b85eaf9f9fdd752c676f0157a2831'),
+            ('height-large-noise.jpg', (788, 1327),
+             '89c171ef1978dabf1d5325675dc76359'),
+            ('height-large-horizontal-noise.jpg', (1883, 752),
+             '00c10d9ca786eb96a0fe380327cf23d1'),
+        )
+        for name, size, hexdigest in images:
+            img_path = 'tests/fixtures/images/%s' % name
+            img = Image.open(img_path)
+            img = self.container.filter_footer(img)
+            self.assertEqual(img.size, size)
+            self.assertEqual(hashlib.md5(img.tobytes()).hexdigest(), hexdigest)
+
+    def test_filter_margin(self):
+        images = (
+            ('width-small.jpg', (660, 1536),
+             '8309e0001bb633b82942b97637826780'),
+            ('width-large.jpg', (984, 1024),
+             '234480946116d1f82957cff78072d756'),
+            ('height-small.jpg', (332, 768),
+             '7438aa170cd8d620de280d997eb49582'),
+            ('height-large.jpg', (660, 1536),
+             '7c6f3076c7fcea309291af04570ce172'),
+            ('height-small-horizontal.jpg', (768, 332),
+             'd61247f58d4344c8715643f6029ac1f6'),
+            ('height-large-horizontal.jpg', (1536, 660),
+             'bdb979e21e59ff55dd55e6a9063396e2'),
+            ('text-small.jpg', (660, 1661),
+             'c61078de88e5d750f7ceb2ad335da888'),
+            ('width-small-noise.jpg', (727, 1727),
+             'a40432cb92359f56adb8e7b94230fdf9'),
+            ('width-large-noise.jpg', (1100, 1146),
+             '7a8257b6694fc6e7cd1f1775f4d46d09'),
+            ('height-large-noise.jpg', (660, 1536),
+             '6070649b3641cbfde7991313180890f0'),
+            ('height-large-horizontal-noise.jpg', (1536, 660),
+             '31344c6a937660e52294eb04cdaa0979'),
+        )
+        for name, size, hexdigest in images:
+            img_path = 'tests/fixtures/images/%s' % name
+            img = Image.open(img_path)
+            img = self.container.filter_margin(img)
+            self.assertEqual(img.size, size)
+            self.assertEqual(hashlib.md5(img.tobytes()).hexdigest(), hexdigest)
 
     def _test_container_split(self, has_cover):
         self.container.has_cover = has_cover
