@@ -60,7 +60,7 @@ class KissManga(MangaSpider):
 
         @url http://kissmanga.com/MangaList?page=200
         @returns items 0 0
-        @returns request 25 30
+        @returns request 25 60
         """
 
         xp = '//table[@class="listing"]/tr/td[1]'
