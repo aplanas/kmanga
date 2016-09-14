@@ -116,7 +116,13 @@ class MobiCtl(object):
             else:
                 image_path = EMPTY
             _images.append(os.path.join(self.images_store, image_path))
-        container.add_images(_images, adjust=Container.ROTATE, as_link=True)
+
+        # By default reduce the margin of the image
+        _filter = Container.FILTER_MARGIN
+        if self.issue.manga.source.has_footer:
+            _filter |= Container.FILTER_FOOTER
+        container.add_images(_images, adjust=Container.ROTATE,
+                             _filter=_filter, as_link=True)
 
         if container.get_size() > self.volume_max_size:
             containers = container.split(self.volume_max_size, clean=True)
