@@ -35,6 +35,7 @@ class Command(BaseCommand):
             'subscribe',
             'send',
             'sendsub',
+            'retry',
         ], help='Command to execute')
 
         # Parameters used by some commands
@@ -270,6 +271,19 @@ class Command(BaseCommand):
             do_not_send = options['do-not-send']
             for user_profile in user_profiles:
                 self.sendsub(user_profile, accounts, loglevel, do_not_send)
+        elif command == 'retry':
+            user_profiles = []
+
+            if options['user']:
+                username = options['user']
+                user_profiles = [self._get_user_profile(username)]
+            else:
+                user_profiles = UserProfile.objects.filter(
+                    user__subscription__id__gt=0).distinct()
+
+            do_not_send = options['do-not-send']
+            for user_profile in user_profiles:
+                self.retry(user_profile, accounts, loglevel, do_not_send)
         else:
             raise CommandError('Not valid command value.')
 
@@ -383,5 +397,19 @@ class Command(BaseCommand):
                 issue.retry_if_failed(user)
                 issues.append(issue)
                 remains -= 1
+
+        self.send(issues, user_profile, accounts, loglevel, do_not_send)
+
+    def retry(self, user_profile, accounts, loglevel, do_not_send):
+        """Retry the failing send to an user."""
+        user = user_profile.user
+
+        issues = []
+        subscriptions = user.subscription_set(manager='actives').all()
+        for subscription in subscriptions:
+            for issue in subscription.issues_to_retry():
+                # Increment the retry counter if the result was FAILED
+                issue.retry_if_failed(user)
+                issues.append(issue)
 
         self.send(issues, user_profile, accounts, loglevel, do_not_send)

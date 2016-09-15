@@ -405,7 +405,7 @@ class Issue(TimeStampedModel):
         return query
 
     def retry_if_failed(self, user):
-        """Increment the retry field of `Result` is status is FAIL."""
+        """Increment the retry field of `Result` if status is FAIL."""
         self.result(user, status=Result.FAILED).update(retry=F('retry') + 1)
 
 
@@ -470,6 +470,9 @@ class SubscriptionActiveManager(models.Manager):
 
 @python_2_unicode_compatible
 class Subscription(TimeStampedModel):
+    # Number of retries before giving up in a FAILED result
+    RETRY = 3
+
     manga = models.ForeignKey(Manga)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     language = models.CharField(max_length=2,
@@ -492,8 +495,11 @@ class Subscription(TimeStampedModel):
         """Return the list of issues in the language of the Subscription."""
         return self.manga.issue_set.filter(language=self.language)
 
-    def issues_to_send(self, retry=3):
+    def issues_to_send(self, retry=None):
         """Return the list of issues to send, ordered by number."""
+        if not retry:
+            retry = Subscription.RETRY
+
         already_sent = Result.objects.processed_last_24hs(self.user,
                                                           subscription=self)
         remains = max(0, self.issues_per_day-already_sent)
@@ -505,6 +511,19 @@ class Subscription(TimeStampedModel):
                 (Q(status=Result.FAILED) & Q(retry__gt=retry))
             ).values('issue__id')
         ).order_by('order')[:remains]
+
+    def issues_to_retry(self, retry=None):
+        """Return the list of issues to retry, ordered by number."""
+        # This method doesn't take care about the limits of the user
+        if not retry:
+            retry = Subscription.RETRY
+
+        return self.manga.issue_set.filter(
+            language=self.language,
+            result__subscription=self,
+            result__status=Result.FAILED,
+            result__retry__lte=retry
+        ).order_by('order')
 
     def add_sent(self, issue):
         """Add or update a Result to a Subscription."""
