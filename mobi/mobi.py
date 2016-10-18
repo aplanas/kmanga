@@ -419,24 +419,21 @@ class Container(object):
         #
         # The process is like this:
         #
-        #   1.- Equalize the image, giving much more weight to noise
-        #       pixels.
+        #   1.- Binarize the image, moving the noise at the same level
+        #       that the real information.
         #
-        #   2.- Binarize the image to normalize different thresholds.
-        #
-        #   3.- Use a MinFilter of size 3 to a big mass of pixels that
+        #   2.- Use a MinFilter of size 3 to a big mass of pixels that
         #       containg high frequency data.  That usually means
         #       pixels surrounded with blanks.
         #
-        #   4.- Do a Gaussian filter to lower more the high frequency
+        #   3.- Do a Gaussian filter to lower more the high frequency
         #       data, moving the mass close arround the pixel.  This
         #       will lower more the pixels surrounded with gaps.
         #
-        #   5.- Discard the pixels with low mass.
+        #   4.- Discard the pixels with low mass.
         #
         _img = ImageOps.invert(img.convert(mode='L'))
-        _img = ImageOps.equalize(_img)
-        _img = _img.point(lambda x: (x >= 16) and 255)
+        _img = _img.point(lambda x: x and 255)
         _img = _img.filter(ImageFilter.MinFilter(size=3))
         _img = _img.filter(ImageFilter.GaussianBlur(radius=5))
         _img = _img.point(lambda x: (x >= 48) and x)
