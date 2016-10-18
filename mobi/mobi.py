@@ -437,7 +437,8 @@ class Container(object):
         _img = _img.filter(ImageFilter.MinFilter(size=3))
         _img = _img.filter(ImageFilter.GaussianBlur(radius=5))
         _img = _img.point(lambda x: (x >= 48) and x)
-        return img.crop(_img.getbbox())
+        # If the image is white, we do not have bbox
+        return img.crop(_img.getbbox()) if _img.getbbox() else img
 
     def filter_margin(self, img):
         """Filter to remove empty margins in an image."""
@@ -445,7 +446,8 @@ class Container(object):
         _img = ImageOps.invert(img.convert(mode='L'))
         _img = _img.filter(ImageFilter.GaussianBlur(radius=3))
         _img = _img.point(lambda x: (x >= 16) and x)
-        return img.crop(self.bbox(_img))
+        # If the image is white, we do not have bbox
+        return img.crop(self.bbox(_img)) if _img.getbbox() else img
 
     def split(self, size, clean=False):
         """Split the container in volumes of same size."""
