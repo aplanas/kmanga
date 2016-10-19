@@ -660,8 +660,13 @@ class MangaMobi(object):
         # We want to use PanelView only in the case that there is a
         # rotated image, because in this case we need to control the
         # zoom order for the four regions of a page.
-        image_info = self.container.get_image_info()
-        return any(info[-1] == Container.ROTATE for info in image_info)
+        # image_info = self.container.get_image_info()
+        # return any(info[-1] == Container.ROTATE for info in image_info)
+        # XXX TODO - Since firmware 5.8.5 Virtual Panels feature seems
+        # to be disabled, and the only way to zoom in a area (as far
+        # as I tested) is via Panel View.  Meanwhile I research this
+        # topic, I need to backup in Panel View.
+        return True
 
     def _img_scaled_size(self, size, scale=1.0):
         width, height = size
