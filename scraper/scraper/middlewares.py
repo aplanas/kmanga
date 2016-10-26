@@ -87,8 +87,7 @@ class SmartProxy(object):
             return
 
         if needs_proxy(spider.name):
-            proxy = Proxy.objects.filter(source__spider=spider.name)
-            proxy = proxy.order_by('?').first()
+            proxy = Proxy.objects.get_one(spider.name)
             if proxy:
                 logger.info('Using proxy <%s> for request' % proxy)
                 request.meta['proxy'] = 'http://%s' % proxy.proxy
@@ -155,14 +154,9 @@ class SmartProxy(object):
     def _delete_proxy_from_request(self, request, spider):
         proxy = request.meta['proxy'].lstrip('htp:/')
         del request.meta['proxy']
-        try:
-            proxy = Proxy.objects.get(proxy=proxy, source__spider=spider.name)
-            logger.warning('Removing failed proxy <%s>, %d proxies left' % (
-                proxy, Proxy.objects.filter(
-                    source__spider=spider.name).count()))
-            proxy.delete()
-        except Proxy.DoesNotExist:
-            pass
+        Proxy.objects.discard(proxy, spider.name)
+        logger.warning('Removing failed proxy <%s>, %d proxies left' % (
+            proxy, Proxy.objects.remainings(spider=spider.name)))
 
     def _valid_redirect(self, status, url_from, url_to):
         """Implement some heuristics to detect valid redirections."""
