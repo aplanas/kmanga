@@ -177,8 +177,19 @@ class ScrapyCtl(object):
         process_control.run()
 
 
+def _scrape_issues(issues, accounts, loglevel):
+    """Helper to scrape issues."""
+    scrapy = ScrapyCtl(accounts, loglevel, remote=True)
+    scrapy.scrape(issues)
+
+
 @job('default', timeout=60*60)
 def scrape_issues(issues, accounts, loglevel):
     """RQ job to scrape issues."""
-    scrapy = ScrapyCtl(accounts, loglevel, remote=True)
-    scrapy.scrape(issues)
+    _scrape_issues(issues, accounts, loglevel)
+
+
+@job('low', timeout=60*60*3)
+def scrape_issues_slow(issues, accounts, loglevel):
+    """RQ job to scrape issues with a proxy."""
+    _scrape_issues(issues, accounts, loglevel)
