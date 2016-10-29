@@ -218,7 +218,7 @@ class MangaSpider(scrapy.Spider):
                 request = scrapy.Request(url, self.parse)
                 yield request
         else:
-            logging.error('Error during login in [%s]' % self.name)
+            logger.error('Error during login in [%s]' % self.name)
 
     def parse_genres(self, response):
         raise NotImplementedError
