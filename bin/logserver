@@ -57,6 +57,10 @@ class LogRecordHandler(asyncore.dispatcher):
         logger = logging.getLogger(record.name)
         logger.handle(record)
 
+    def writable(self):
+        # We do not have anything in the queue to send
+        return False
+
 
 class LogRecordServer(asyncore.dispatcher):
     def __init__(self, host, port):
