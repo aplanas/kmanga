@@ -474,8 +474,8 @@ class Container(object):
             container.add_images(image_slice, as_link=True)
             # Transmit the adjustment from the original container
             for i in range(begin, end):
-                i = i - begin
-                container.set_image_adjust(i, images[i][-1])
+                adjust = images[i][-1]
+                container.set_image_adjust(i - begin, adjust)
             if self.has_cover:
                 container.set_cover(self.get_cover_path(), as_link=True)
             containers_used += 1
