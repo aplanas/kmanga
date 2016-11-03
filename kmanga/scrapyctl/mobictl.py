@@ -24,9 +24,9 @@ logger = logging.getLogger(__name__)
 
 class MobiInfo(object):
     """Basic container to store Issue information."""
-    def __init__(self, issue, multi_vol=False, vol=None):
+    def __init__(self, issue, multi_vol=False, vol=None, total_vols=1):
         self.title = self._title(issue.manga.name, issue.name, issue.number,
-                                 multi_vol, vol)
+                                 multi_vol, vol, total_vols)
         self.language = issue.language.lower()
         self.author = issue.manga.author
         self.publisher = issue.manga.source.name
@@ -56,7 +56,8 @@ class MobiInfo(object):
         letter = letter if letter else ''
         return number, letter
 
-    def _title(self, manga_name, issue_name, number, multi_vol, vol):
+    def _title(self, manga_name, issue_name, number, multi_vol, vol,
+               total_vols):
         """Generate a title for the MOBI."""
         # Try to extract the name of the issue
         remove = (r'Vol\.?\s*[\d.]+',
@@ -82,7 +83,7 @@ class MobiInfo(object):
             title = manga_name
         # Add volume information
         if multi_vol:
-            title = '%s/%02d' % (title, vol)
+            title = '%s (%02d/%02d)' % (title, vol, total_vols)
 
         if issue_name:
             title = '%s: %s' % (title, issue_name)
@@ -133,7 +134,7 @@ class MobiCtl(object):
         mobi_and_containers = []
         for volume, container in enumerate(containers):
             multi_vol, vol = len(containers) > 1, volume + 1
-            info = MobiInfo(self.issue, multi_vol, vol)
+            info = MobiInfo(self.issue, multi_vol, vol, len(containers))
 
             mobi = MangaMobi(container, info, kindlegen=self.kindlegen)
             mobi_file = mobi.create()
