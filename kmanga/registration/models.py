@@ -21,6 +21,7 @@ class UserProfile(models.Model):
     FRENCH = 'FR'
     ITALIAN = 'IT'
     RUSSIAN = 'RU'
+    PORTUGUESE = 'PT'
     LANGUAGE_CHOICES = (
         (ENGLISH, 'English'),
         (SPANISH, 'Spanish'),
@@ -28,6 +29,7 @@ class UserProfile(models.Model):
         (FRENCH, 'French'),
         (ITALIAN, 'Italian'),
         (RUSSIAN, 'Russian'),
+        (PORTUGUESE, 'Portuguese'),
     )
     TIME_ZONE_CHOICES = [
         (i, 'UTC%+03d:00' % i) for i in range(-12, 15)
