@@ -40,6 +40,7 @@ class SourceLanguage(TimeStampedModel):
     FRENCH = 'FR'
     ITALIAN = 'IT'
     RUSSIAN = 'RU'
+    PORTUGUESE = 'PT'
     LANGUAGE_CHOICES = (
         (ENGLISH, 'English'),
         (SPANISH, 'Spanish'),
@@ -47,6 +48,7 @@ class SourceLanguage(TimeStampedModel):
         (FRENCH, 'French'),
         (ITALIAN, 'Italian'),
         (RUSSIAN, 'Russian'),
+        (PORTUGUESE, 'Portuguese'),
     )
 
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES)
