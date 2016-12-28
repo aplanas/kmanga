@@ -20,8 +20,9 @@ class CommandTestCase(TestCase):
         self.scrapy = ScrapyCtl(accounts={}, loglevel='ERROR')
         self.command = Command()
         self.command.stdout = mock.MagicMock()
-        self.all_spiders = ['mangareader', 'kissmanga', 'submangaorg',
-                            'batoto', 'mangahere', 'mangafox']
+        self.all_spiders = ['mangareader', 'unionmangas', 'kissmanga',
+                            'submangaorg', 'batoto', 'mangahere',
+                            'mangafox']
 
     def test_get_spiders(self):
         """Test recovering the list of scrapy spiders."""
