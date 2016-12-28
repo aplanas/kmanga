@@ -68,6 +68,17 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "name": "UnionMangas",
+            "spider": "unionmangas",
+            "url": "http://unionmangas.net/"
+        },
+        "model": "core.source",
+        "pk": 7
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
             "language": "EN",
             "modified": "2014-10-25T00:00:00.000Z",
             "source": 1
@@ -144,5 +155,15 @@
         },
         "model": "core.sourcelanguage",
         "pk": 8
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "PT",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 7
+        },
+        "model": "core.sourcelanguage",
+        "pk": 9
     }
 ]
