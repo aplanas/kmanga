@@ -183,19 +183,20 @@ class VHost(object):
     def process_request(self, request, spider):
         """Replace the host name with the IP."""
         if hasattr(spider, 'vhost_ip'):
-            domain = spider.allowed_domains[0]
-            ip = spider.vhost_ip
-            url = re.sub(r'(www.)?%s' % domain, ip, request.url)
-            # During the second pass, both URL are the same (there is
-            # not replacement)
-            if request.url != url:
-                request = request.replace(url=url, headers={'Host': domain})
-                return request
+            for domain in spider.allowed_domains:
+                ip = spider.vhost_ip
+                url = re.sub(r'(www.)?%s' % domain, ip, request.url)
+                # During the second pass, both URL are the same (there
+                # is not replacement)
+                if request.url != url:
+                    request = request.replace(url=url,
+                                              headers={'Host': domain})
+                    return request
 
     def process_response(self, request, response, spider):
         """Replace back the IP with the host name."""
         if hasattr(spider, 'vhost_ip'):
-            domain = spider.allowed_domains[0]
+            domain = request.headers.get('Host', spider.allowed_domains[0])
             ip = spider.vhost_ip
             url = re.sub(ip, domain, response.url)
             response = response.replace(url=url)
