@@ -29,6 +29,17 @@ from scrapy.utils.markup import remove_tags, replace_entities
 
 logger = logging.getLogger(__name__)
 
+# Languages
+GERMAN = 'DE'
+ENGLISH = 'EN'
+SPANISH = 'ES'
+FRENCH = 'FR'
+ITALIAN = 'IT'
+RUSSIAN = 'RU'
+PORTUGUESE = 'PT'
+LANGUAGES = (GERMAN, ENGLISH, SPANISH, FRENCH, ITALIAN, RUSSIAN,
+             PORTUGUESE)
+
 
 def convert_to_date(str_, dmy=False):
     """Parse humanized dates."""
@@ -85,13 +96,13 @@ def convert_to_date(str_, dmy=False):
         raise ValueError('Format "%s" not recognized' % str_)
 
 
-def convert_to_number(str_, as_int=False, default=0):
+def convert_to_number(str_, as_int=False, separator=r',', default=0):
     """Parse issues / viewers numbers."""
     result = default
     # Remove ordinal suffix
     str_ = re.sub(r'(st|nd|rd|th)', '', str_)
     # Remove decimal separator (for millards)
-    str_ = re.sub(r',', '', str_)
+    str_ = re.sub(separator, '', str_)
     try:
         if str_.endswith('k'):
             result = 1000 * float(str_[:-1])
@@ -172,24 +183,27 @@ class CleanBasePipeline(object):
                              " or can't be converted to a string")
         return value
 
-    def _clean_field_int(self, field, optional=False, default=0):
+    def _clean_field_int(self, field, optional=False, separator=r',',
+                         default=0):
         """Generic clean method for integer field."""
         value = default
         try:
             value = convert_to_number(self._as_str(field, separator=''),
-                                      as_int=True, default=default)
+                                      as_int=True, separator=separator,
+                                      default=default)
         except ValueError:
             if not optional:
                 raise ValueError('field is not optional'
                                  " or can't be converted to an integer")
         return value
 
-    def _clean_field_float(self, field, optional=False, default=0.0):
+    def _clean_field_float(self, field, optional=False, separator=r',',
+                           default=0.0):
         """Generic clean method for float field."""
         value = default
         try:
             value = convert_to_number(self._as_str(field, separator=''),
-                                      default=default)
+                                      separator=separator, default=default)
         except ValueError:
             if not optional:
                 raise ValueError('field is not optional'
@@ -381,7 +395,7 @@ class CleanPipeline(CleanBasePipeline):
             }),
             'order': self._clean_field_int,
             'language': (self._clean_field_set,
-                         {'values': ('EN', 'ES')}),
+                         {'values': LANGUAGES}),
             'release': self._clean_field_date,
             'url': self._clean_field_str,
         }
@@ -412,8 +426,8 @@ class CleanPipeline(CleanBasePipeline):
 
     def clean_field_batoto_issue_language(self, field):
         lang = {
-            'English': 'EN',
-            'Spanish': 'ES',
+            'English': ENGLISH,
+            'Spanish': SPANISH,
         }
         return self._clean_field_set(field, lang.values(), translator=lang)
 
@@ -450,3 +464,17 @@ class CleanPipeline(CleanBasePipeline):
             'Finalizado': 'C',
         }
         return self._clean_field_set(field, status.values(), translator=status)
+
+    # -- UnionMangas fields
+    def clean_field_unionmangas_manga_status(self, field):
+        status = {
+            'Ativo': 'O',
+            'Completo': 'C',
+        }
+        return self._clean_field_set(field, status.values(), translator=status)
+
+    def clean_field_unionmangas_manga_rank(self, field):
+        return self._clean_field_int(field, separator=r'\.')
+
+    def clean_field_unionmangas_issue_release(self, field):
+        return self._clean_field_date(field, dmy=True)
