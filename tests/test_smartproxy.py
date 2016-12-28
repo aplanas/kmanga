@@ -272,7 +272,10 @@ class TestSmartProxy(unittest.TestCase):
         request_mock.meta = {'proxy': 'http://myproxy'}
 
         proxy.DoesNotExist = Exception
-        proxy.objects = mock.Mock(**{'get.side_effect': proxy.DoesNotExist()})
+        proxy.objects = mock.Mock(**{
+            'get.side_effect': proxy.DoesNotExist(),
+            'remainings.return_value': 0,
+        })
         self.proxy.process_exception(request_mock, None, spider_mock)
 
         self.assertTrue('proxy' not in request_mock.meta)
