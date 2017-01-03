@@ -180,10 +180,16 @@ class Container(object):
 
         # Remove the margin and/or the footer.  First we check for the
         # footer filter, and we apply the margin filter to the result.
+        #
+        # XXX TODO - If one of the filter is called, we consider the
+        # image adjusted (changed), event if the bounding box was
+        # exactly the full image (so not change)
         if _filter and _filter & Container.FILTER_FOOTER:
             img = self.filter_footer(img)
+            adjusted = True
         if _filter and _filter & Container.FILTER_MARGIN:
             img = self.filter_margin(img)
+            adjusted = True
 
         if as_link and not adjusted:
             os.link(image, img_dst)
@@ -197,7 +203,8 @@ class Container(object):
     def add_images(self, images, adjust=None, _filter=None, as_link=False):
         """Add a list of images into the container."""
         for image in images:
-            self.add_image(image, adjust, _filter, as_link)
+            self.add_image(image, adjust=adjust, _filter=_filter,
+                           as_link=as_link)
 
     def set_image_adjust(self, number, adjust):
         """Set the adjustment postfix in a image."""
