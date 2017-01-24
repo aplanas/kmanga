@@ -221,15 +221,47 @@ class MangaSpider(scrapy.Spider):
             logger.error('Error during login in [%s]' % self.name)
 
     def parse_genres(self, response):
+        # Return a list of `items.Genres` fully populated.
         raise NotImplementedError
 
     def parse_catalog(self, response):
+        # Return a list of `items.Manga` fully populated. Is expected
+        # to delegate the adquisition of the manga information to
+        # `parse_collection`.
+        #
+        # In `parse_collection` is optional to return `rank` and
+        # `rank_order` fields, so usually is here were this
+        # information is retrieved.
         raise NotImplementedError
 
-    def parse_collection(self, response, manga):
+    def parse_collection(self, response, manga=None):
+        # Return a single `items.Manga` fully or partially
+        # populated. If `manga` is not None, this will use this
+        # instance as a pre-populated instance.
+        #
+        # The fields `rank` and `rank_order` are optional, because
+        # most sites don't publish the rank (number of views,
+        # popularity, etc) in the manga view, that is where this
+        # method read the data from, but in the 'latest' or 'full
+        # list' view, that is where `parse_catalog` read from.
+        #
+        # Apart from that, the rest of the fields needs to be returned
+        # (name, URL, etc) even if those are available in a different
+        # view.
         raise NotImplementedError
 
-    def parse_latest(self, response, until):
+    def parse_latest(self, response, until=None):
+        # Return a list of `items.Manga` fully or partially populated.
+        #
+        # The manga information is completely ignored, and is only
+        # used for the list of issues (`issues` field). Only the
+        # issues that are new are updated, so deleted chapters are not
+        # removed from the database during this processing (but in the
+        # `parse_collection` one).
+        #
+        # But for convenience is recommended to delegate the manga
+        # recovery to `parse_collection`, so the issue `order` field
+        # is correct and not estimated.
         raise NotImplementedError
 
     def parse_manga(self, response, manga, issue):
