@@ -168,42 +168,46 @@ class UpdateDBPipeline(object):
 
         # A catalog is a list of mangas (collections) updates.  The
         # manga item from a catalog update can have more information
-        # that the one created from a collection update.  For now only
-        # 'rank' is include in the catalog and not in the collection.
-
+        # that the one created from a collection update.  Usually the
+        # catalog provides information about the 'rank' and
+        # 'rank_order', and this information is, sometimes, missing in
+        # the collection.  This information will be stored in the
+        # database in `update_collection` if it is pressent.
+        #
         # The removal (delete) of collection are done outside.  Here
         # we only receive one item at a time, so we can't see the
         # items that are not anymore in the database.  The field
         # `updated` can be used here (only for collection, that is
         # always updated)
+        self.update_collection(item, spider)
 
+    @transaction.atomic
+    def update_collection(self, item, spider):
+        """Update a collection of issues (a manga)."""
         spider_name = spider.name.lower()
         source = Source.objects.get(spider=spider_name)
-
         try:
             manga = Manga.objects.get(url=item['url'], source=source)
         except Manga.DoesNotExist:
             manga = Manga(url=item['url'], source=source)
 
-        manga.rank = item['rank']
-        manga.rank_order = item['rank_order']
-        self.update_collection(item, spider, manga=manga)
+        # Relations are synchronized later on
+        relations = ('alt_name', 'genres', 'image_urls', 'images', 'issues')
+        fields = [f for f in item if f not in relations]
 
-    @transaction.atomic
-    def update_collection(self, item, spider, manga=None):
-        """Update a collection of issues (a manga)."""
-        spider_name = spider.name.lower()
-        source = Source.objects.get(spider=spider_name)
-        if not manga:
-            try:
-                manga = Manga.objects.get(url=item['url'], source=source)
-            except Manga.DoesNotExist:
-                manga = Manga(url=item['url'], source=source)
-
-        ignore_fields = ('rank', 'rank_order')
-        exceptions = ('alt_name', 'genres', 'image_urls', 'images', 'issues')
-        fields = [f for f in item if f not in (ignore_fields + exceptions)]
-        # Update the fields of the manga object
+        # Note here that some fields are available when the entry
+        # point is via `update_catalog`, and not via
+        # `update_collection`.  For example, some sources do not
+        # provide information about `rank` in the manga register, but
+        # only in the catalog view.  In that case we do not want to
+        # overwrite, or use the default value when the item do not
+        # contain this information.
+        #
+        # The solution proposed here is to iterate only for the values
+        # that are in the `item`, and delegate in `clean` the
+        # detection of the values that are required.
+        #
+        # Update the fields of the manga object that are populated
         for f in fields:
             self._sic(manga, item, f)
 
