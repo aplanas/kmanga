@@ -63,7 +63,7 @@ class MobiInfo(object):
         remove = (r'Vol\.?\s*[\d.]+',
                   r'Ch\.?\s*[\d.]+',
                   ':', '-',
-                  manga_name,
+                  re.escape(manga_name),
                   number)
         pattern = '|'.join(r'(?:^\s*%s\s*)' % i for i in remove)
         _issue_name = ''
