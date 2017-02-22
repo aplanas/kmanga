@@ -59,8 +59,8 @@ class Batoto(MangaSpider):
         """Generate the list of genres.
 
         @url http://bato.to/search?advanced=1
-        @returns items 1 1
-        @returns request 0 0
+        @returns items 1
+        @returns request 0
         @scrapes names
         """
 
@@ -73,7 +73,7 @@ class Batoto(MangaSpider):
         """Generate the catalog (list of mangas) of the site.
 
         @url http://bato.to/search_ajax?p=200
-        @returns items 0 0
+        @returns items 0
         @returns request 30 40
         """
 
@@ -85,22 +85,26 @@ class Batoto(MangaSpider):
             manga = Manga()
             # URL
             xp = './td[1]/strong/a/@href'
-            manga['url'] = item.xpath(xp).extract()
+            manga['url'] = item.xpath(xp).extract_first()
+            # Rank
             # In Batoto there is not rank, but a combination of
             # rating, viewers and followers.
             xp = './td[3]/div/@title'
             rating = float(mb(item.xpath(xp).re(r'([.\d]+)/5')))
             xp = './td[4]/text()'
-            viewers = convert_to_number(item.xpath(xp).extract()[0])
+            viewers = convert_to_number(item.xpath(xp).extract_first())
             xp = './td[5]/text()'
-            followers = convert_to_number(item.xpath(xp).extract()[0])
+            followers = convert_to_number(item.xpath(xp).extract_first())
             manga['rank'] = (rating + 0.1) * viewers * followers
+            # Rank order
             manga['rank_order'] = 'DESC'
+
             # URL Hack to avoid a redirection. This is used because
             # the download_delay is also added to the redirector.
+            #
             # This makes the spider a bit faster, but we still needs
             # to update the real URL in the `parse_collection` side.
-            url = manga['url'][0].split('_/')[-1]
+            url = manga['url'].split('_/')[-1]
             url = 'http://bato.to/comic/_/comics/%s' % url
             # Also use this URL in the Item to avoid duplicates.
             manga['url'] = url
@@ -120,10 +124,10 @@ class Batoto(MangaSpider):
         """Generate the list of issues for a manga
 
         @url http://bato.to/comic/_/comics/angel-densetsu-r460
-        @returns items 1 1
-        @returns request 0 0
+        @returns items 1
+        @returns request 0
         @scrapes url name alt_name author artist reading_direction
-        @scrapes status genres description issues
+        @scrapes status genres description image_urls issues
         """
 
         if 'manga' in response.meta:
@@ -183,18 +187,17 @@ class Batoto(MangaSpider):
             issue['release'] = line.xpath(xp).extract()
             # URL
             xp = './td[1]/a/@href'
-            url = line.xpath(xp).extract()[0]
+            url = line.xpath(xp).extract_first()
             issue['url'] = response.urljoin(url)
             manga['issues'].append(issue)
-        yield manga
+        return manga
 
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
         @url http://bato.to
-        @returns items 1 100
-        @returns request 0 1
-        @scrapes url name issues
+        @returns items 0
+        @returns request 25 100
         """
 
         if not until:
@@ -203,59 +206,27 @@ class Batoto(MangaSpider):
             else:
                 until = date.today()
 
-        xp = './/tr[contains(@class, "row")]'
-        last_row, manga = None, None
-        for update in response.xpath(xp):
-            row = update.xpath('@class').extract()[0].split()[0]
-            if row != last_row:
-                if manga:
-                    yield manga
-                manga = Manga(issues=[])
-                # Name
-                xp = 'td[2]/a[2]/text()'
-                manga['name'] = update.xpath(xp).extract()
-                # URL
-                xp = 'td[2]/a[2]/@href'
-                manga['url'] = update.xpath(xp).extract()
-            else:
-                issue = Issue()
-                # Name
-                xp = './/td/a[img/@style="vertical-align:middle;"]/text()'
-                issue['name'] = update.xpath(xp).extract()
-                # Number
-                issue['number'] = update.xpath(xp).re(
-                    r'Ch.(?:Story )?([.\d]+)')
-                # Order
-                # This is only an estimation for now
-                issue['order'] = issue['number']
-                # Language
-                xp = './/td/div/@title'
-                issue['language'] = update.xpath(xp).extract()
-                # Release
-                xp = './/td[last()]/text()'
-                issue['release'] = update.xpath(xp).extract()
-                # URL
-                xp = './/td/a[img/@style="vertical-align:middle;"]/@href'
-                url = update.xpath(xp).extract()[0]
-                issue['url'] = response.urljoin(url)
+        # Get all manga's URL from the same page and update it via
+        # `parse_collection`
+        xp = '//td[@colspan="5"]/a[@style="font-weight:bold;"]/@href'
+        for url in response.xpath(xp).extract():
+            manga = Manga(url=url)
+            meta = {'manga': manga}
+            request = scrapy.Request(url, self.parse_collection, meta=meta)
+            yield request
 
-                # Check if is a new update
-                update_date = convert_to_date(issue['release'][0].strip())
-                if update_date < until:
-                    return
-
-                manga['issues'].append(issue)
-            last_row = row
-
-        # Return the last manga
-        if manga:
-            yield manga
+        # Check the oldest update date
+        xp = '//td[contains(@style, "font-size: 11px")]/text()'
+        update_date = response.xpath(xp).extract()[-1].strip()
+        update_date = convert_to_date(update_date)
+        if update_date < until:
+            return
 
         # Next page
         xp = '//a[@title="Older Releases"]/@href'
-        next_url = response.xpath(xp).extract()
+        next_url = response.xpath(xp).extract_first()
         if next_url:
-            next_url = response.urljoin(next_url[0])
+            next_url = response.urljoin(next_url)
             meta = {'until': until}
             yield scrapy.Request(next_url, self.parse_latest, meta=meta)
 
