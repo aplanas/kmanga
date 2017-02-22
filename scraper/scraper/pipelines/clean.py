@@ -426,8 +426,13 @@ class CleanPipeline(CleanBasePipeline):
 
     def clean_field_batoto_issue_language(self, field):
         lang = {
+            'German': GERMAN,
             'English': ENGLISH,
             'Spanish': SPANISH,
+            'French': FRENCH,
+            'Italian': ITALIAN,
+            'Russian': RUSSIAN,
+            'Portuguese': PORTUGUESE,
         }
         return self._clean_field_set(field, lang.values(), translator=lang)
 
