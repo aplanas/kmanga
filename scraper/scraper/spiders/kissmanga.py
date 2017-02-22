@@ -45,8 +45,8 @@ class KissManga(MangaSpider):
         """Generate the list of genres.
 
         @url http://kissmanga.com/AdvanceSearch
-        @returns items 1 1
-        @returns request 0 0
+        @returns items 1
+        @returns request 0
         @scrapes names
         """
 
@@ -59,7 +59,7 @@ class KissManga(MangaSpider):
         """Generate the catalog (list of mangas) of the site.
 
         @url http://kissmanga.com/MangaList?page=200
-        @returns items 0 0
+        @returns items 0
         @returns request 25 60
         """
 
@@ -68,7 +68,7 @@ class KissManga(MangaSpider):
             manga = Manga()
             # URL
             xp = 'a/@href'
-            manga['url'] = response.urljoin(item.xpath(xp).extract()[0])
+            manga['url'] = response.urljoin(item.xpath(xp).extract_first())
             meta = {'manga': manga}
             request = scrapy.Request(manga['url'], self.parse_collection,
                                      meta=meta)
@@ -76,19 +76,20 @@ class KissManga(MangaSpider):
 
         # Next page
         xp = '//ul[@class="pager"]/li/a[contains(., "Next")]/@href'
-        next_url = response.xpath(xp).extract()
+        next_url = response.xpath(xp).extract_first()
         if next_url:
-            next_url = response.urljoin(next_url[0])
+            next_url = response.urljoin(next_url)
             yield scrapy.Request(next_url, self.parse_catalog)
 
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
 
         @url http://kissmanga.com/Manga/Naruto
-        @returns items 1 1
-        @returns request 0 0
+        @returns items 1
+        @returns request 0
         @scrapes url name alt_name author artist reading_direction
-        @scrapes status genres description issues
+        @scrapes status genres rank rank_order description image_urls
+        @scrapes issues
         """
 
         if 'manga' in response.meta:
@@ -96,6 +97,8 @@ class KissManga(MangaSpider):
         else:
             manga = Manga(url=response.url)
 
+        # URL
+        manga['url'] = response.url
         # Name
         xp = '//div[@class="barContent"]//a[@class="bigChar"]/text()'
         manga['name'] = response.xpath(xp).extract()
@@ -107,16 +110,17 @@ class KissManga(MangaSpider):
         manga['author'] = response.xpath(xp % 'Author:').extract()
         # Artist
         manga['artist'] = manga['author']
-        # Genres
-        manga['genres'] = response.xpath(xp % 'Genres:').extract()
         # Reading direction
         manga['reading_direction'] = 'RL'
+        # Genres
+        manga['genres'] = response.xpath(xp % 'Genres:').extract()
         # Status
         xp = '//span[@class="info" and contains(text(), "%s")]' \
              '/following-sibling::text()[1]'
         manga['status'] = response.xpath(xp % 'Status:').extract()
         # Rank
         manga['rank'] = response.xpath(xp % 'Views:').re(r'(\d+).')
+        # Rank order
         manga['rank_order'] = 'DESC'
         # Description
         xp = '//p[span[@class="info" and contains(text(), "%s")]]'\
@@ -124,8 +128,8 @@ class KissManga(MangaSpider):
         manga['description'] = response.xpath(xp % 'Summary:').extract()
         # Cover image
         xp = '//div[@id="rightside"]//img/@src'
-        url = response.xpath(xp).extract()
-        manga['image_urls'] = [response.urljoin(url[0])]
+        url = response.xpath(xp).extract_first()
+        manga['image_urls'] = [response.urljoin(url)]
 
         # Parse the manga issues list
         manga['issues'] = []
@@ -138,10 +142,10 @@ class KissManga(MangaSpider):
             issue['name'] = line.xpath(xp).extract()
             # Number
             xp = './/a/text()'
-            number = line.xpath(xp).re(
+            number = line.xpath(xp).re_first(
                 r'(?:[Vv]ol.[.\d]+)?\s*'
                 r'(?:[Cc]h.|[Ee]p.|[Cc]haper|[Pp]art.)?(\d[.\d]+)')
-            issue['number'] = number[0] if len(number) > 1 else number
+            issue['number'] = number
             # Order
             issue['order'] = len(lines) - len(manga['issues'])
             # Release
@@ -149,18 +153,17 @@ class KissManga(MangaSpider):
             issue['release'] = line.xpath(xp).re(r'\d{1,2}/\d{1,2}/\d{4}')
             # URL
             xp = './/a/@href'
-            url = line.xpath(xp).extract()
-            issue['url'] = response.urljoin(url[0])
+            url = line.xpath(xp).extract_first()
+            issue['url'] = response.urljoin(url)
             manga['issues'].append(issue)
-        yield manga
+        return manga
 
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
         @url http://kissmanga.com/
-        @returns items 0 0
-        @returns request 5 10
-        @scrapes url name issues
+        @returns items 0
+        @returns request 25 50
         """
 
         if not until:
@@ -169,23 +172,18 @@ class KissManga(MangaSpider):
             else:
                 until = date.today()
 
-        # XXX TODO - we ignore the `until` date, and make a full parse
-        # of the initial scroll panel (that contain old entries)
-        xp = '//div[@class="items"]/div'
-        for update in response.xpath(xp):
-            manga = Manga()
-            # Name
-            xp = './/a/text()'
-            manga['name'] = update.xpath(xp).extract()
-            # URL
-            xp = './/a/@href'
-            url = update.xpath(xp).extract()
-            manga['url'] = response.urljoin(url[0])
-
-            # Parse the manga issues list
-            request = scrapy.Request(manga['url'], self.parse_collection,
-                                     meta={'manga': manga})
+        # Get all manga's URL from the same page and update it via
+        # `parse_collection`
+        xp = '//div[@class="items"]//a/@href'
+        for url in response.xpath(xp).extract():
+            url = response.urljoin(url)
+            manga = Manga(url=url)
+            meta = {'manga': manga}
+            request = scrapy.Request(url, self.parse_collection, meta=meta)
             yield request
+
+        # XXX TODO - we ignore the `until` date, and make a full parse
+        # of the initial scroll panel (that contains old entries)
 
     def parse_manga(self, response, manga, issue):
         issue_pages = []
