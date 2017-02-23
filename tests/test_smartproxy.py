@@ -123,9 +123,8 @@ class TestSmartProxy(unittest.TestCase):
         spider_mock.name = 'spider'
         needs_proxy.return_value = True
 
-        order_by = mock.Mock(**{'first.return_value': Proxy('myproxy')})
-        filter_ = mock.Mock(**{'order_by.return_value': order_by})
-        proxy.objects = mock.Mock(**{'filter.return_value': filter_})
+        proxy_ = mock.Mock(proxy='myproxy')
+        proxy.objects = mock.Mock(**{'get_one.return_value': proxy_})
 
         self.proxy.process_request(request_mock, spider_mock)
 
@@ -134,7 +133,7 @@ class TestSmartProxy(unittest.TestCase):
 
     @mock.patch('scraper.middlewares.Proxy')
     @mock.patch('scraper.middlewares.needs_proxy')
-    def test_process_request_no_proxy(self, needs_proxy, proxy):
+    def test_process_request_no_proxy_proxy(self, needs_proxy, proxy):
         request_mock = mock.Mock()
         spider_mock = mock.Mock()
 
@@ -143,13 +142,31 @@ class TestSmartProxy(unittest.TestCase):
         spider_mock.name = 'spider'
         needs_proxy.return_value = True
 
-        order_by = mock.Mock(**{'first.return_value': None})
-        filter_ = mock.Mock(**{'order_by.return_value': order_by})
-        proxy.objects = mock.Mock(**{'filter.return_value': filter_})
+        proxy_ = mock.Mock(proxy='myproxy')
+        proxy.objects = mock.Mock(**{'get_one.return_value': proxy_})
+
+        self.proxy.process_request(request_mock, spider_mock)
+
+        self.assertTrue('proxy' in request_mock.meta)
+        self.assertTrue('dont_redirect' in request_mock.meta)
+
+    @mock.patch('scraper.middlewares.Proxy')
+    @mock.patch('scraper.middlewares.needs_proxy')
+    def test_process_request_no_proxy_no_proxy(self, needs_proxy, proxy):
+        request_mock = mock.Mock()
+        spider_mock = mock.Mock()
+
+        request_mock.meta = {}
+        spider_mock._operation = 'manga'
+        spider_mock.name = 'spider'
+        needs_proxy.return_value = True
+
+        proxy.objects = mock.Mock(**{'get_one.return_value': None})
 
         self.proxy.process_request(request_mock, spider_mock)
 
         self.assertTrue('proxy' not in request_mock.meta)
+        self.assertTrue('dont_redirect' not in request_mock.meta)
 
     def test_process_response_skip(self):
         request_mock = mock.Mock()
