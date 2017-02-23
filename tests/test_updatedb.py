@@ -152,7 +152,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.assertEqual(len(m.genres.all()), 2)
         self.assertEqual({o.name for o in m.genres.all()},
                          set(('g1', 'g2')))
-        self.assertEqual(m.rank, None)
+        self.assertEqual(m.rank, 1.0)
         self.assertEqual(m.rank_order, 'ASC')
         self.assertEqual(m.description, 'Description')
 
@@ -294,7 +294,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.assertEqual(len(m.genres.all()), 2)
         self.assertEqual({o.name for o in m.genres.all()},
                          set(('g1', 'g3')))
-        self.assertEqual(m.rank, None)
+        self.assertEqual(m.rank, 1.0)
         self.assertEqual(m.rank_order, 'ASC')
         self.assertEqual(m.description, 'Description')
 
@@ -395,7 +395,7 @@ class TestUpdateDBPipeline(unittest.TestCase):
         self.assertEqual(len(m.genres.all()), 2)
         self.assertEqual({o.name for o in m.genres.all()},
                          set(('g1', 'g2')))
-        self.assertEqual(m.rank, None)
+        self.assertEqual(m.rank, 1.0)
         self.assertEqual(m.rank_order, 'ASC')
         self.assertEqual(m.description, 'Description')
 
