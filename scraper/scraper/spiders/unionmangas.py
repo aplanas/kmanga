@@ -53,8 +53,8 @@ class UnionMangas(MangaSpider):
         """Generate the list of genres.
 
         @url http://unionmangas.net/mangas
-        @returns items 1 1
-        @returns request 0 0
+        @returns items 1
+        @returns request 0
         @scrapes names
         """
 
@@ -67,43 +67,41 @@ class UnionMangas(MangaSpider):
         """Generate the catalog (list of mangas) of the site.
 
         @url http://unionmangas.net/mangas/a-z/10
-        @returns items 0 0
+        @returns items 0
         @returns request 1 50
         """
 
         xp = '//div[contains(@class, "bloco-manga")]'
         for item in response.xpath(xp):
             manga = Manga()
-            # Name
-            xp = 'a[2]/text()'
-            manga['name'] = item.xpath(xp).extract()
             # URL
             xp = 'a[2]/@href'
-            manga['url'] = item.xpath(xp).extract()
+            manga['url'] = item.xpath(xp).extract_first()
             # Rank
             xp = 'div[@style="display: none"]/text()'
             manga['rank'] = item.xpath(xp).re(r'([\d.]+) views')
+            # Rank order
             manga['rank_order'] = 'DESC'
             meta = {'manga': manga}
-            request = scrapy.Request(manga['url'][0], self.parse_collection,
+            request = scrapy.Request(manga['url'], self.parse_collection,
                                      meta=meta)
             yield request
 
         # Next page
         xp = '//ul[@class="pagination"]/li/a[contains(., "Next")]/@href'
-        next_url = response.xpath(xp).extract()
+        next_url = response.xpath(xp).extract_first()
         if next_url:
-            next_url = response.urljoin(next_url[0])
+            next_url = response.urljoin(next_url)
             yield scrapy.Request(next_url, self.parse_catalog)
 
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
 
         @url http://unionmangas.net/manga/bleach
-        @returns items 1 1
-        @returns request 0 0
-        @scrapes url alt_name author artist reading_direction
-        @scrapes status genres description issues
+        @returns items 1
+        @returns request 0
+        @scrapes url name alt_name author artist reading_direction
+        @scrapes status genres description image_urls issues
         """
 
         if 'manga' in response.meta:
@@ -111,6 +109,8 @@ class UnionMangas(MangaSpider):
         else:
             manga = Manga(url=response.url)
 
+        # URL
+        manga['url'] = response.url
         # Name
         xp = '//div[@class="col-md-12"]/h2/text()'
         manga['name'] = response.xpath(xp).extract()
@@ -164,34 +164,23 @@ class UnionMangas(MangaSpider):
         """Generate the list of new mangas until a date
 
         @url http://unionmangas.net/
-        @returns items 0 0
+        @returns items 0
         @returns request 10 100
-        @scrapes url name issues
         """
 
-        # For UnionMangas we do not use `until`, we only take the day
-        # updates (Hoje)
         if not until:
             if 'until' in response.meta:
                 until = response.meta['until']
             else:
                 until = date.today()
 
-        xp = '//a[@class="link-titulo"]'
-        for update in response.xpath(xp):
-            manga = Manga()
-            # Name
-            xp = './text()'
-            manga['name'] = update.xpath(xp).extract()
-            # URL
-            xp = './@href'
-            manga['url'] = update.xpath(xp).extract()
-
-            # We can recover the link of the issue, but is faster (and
-            # more correct) to parse the full manga
+        # Get all manga's URL from the same page and update it via
+        # `parse_collection`
+        xp = '//a[@class="link-titulo"]/@href'
+        for url in response.xpath(xp).extract():
+            manga = Manga(url=url)
             meta = {'manga': manga}
-            request = scrapy.Request(manga['url'][0], self.parse_collection,
-                                     meta=meta)
+            request = scrapy.Request(url, self.parse_collection, meta=meta)
             yield request
 
     def parse_manga(self, response, manga, issue):
