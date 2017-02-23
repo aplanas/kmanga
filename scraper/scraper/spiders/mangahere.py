@@ -44,8 +44,8 @@ class MangaHere(MangaSpider):
         """Generate the list of genres.
 
         @url http://www.mangahere.co/advsearch.htm
-        @returns items 1 1
-        @returns request 0 0
+        @returns items 1
+        @returns request 0
         @scrapes names
         """
 
@@ -58,19 +58,16 @@ class MangaHere(MangaSpider):
         """Generate the catalog (list of mangas) of the site.
 
         @url http://www.mangahere.co/mangalist/
-        @returns items 0 0
+        @returns items 0
         @returns request 15000 20000
         """
 
         xp = '//a[@class="manga_info"]'
         for item in response.xpath(xp):
             manga = Manga()
-            # Name
-            xp = './text()'
-            manga['name'] = item.xpath(xp).extract()
             # URL
             xp = './@href'
-            manga['url'] = response.urljoin(item.xpath(xp).extract()[0])
+            manga['url'] = response.urljoin(item.xpath(xp).extract_first())
             meta = {'manga': manga}
             request = scrapy.Request(manga['url'], self.parse_collection,
                                      meta=meta)
@@ -80,10 +77,11 @@ class MangaHere(MangaSpider):
         """Generate the list of issues for a manga
 
         @url http://www.mangahere.co/manga/angel_densetsu/
-        @returns items 1 1
-        @returns request 0 0
-        @scrapes url alt_name author artist reading_direction
-        @scrapes status genres description issues
+        @returns items 1
+        @returns request 0
+        @scrapes url name alt_name author artist reading_direction
+        @scrapes status genres rank rank_order description image_urls
+        @scrapes issues
         """
 
         if 'manga' in response.meta:
@@ -101,6 +99,11 @@ class MangaHere(MangaSpider):
         if response.xpath(xp).extract():
             return
 
+        # URL
+        manga['url'] = response.url
+        # Name
+        xp = '//meta[@property="og:title"]/@content'
+        manga['name'] = response.xpath(xp).extract()
         # Alternate name
         xp = '//li[label[contains(text(),"%s")]]/text()'
         manga['alt_name'] = response.xpath(
@@ -114,7 +117,7 @@ class MangaHere(MangaSpider):
         manga['reading_direction'] = 'RL'
         # Status
         xp = '//li[label[contains(text(),"%s")]]/text()'
-        manga['status'] = response.xpath(xp % 'Status:').extract()[0]
+        manga['status'] = response.xpath(xp % 'Status:').extract_first()
         # Genres
         manga['genres'] = response.xpath(xp % 'Genre(s):').re(r'([^,]+)')
         # Rank
@@ -158,18 +161,17 @@ class MangaHere(MangaSpider):
             issue['release'] = line.xpath(xp).extract()
             # URL
             xp = './/a/@href'
-            url = line.xpath(xp).extract()[0]
+            url = line.xpath(xp).extract_first()
             issue['url'] = response.urljoin(url)
             manga['issues'].append(issue)
-        yield manga
+        return manga
 
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
         @url http://www.mangahere.co/latest/
-        @returns items 1 100
-        @returns request 0 1
-        @scrapes url name issues
+        @returns items 0
+        @returns request 25 200
         """
 
         if not until:
@@ -178,52 +180,27 @@ class MangaHere(MangaSpider):
             else:
                 until = date.today()
 
-        xp = '//div[@class="manga_updates"]/dl'
-        for update in response.xpath(xp):
-            # Check if is a new update
-            xp = './/span[@class="time"]/text()'
-            update_date = update.xpath(xp).extract()
-            update_date = convert_to_date(update_date[0])
-            if update_date < until:
-                return
+        # Get all manga's URL from the same page and update it via
+        # `parse_collection`
+        xp = '//a[@class="manga_info"]/@href'
+        for url in response.xpath(xp).extract():
+            manga = Manga(url=url)
+            meta = {'manga': manga}
+            request = scrapy.Request(url, self.parse_collection, meta=meta)
+            yield request
 
-            manga = Manga()
-            # Name
-            xp = './/a[@class="manga_info"]/text()'
-            manga['name'] = update.xpath(xp).extract()
-            # URL
-            xp = './/a[@class="manga_info"]/@href'
-            url = update.xpath(xp).extract()
-            manga['url'] = response.urljoin(url[0])
-
-            # Parse the manga issues list
-            manga['issues'] = []
-            xp = './dd'
-            for line in update.xpath(xp):
-                issue = Issue(language='EN')
-                # Name
-                xp = 'a/text()'
-                issue['name'] = line.xpath(xp).extract()
-                # Number
-                xp = 'a/text()'
-                issue['number'] = line.xpath(xp).re(r'([.\d]+)\s*$')
-                # Order
-                # This is only an estimation for now
-                issue['order'] = issue['number']
-                # Release
-                issue['release'] = update_date
-                # URL
-                xp = 'a/@href'
-                url = line.xpath(xp).extract()
-                issue['url'] = response.urljoin(url[0])
-                manga['issues'].append(issue)
-            yield manga
+        # Check the oldest update date
+        xp = '//span[@class="time"]/text()'
+        update_date = response.xpath(xp).extract()[-1]
+        update_date = convert_to_date(update_date)
+        if update_date < until:
+            return
 
         # Next page
         xp = '//a[@class="next"]/@href'
-        next_url = response.xpath(xp).extract()
+        next_url = response.xpath(xp).extract_first()
         if next_url:
-            next_url = response.urljoin(next_url[0])
+            next_url = response.urljoin(next_url)
             meta = {'until': until}
             yield scrapy.Request(next_url, self.parse_latest, meta=meta)
 
