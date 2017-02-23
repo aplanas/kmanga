@@ -71,8 +71,8 @@ class SmartProxy(object):
         return cls(crawler.settings)
 
     def process_request(self, request, spider):
-        # The proxy only works if the operation is fetch an issue or a
-        # commection
+        # The proxy only works if the request comes from a spider that
+        # have an operation associated (`catalog`, `collection`, etc)
         has_operation = hasattr(spider, '_operation')
         operations = ('catalog', 'collection', 'latest', 'manga')
         if not has_operation or spider._operation not in operations:
