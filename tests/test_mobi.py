@@ -362,12 +362,16 @@ class TestMangaMobi(unittest.TestCase):
             with open('tests/fixtures/dummy/content.opf.reference') as f2:
                 self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
 
-    def test_page_no_panel_view(self):
-        self.mangamobi.page(0)
-        page = 'tests/fixtures/dummy/html/page-000.html'
-        with open(page) as f1:
-            with open(page+'.no-panel-view.reference') as f2:
-                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
+    # XXX TODO - Since firmware 5.8.5 Virtual Panels feature seems
+    # to be disabled, and the only way to zoom in a area (as far
+    # as I tested) is via Panel View.  Meanwhile I research this
+    # topic, this test will not work.
+    # def test_page_no_panel_view(self):
+    #     self.mangamobi.page(0)
+    #     page = 'tests/fixtures/dummy/html/page-000.html'
+    #     with open(page) as f1:
+    #         with open(page+'.no-panel-view.reference') as f2:
+    #             self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
 
     def test_page_panel_view(self):
         self.container.add_image(
