@@ -79,7 +79,7 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
-            "language": "EN",
+            "language": "DE",
             "modified": "2014-10-25T00:00:00.000Z",
             "source": 1
         },
@@ -89,7 +89,7 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
-            "language": "ES",
+            "language": "EN",
             "modified": "2014-10-25T00:00:00.000Z",
             "source": 1
         },
@@ -99,9 +99,9 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
-            "language": "EN",
+            "language": "ES",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 2
+            "source": 1
         },
         "model": "core.sourcelanguage",
         "pk": 3
@@ -109,9 +109,9 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
-            "language": "ES",
+            "language": "FR",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 3
+            "source": 1
         },
         "model": "core.sourcelanguage",
         "pk": 4
@@ -119,9 +119,9 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
-            "language": "EN",
+            "language": "IT",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 3
+            "source": 1
         },
         "model": "core.sourcelanguage",
         "pk": 5
@@ -129,9 +129,9 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
-            "language": "EN",
+            "language": "RU",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 4
+            "source": 1
         },
         "model": "core.sourcelanguage",
         "pk": 6
@@ -139,9 +139,9 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
-            "language": "EN",
+            "language": "PT",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 5
+            "source": 1
         },
         "model": "core.sourcelanguage",
         "pk": 7
@@ -151,10 +151,60 @@
             "created": "2014-10-25T00:00:00.000Z",
             "language": "EN",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 6
+            "source": 2
         },
         "model": "core.sourcelanguage",
         "pk": 8
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "ES",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 3
+        },
+        "model": "core.sourcelanguage",
+        "pk": 9
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "EN",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 3
+        },
+        "model": "core.sourcelanguage",
+        "pk": 10
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "EN",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 4
+        },
+        "model": "core.sourcelanguage",
+        "pk": 11
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "EN",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 5
+        },
+        "model": "core.sourcelanguage",
+        "pk": 12
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "EN",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 6
+        },
+        "model": "core.sourcelanguage",
+        "pk": 13
     },
     {
         "fields": {
@@ -164,6 +214,6 @@
             "source": 7
         },
         "model": "core.sourcelanguage",
-        "pk": 9
+        "pk": 14
     }
 ]
