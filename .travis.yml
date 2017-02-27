@@ -28,7 +28,7 @@ install:
 
 before_script:
   - echo "VENV=$HOME/virtualenv/python$TRAVIS_PYTHON_VERSION" > bin/kmanga.conf
-  - cp kmanga/kmanga/settings_local.py.travis kmanga/kmanga/settings_local.py
+  - cp kmanga/kmanga/local_settings.py.travis kmanga/kmanga/local_settings.py
   - psql -c "CREATE DATABASE kmanga;" -U postgres
   - kmanga/manage.py makemigrations
   - cp bin/0002_full_text_search.py kmanga/core/migrations/

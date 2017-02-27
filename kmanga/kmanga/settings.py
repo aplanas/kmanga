@@ -184,6 +184,6 @@ KMANGA_EMAIL = 'kindle@kmanga.net'
 
 # Import local settings
 try:
-    from settings_local import *
+    from local_settings import *
 except ImportError:
     pass

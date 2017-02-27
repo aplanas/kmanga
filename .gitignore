@@ -12,4 +12,4 @@
 
 # Local configuration files
 kmanga.conf
-settings_local.py
+local_settings.py
