@@ -369,6 +369,8 @@ class MobiCtlTestCase(TestCase):
              'Manga 001: title'),
             (('Manga', 'Manga 1', '1', False, 0, 0),
              'Manga 001'),
+            (('Manga', 'Manga 99.11', '99.11', False, 0, 0),
+             'Manga 099.11'),
             (('Manga', 'Manga 1: title', '1', False, 0, 0),
              'Manga 001: title'),
             (('Manga', 'manga 1 Vol.1 title', '1', False, 0, 0),

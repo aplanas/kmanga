@@ -76,7 +76,8 @@ class MobiInfo(object):
         if number and self.is_int(num):
             title = '%s %03d%s' % (manga_name, int(num), lett)
         elif number and self.is_float(num):
-            title = '%s %05.1f%s' % (manga_name, float(num), lett)
+            chapter, part = num.split('.')
+            title = '%s %03d.%s%s' % (manga_name, float(chapter), part, lett)
         elif number:
             title = '%s %s' % (manga_name, number)
         else:
