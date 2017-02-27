@@ -23,6 +23,15 @@ class UserCreateForm(UserCreationForm):
         userprofile.save()
         return instance
 
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if not email:
+            raise forms.ValidationError(
+                'Required. The email is needed to recover the password',
+                code='email_missing',
+            )
+        return email
+
     def clean_email_kindle(self):
         email_kindle = self.cleaned_data['email_kindle']
         if UserProfile.objects.filter(email_kindle=email_kindle).exists():
