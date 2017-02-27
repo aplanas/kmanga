@@ -166,7 +166,7 @@ class Mangafox(MangaSpider):
 
         @url http://mangafox.me/releases/
         @returns items 0
-        @returns request 25 50
+        @returns request 25 100
         """
 
         if not until:
