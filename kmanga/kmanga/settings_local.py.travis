@@ -1,6 +1,8 @@
 # Local settings for KManga
 from settings import INSTALLED_APPS
 
+SECRET_KEY = 'MySecrectKey'
+
 DEBUG = True
 
 # ADMINS = [('admin', 'admin@kmanga.net')]

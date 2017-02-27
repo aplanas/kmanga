@@ -1,5 +1,7 @@
 # Local settings for KManga
 
+SECRET_KEY = 'MySecrectKey'
+
 DEBUG = False
 
 ADMINS = [('admin', 'admin@kmanga.net')]
