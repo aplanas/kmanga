@@ -6,6 +6,7 @@
   <div class="form-group{% if form.username.errors %} has-error has-feedback{% endif %}">
     <label for="email">Email address</label>
     <input type="email" class="form-control" id="email" name="email" placeholder="Email" aria-describedby="email_error">
+    <input type="hidden" id="user" name="user" value="{{ user }}">
     <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
     <span id="email_error" class="sr-only">(error)</span>
     {% if form.email.errors %}<span class="help-block">{{ form.email.errors.as_text }}</span>{% endif %}

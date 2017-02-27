@@ -10,11 +10,14 @@ from scrapyctl.utils import send
 
 class ContactForm(forms.Form):
     email = forms.EmailField(required=True)
+    user = forms.CharField(required=True)
     message = forms.CharField(required=True)
 
     def send_email(self):
+        subject = 'Contact message from %s (%s)' % (
+            self.cleaned_data['email'], self.cleaned_data['user'])
         send_mail(
-            'Contact message from %s' % self.cleaned_data['email'],
+            subject,
             self.cleaned_data['message'],
             settings.KMANGA_EMAIL,
             [settings.CONTACT_EMAIL],
