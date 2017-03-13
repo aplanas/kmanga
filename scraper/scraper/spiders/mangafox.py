@@ -18,7 +18,6 @@
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date
-from urlparse import urljoin
 
 import scrapy
 
@@ -83,7 +82,7 @@ class Mangafox(MangaSpider):
         xp = '//a[span[@class="next"]]/@href'
         next_url = response.xpath(xp).extract_first()
         if next_url:
-            next_url = urljoin(response.url, next_url)
+            next_url = response.urljoin(next_url)
             yield scrapy.Request(next_url, self.parse_catalog)
 
     def parse_collection(self, response, manga=None):
@@ -195,7 +194,7 @@ class Mangafox(MangaSpider):
         xp = '//a[span[@class="next"]]/@href'
         next_url = response.xpath(xp).extract_first()
         if next_url:
-            next_url = urljoin(response.url, next_url)
+            next_url = response.urljoin(next_url)
             meta = {'until': until}
             yield scrapy.Request(next_url, self.parse_latest, meta=meta)
 
