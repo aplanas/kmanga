@@ -173,8 +173,7 @@ class MangaSpider(scrapy.Spider):
         raise NotImplementedError
 
     def _check_login_params(self):
-        errors = {
-            'form_xpath': 'Provide a formxpath in the spider declaration.',
+        required = {
             'username_field': 'Provide an username_field in the spider '
                               'declaration.',
             'password_field': 'Provide a password_field in the spider '
@@ -183,22 +182,41 @@ class MangaSpider(scrapy.Spider):
             'password': 'Provide a password as a spider parameter.',
             'login_check': 'Provide a login_check dict as a spider parameter.',
         }
-        for attr, msg in errors.items():
+        optionals = {
+            # If the user specify `form_xpath`, we will try to find
+            # the form, but if `form_url` is specified, this will
+            # considered the `action` URL for the POST
+            ('form_xpath', 'form_url'): 'Provide a form_xpath or form_url '
+                                        'in the spider declaration.',
+        }
+        for attr, msg in required.items():
             if not hasattr(self, attr) or not getattr(self, attr):
+                raise AttributeError(msg)
+        for attrs, msg in optionals.items():
+            if not any((hasattr(self, attr) and getattr(self, attr))
+                       for attr in attrs):
                 raise AttributeError(msg)
 
     def parse_login(self, response):
         self._check_login_params()
         self._login = False
-        return scrapy.FormRequest.from_response(
-            response,
-            formxpath=self.form_xpath,
-            formdata={
-                self.username_field: self.username,
-                self.password_field: self.password
-            },
-            callback=self.parse_after_login
-        )
+        form_data = {
+            self.username_field: self.username,
+            self.password_field: self.password
+        }
+        if hasattr(self, 'form_xpath'):
+            return scrapy.FormRequest.from_response(
+                response,
+                formxpath=self.form_xpath,
+                formdata=form_data,
+                callback=self.parse_after_login
+            )
+        elif hasattr(self, 'form_url'):
+            return scrapy.FormRequest(
+                self.form_url,
+                formdata=form_data,
+                callback=self.parse_after_login
+            )
 
     def parse_after_login(self, response):
         login_ok = self.login_check.get(MangaSpider.LOGIN_OK, None)
