@@ -87,6 +87,7 @@ class TestCleanBasePipeline(unittest.TestCase):
         self.assertEqual(convert_to_date('01/01/2015'), today)
         self.assertEqual(convert_to_date('31/12/2014', dmy=True), yesterday)
         self.assertEqual(convert_to_date('12/31/2014', dmy=False), yesterday)
+        self.assertEqual(convert_to_date('2015-01-01T00:00:00+00:00'), today)
         with self.assertRaises(ValueError):
             convert_to_date('Not valid date')
 

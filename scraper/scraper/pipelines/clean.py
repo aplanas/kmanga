@@ -92,6 +92,8 @@ def convert_to_date(str_, dmy=False):
             return datetime.strptime(str_, '%d/%m/%Y').date()
         else:
             return datetime.strptime(str_, '%m/%d/%Y').date()
+    elif re.match(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00', str_):
+        return datetime.strptime(str_, '%Y-%m-%dT%H:%M:%S+00:00').date()
     else:
         raise ValueError('Format "%s" not recognized' % str_)
 
@@ -483,3 +485,25 @@ class CleanPipeline(CleanBasePipeline):
 
     def clean_field_unionmangas_issue_release(self, field):
         return self._clean_field_date(field, dmy=True)
+
+    # -- MangaTraders fields
+    def clean_field_mangatraders_manga_reading_direction(self, field):
+        type_ = self._clean_field_str(field)
+        # This table is not exact, for example, some Manhwa are readed
+        # from right to left, like a manga
+        reading_direction = {
+            'Doujinshi': 'RL',
+            'Manfra': 'RL',
+            'Manga': 'RL',
+            'Manhua': 'RL',
+            'Manhwa': 'LR',
+            'Novel': 'LR',
+            'OEL': 'LR',
+            'One-Shot': 'RL',
+            'Oneshot': 'RL',
+            'Other': 'LR',
+        }.get(type_, 'RL')
+        return reading_direction
+
+    def clean_field_mangatraders_manga_status(self, field):
+        return 'O' if 'Ongoing' in field else 'C'
