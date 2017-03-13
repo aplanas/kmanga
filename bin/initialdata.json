@@ -93,6 +93,17 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "name": "MangaSee",
+            "spider": "mangasee",
+            "url": "http://mangaseeonline.us/"
+        },
+        "model": "core.source",
+        "pk": 8
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
             "language": "DE",
             "modified": "2014-10-25T00:00:00.000Z",
             "source": 1
@@ -229,5 +240,15 @@
         },
         "model": "core.sourcelanguage",
         "pk": 14
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "EN",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 7
+        },
+        "model": "core.sourcelanguage",
+        "pk": 15
     }
 ]
