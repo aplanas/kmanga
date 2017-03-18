@@ -15,6 +15,14 @@
     <p>{{ object.description }}</p>
   </div>
 </div>
+{% if not object.source.enabled %}
+<div class="row">
+  <div class="alert alert-warning alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>Warning!</strong> This source is disabled. We can't send issues to your kindle for now. Consider looking for an alternative source.
+  </div>
+</div>
+{% else %}
 <div class="row">
   <form method="post" action="{% url 'subscription-create' %}" class="form-inline">{% csrf_token %}
     <input type="hidden" name="manga" value="{{ object.pk }}">
@@ -28,4 +36,5 @@
     <button type="submit" class="btn btn-lg btn-default">Subscribe</button>
   </form>
 </div>
+{% endif %}
 {% endblock content %}

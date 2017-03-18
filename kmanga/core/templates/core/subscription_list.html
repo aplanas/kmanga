@@ -15,6 +15,13 @@
       <div class="caption">
 	<h3>{{ subscription.manga.name }} <span class="badge">{{ subscription.language }}</span> <a href="{{ subscription.manga.url }}"><span class="badge">{{ subscription.manga.source.name }}</span></a></h3>
 	<ul class="nav nav-pills" role="tablist">
+	  {% if not subscription.manga.source.enabled %}
+	  <li class="pill" role="presentation">
+	    <div data-toggle="tooltip" data-placement="top" title="Source is disabled">
+	      <span class="label label-warning">Disabled</span>
+	    </div>
+	  </li>
+	  {% endif %}
 	  <li class="pill" role="presentation">
 	    <div data-toggle="tooltip" data-placement="top" title="Issues sent">
 	      <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span><span class="badge">{{ subscription.result_set.sent.count }}</span>

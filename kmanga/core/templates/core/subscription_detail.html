@@ -36,6 +36,12 @@
       <div class="col-xs-12">
 	<h3>Description</h3>
 	<p>{{ object.manga.description }}</p>
+	{% if not object.manga.source.enabled %}
+	<div class="alert alert-warning alert-dismissible" role="alert">
+	  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	  <strong>Warning!</strong> This source is disabled. We can't send issues to your kindle for now. Consider looking for an alternative source.
+	</div>
+	{% endif %}
       </div>
       <div class="col-xs-12">
 	<hr>
@@ -76,7 +82,9 @@
 	<label for="action">Action</label>
 	<select id="action" name="action" class="form-control">
 	  <option value="" selected="selected">---------</option>
+	  {% if object.manga.source.enabled %}
 	  <option value="SN">send now</option>
+	  {% endif %}
 	  <option value="SE">mark as sent</option>
 	  <option value="PE">mark as pending</option>
 	</select>

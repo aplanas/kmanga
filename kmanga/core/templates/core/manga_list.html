@@ -20,6 +20,13 @@
       <div class="caption">
 	<h3>{{ manga.name }} <a href="{{ manga.url }}" class="label label-default">{{ manga.source.name }}</a></h3>
 	<ul class="nav nav-pills" role="tablist">
+	  {% if not manga.source.enabled %}
+	  <li class="pill" role="presentation">
+	    <div data-toggle="tooltip" data-placement="top" title="Source is disabled">
+	      <span class="label label-warning">Disabled</span>
+	    </div>
+	  </li>
+	  {% endif %}
 	  {% if manga|is_subscribed:user %}
 	  <li class="pill" role="presentation">
 	    <span class="label label-info">Subscribed</span>
@@ -62,3 +69,11 @@
   </ul>
 </nav>
 {% endblock content %}
+
+{% block extra_js %}
+<script>
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+{% endblock extra_js %}
