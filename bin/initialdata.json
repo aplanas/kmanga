@@ -2,6 +2,8 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
+            "enabled": true,
+            "has_footer": false,
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "Batoto",
             "spider": "batoto",
@@ -13,6 +15,8 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
+            "enabled": true,
+            "has_footer": false,
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "MangaReader",
             "spider": "mangareader",
@@ -24,6 +28,8 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
+            "enabled": true,
+            "has_footer": false,
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "SubmangaOrg",
             "spider": "submangaorg",
@@ -35,6 +41,8 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
+            "enabled": true,
+            "has_footer": true,
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "MangaFox",
             "spider": "mangafox",
@@ -46,6 +54,8 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
+            "enabled": true,
+            "has_footer": false,
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "MangaHere",
             "spider": "mangahere",
@@ -57,6 +67,8 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
+            "enabled": false,
+            "has_footer": false,
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "KissManga",
             "spider": "kissmanga",
@@ -68,6 +80,8 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
+            "enabled": true,
+            "has_footer": false,
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "UnionMangas",
             "spider": "unionmangas",
