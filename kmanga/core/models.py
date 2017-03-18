@@ -27,6 +27,7 @@ class Source(TimeStampedModel):
     spider = models.CharField(max_length=80)
     url = models.URLField(unique=True)
     has_footer = models.BooleanField(default=False)
+    enabled = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
