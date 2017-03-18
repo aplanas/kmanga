@@ -304,7 +304,11 @@ class Command(BaseCommand):
         self.stdout.write('=' * len(header))
         self.stdout.write('')
         for name in spiders:
-            self.stdout.write('- %s' % name)
+            enabled = Source.objects.get(spider=name).enabled
+            if enabled:
+                self.stdout.write('- %s' % name)
+            else:
+                self.stdout.write('- %s (disabled)' % name)
 
     def search(self, spiders, manga, lang, details):
         """Search a manga in the database."""
@@ -378,7 +382,7 @@ class Command(BaseCommand):
         #     issues to send to this user.
         #
         #   * Get the list of subscriptions for this user in random
-        #     order.
+        #     order (for sources that are active).
         #
         #   * For each subcription, get the list of issues that can be
         #     sent for this user today. This calculation is done in
@@ -387,7 +391,9 @@ class Command(BaseCommand):
         remains = user_profile.remains()
 
         issues = []
-        subscriptions = user.subscription_set(manager='actives').order_by('?')
+        subscriptions = user.subscription_set(manager='actives')\
+                            .filter(manga__source__enabled=True)\
+                            .order_by('?')
         for subscription in subscriptions:
             for issue in subscription.issues_to_send():
                 # Exit if we reach the limit for today
@@ -405,7 +411,8 @@ class Command(BaseCommand):
         user = user_profile.user
 
         issues = []
-        subscriptions = user.subscription_set(manager='actives').all()
+        subscriptions = user.subscription_set(manager='actives')\
+                            .filter(manga__source__enabled=True)
         for subscription in subscriptions:
             for issue in subscription.issues_to_retry():
                 # Increment the retry counter if the result was FAILED
