@@ -18,9 +18,11 @@
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date
-import urllib
+import urllib2
+import urlparse
 
 import scrapy
+from spidermonkey import Spidermonkey
 
 from scraper.items import Genres, Manga, Issue, IssuePage
 
@@ -187,10 +189,8 @@ class KissManga(MangaSpider):
 
     def parse_manga(self, response, manga, issue):
         issue_pages = []
-        xp = '//script'
-        images = response.xpath(xp).re(r'lstImages.push\("(.*)"\);')
+        images = self._unencrypt_images(response)
         for number, url in enumerate(images):
-            url = urllib.unquote(url)
             issue_page = IssuePage(
                 manga=manga,
                 issue=issue,
@@ -199,3 +199,32 @@ class KissManga(MangaSpider):
             )
             issue_pages.append(issue_page)
         return issue_pages
+
+    def _unencrypt_images(self, response):
+        """Build the JavaScript progran to unencrypt the image URLs."""
+        xp = '//script'
+        # Get the scripts that will build the program to unencrypt the
+        # URLs for the images
+        ca = self._fetch('/Scripts/ca.js')
+        lo = self._fetch('/Scripts/lo.js')
+        # Get the list of keys
+        keys = response.xpath(xp).re('var _0x.*')
+
+        # Generate the JavaScript program to show the URLs
+        wrapKA = response.xpath(xp).re(r'lstImages.push\((.*)\);')
+        wrapKA = '\n'.join(('print(%s);' % line for line in wrapKA))
+
+        code = [ca, lo]
+        code.extend(keys)
+        proc = Spidermonkey(early_script_file='-', code=code)
+        stdout, stderr = proc.communicate(wrapKA)
+        return stdout.strip().split('\n')
+
+    def _fetch(self, url):
+        """Fetch a relative URL from the site."""
+        headers = {
+            'Host': self.allowed_domains[0],
+        }
+        url = urlparse.urljoin('http://%s' % self.vhost_ip, url)
+        request = urllib2.Request(url, headers=headers)
+        return urllib2.urlopen(request).read()
