@@ -45,6 +45,7 @@ fi
 # Install Python packages
 pip install Pillow
 pip install Scrapy service-identity
+pip install spidermonkey
 pip install easy-thumbnails django-rq psycopg2
 
 if [ -n "$DEVEL" ]; then
