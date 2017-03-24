@@ -32,7 +32,6 @@ from .mangaspider import MangaSpider
 class KissManga(MangaSpider):
     name = 'kissmanga'
     allowed_domains = ['kissmanga.com']
-    vhost_ip = '93.174.95.110'
 
     def get_genres_url(self):
         return 'http://kissmanga.com/AdvanceSearch'
