@@ -103,6 +103,8 @@ DOWNLOADER_MIDDLEWARES = {
     # Add the VHost middleware at the beginning to avoid re-run all
     # the middleware list every time that the URL change.
     'scraper.middlewares.VHost': 50,
+    # CloudFlare middleware needs to be before RetryMiddleware (550)
+    'scraper.middlewares.CloudFlare': 555,
     # We need to put SmartProxy between RetryMiddleware (500) and
     # HttpProxyMiddleware (750).  Note that RedirectMiddleware (600)
     # can influence if the response is seem by SmartProxy.

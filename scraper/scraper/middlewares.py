@@ -20,7 +20,11 @@
 import logging
 import os.path
 import re
+import time
 from urlparse import urlparse
+
+import scrapy
+from spidermonkey import Spidermonkey
 
 import django
 django.setup()
@@ -200,4 +204,66 @@ class VHost(object):
             ip = spider.vhost_ip
             url = re.sub(ip, domain, response.url)
             response = response.replace(url=url)
+        return response
+
+
+class CloudFlare(object):
+    """Middleware to bypass the CloudFlare protection."""
+
+    def process_response(self, request, response, spider):
+        """Resolve the CloudFlare challenge."""
+        request_response = response
+        if hasattr(spider, 'cloudflare') and spider.cloudflare:
+            if response.status == 503 and response.headers['Server']:
+                logger.debug('CloudFlare challenge detected')
+                request_response = self._cloudflare(request, response, spider)
+            # We resolve it once per request
+            spider.cloudflare = False
+        return request_response
+
+    def _cloudflare(self, request, response, spider):
+        """Resolve the CloudFlare challenge."""
+        # Extract the URL from the form
+        xp = '//form/@action'
+        url = response.xpath(xp).extract_first()
+        url = response.urljoin(url)
+
+        domain = spider.allowed_domains[0]
+
+        # Extract the parameters from the form
+        xp = '//form/input[@name="jschl_vc"]/@value'
+        jschl_vc = response.xpath(xp).extract_first()
+        xp = '//form/input[@name="pass"]/@value'
+        pass_ = response.xpath(xp).extract_first()
+
+        if jschl_vc and pass_:
+            # Extract the JavaScript snippets that can be evaluated
+            xp = '//script/text()'
+            init = response.xpath(xp).re_first(r'var s,t,o,p.*')
+            challenge = response.xpath(xp).re_first(r'(.*;)a.value')
+            variable = response.xpath(xp).re_first(r'\s+;(\w+\.\w+).=')
+            result = 'print(%s + %s)' % (variable, len(domain))
+            code = (init, challenge)
+            proc = Spidermonkey(early_script_file='-', code=code)
+            stdout, stderr = proc.communicate(result)
+            jschl_answer = stdout.strip()
+            logger.debug('Challenge response: %s', jschl_answer)
+
+            # Generate the new request
+            formdata = {
+                'jschl_vc': jschl_vc,
+                'pass': pass_,
+                'jschl_answer': jschl_answer,
+            }
+            original_url = request.url
+            request = scrapy.FormRequest.from_response(
+                response, formdata=formdata)
+            request.headers['Referer'] = original_url
+            # XXX TODO - Is there a way to delay this single request?
+            time.sleep(4)
+            return request
+        else:
+            # The challenge changed and the code is outdated
+            logger.error('CloudFlare challenge changed. Please update')
+
         return response
