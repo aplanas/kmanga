@@ -34,6 +34,16 @@ class UnionMangas(MangaSpider):
     allowed_domains = ['unionmangas.net', 'unionmangas.com.br']
     vhost_ip = '85.93.89.57'
 
+    form_xpath = '//form[@id="frm_login"]'
+    username_field = 'email'
+    password_field = 'password'
+    login_check = {
+        MangaSpider.LOGIN_ERR: 'Usuário ou senha inválidos'
+    }
+
+    def get_login_url(self):
+        return 'http://unionmangas.net/login'
+
     def get_genres_url(self):
         return 'http://unionmangas.net/mangas'
 
