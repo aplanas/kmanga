@@ -1,0 +1,9 @@
+# Host that we want to route via VPN
+HOST=example.com
+
+# Command used to fetch a page and validate the VPN
+COMMAND=curl http://example.com | grep -q validate
+
+# Renew interval (in minutes)
+RENEW_MIN=min
+RENEW_MAX=max
