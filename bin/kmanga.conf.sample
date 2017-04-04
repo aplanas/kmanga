@@ -1,6 +1,24 @@
 PYTHON=python2.7
 PSQL_PORT=5432
 
+# Log directory
+LOG_PATH=/tmp/logs
+
+# Check log email
+# EMAIL=
+
+# Database backup directory
+BACKUP_PATH=/tmp/backup
+
+# Parameters for ACME (https://letsencrypt.org/)
+# ACME_PATH=
+# CERTS_PATH=
+# CHALLENGE_PATH=
+
+# VPN check command user (normal user)
+AS_USER=kmanga
+VPN_PATH=/tmp/vpn
+
 # Only used in development
 # VENV=.venv
 # PSQL=
@@ -10,13 +28,3 @@ PSQL_PORT=5432
 # LIBFFI=
 # LIBFFI_VER=
 # DEVEL=1
-
-# LOG_PATH=
-# BACKUP_PATH=
-# EMAIL=
-
-# ACME_PATH=
-# CERTS_PATH=
-# CHALLENGE_PATH=
-
-# AS_USER=
