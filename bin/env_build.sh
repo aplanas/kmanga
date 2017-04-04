@@ -1,11 +1,12 @@
 #!/bin/sh
 
 # Load the configuration file if exist
-if [ ! -f "bin/kmanga.conf" ]; then
-    echo "Please, create a bin/kmanga.conf configuration file."
+KMANGA_CONF=$(dirname $0)/kmanga.conf
+if [ ! -f "$KMANGA_CONF" ]; then
+    echo "Please, create a $KMANGA_CONF configuration file."
     exit 1
 fi
-source bin/kmanga.conf
+source $KMANGA_CONF
 
 if [ -d $VENV ]; then
     echo "Virtual environment $VENV found."
@@ -21,6 +22,9 @@ export LD_LIBRARY_PATH=$VENV/lib
 # Link some modules to the local library
 ln -rs mobi $VENV/lib/python2.7/site-packages/
 ln -rs scraper/scraper $VENV/lib/python2.7/site-packages/
+
+# Link the configuration file
+ln -rs bin/kmanga.conf $VENV/bin/
 
 # Install PostgreSQL
 if [ -n "$PSQL" ]; then

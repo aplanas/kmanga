@@ -1,12 +1,13 @@
 # !/bin/sh
 
 # Load the configuration file if exist
-if [ ! -f "bin/kmanga.conf" ]; then
-    echo "Please, create a bin/kmanga.conf configuration file."
+KMANGA_CONF=$(dirname $0)/kmanga.conf
+if [ ! -f "$KMANGA_CONF" ]; then
+    echo "Please, create a $KMANGA_CONF configuration file."
     exit 1
 fi
-. bin/kmanga.conf
+source $KMANGA_CONF
 
-. $VENV/bin/activate
+source $VENV/bin/activate
 
 kmanga/manage.py scrapy sendsub
