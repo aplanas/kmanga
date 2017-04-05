@@ -24,14 +24,14 @@ VHOST = {
 # the body, and not one of the INVALID text needs to be present (if
 # there is one, it will be considered as an invalid proxy)
 PROXY_MAP = {
-    'mangafox': {
-        URL: 'http://mangafox.me/manga/sailor_moon/v01/c001/1.html',
-        VALID: [
-            '<select onchange="change_page(this)" class="m">',
-            'mfcdn.net/store/manga/203/01-001.0/compressed/f000.jpg',
-        ],
-        INVALID: None
-    },
+    # 'mangafox': {
+    #     URL: 'http://mangafox.me/manga/sailor_moon/v01/c001/1.html',
+    #     VALID: [
+    #         '<select onchange="change_page(this)" class="m">',
+    #         'mfcdn.net/store/manga/203/01-001.0/compressed/f000.jpg',
+    #     ],
+    #     INVALID: None
+    # },
 }
 
 # List of URLs that contains proxy lists and the decoder
