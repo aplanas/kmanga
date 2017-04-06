@@ -18,8 +18,6 @@
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date
-import urllib2
-import urlparse
 
 import scrapy
 from spidermonkey import Spidermonkey
@@ -188,8 +186,37 @@ class KissManga(MangaSpider):
         # of the initial scroll panel (that contains old entries)
 
     def parse_manga(self, response, manga, issue):
+        # Collect the JavaScript resources.  We need to chain the
+        # requests to fetch the assets, to avoid lost of information
+        # in the `meta` (with the filter on), or loops and double send
+        # of issues (with the filter off)
+        meta = {
+            'url': response.url,
+            'manga': manga,
+            'issue': issue,
+        }
+        return scrapy.Request(response.urljoin('/Scripts/ca.js'),
+                              self._collect_asset_ca, meta=meta)
+
+    def _collect_asset_ca(self, response):
+        meta = response.meta
+        meta['ca'] = response.body
+        return scrapy.Request(response.urljoin('/Scripts/lo.js'),
+                              self._collect_asset_lo, meta=meta)
+
+    def _collect_asset_lo(self, response):
+        meta = response.meta
+        meta['lo'] = response.body
+        return scrapy.Request(meta['url'], self._parse_manga,
+                              dont_filter=True, meta=meta)
+
+    def _parse_manga(self, response):
         issue_pages = []
         images = self._unencrypt_images(response)
+
+        manga = response.meta['manga']
+        issue = response.meta['issue']
+
         for number, url in enumerate(images):
             issue_page = IssuePage(
                 manga=manga,
@@ -205,8 +232,8 @@ class KissManga(MangaSpider):
         xp = '//script'
         # Get the scripts that will build the program to unencrypt the
         # URLs for the images
-        ca = self._fetch('/Scripts/ca.js')
-        lo = self._fetch('/Scripts/lo.js')
+        ca = response.meta['ca']
+        lo = response.meta['lo']
         # Get the list of keys
         keys = response.xpath(xp).re('var _0x.*')
 
@@ -219,12 +246,3 @@ class KissManga(MangaSpider):
         proc = Spidermonkey(early_script_file='-', code=code)
         stdout, stderr = proc.communicate(wrapKA)
         return stdout.strip().split('\n')
-
-    def _fetch(self, url):
-        """Fetch a relative URL from the site."""
-        headers = {
-            'Host': self.allowed_domains[0],
-        }
-        url = urlparse.urljoin('http://%s' % self.vhost_ip, url)
-        request = urllib2.Request(url, headers=headers)
-        return urllib2.urlopen(request).read()
