@@ -113,7 +113,7 @@ class UnionMangas(MangaSpider):
         manga['url'] = response.url
         # Name
         xp = '//div[@class="col-md-12"]/h2/text()'
-        manga['name'] = response.xpath(xp).extract()
+        manga['name'] = response.xpath(xp).extract_first()
         # Alternate name
         manga['alt_name'] = manga['name']
         # Author
