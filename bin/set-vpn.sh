@@ -110,18 +110,18 @@ function reload_openvpn() {
     local proc="openvpn --config $OVPN_CONF"
     if pgrep --full "$proc" >/dev/null; then
 	echo "Reloading openvpn service"
-	pkill --signal HUP --full "$proc"
+	pkill --signal SIGUSR1 --full "$proc"
     else
 	echo "Starting openvpn service"
 	openvpn --config "$OVPN_CONF" &
     fi
 
     # Check if the VPN is working
-    sleep 5
+    sleep 15
     until sudo -u $AS_USER -- sh -c "$COMMAND"; do
     	echo "VPN not valid! - reconnecting"
-	pkill --signal HUP --full "$proc"
-    	sleep 5
+	pkill --signal SIGUSR1 --full "$proc"
+	sleep 15
     done
 }
 
