@@ -1,8 +1,8 @@
 # Local development dependencies go here
 -r base.txt
 
-coverage==4.3.4
-django-debug-toolbar==1.6
+coverage==4.4.1
+django-debug-toolbar==1.8
 mock==2.0.0
 
-# selenium==2.53.6
+# selenium==3.4.3

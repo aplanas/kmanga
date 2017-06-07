@@ -1,13 +1,8 @@
-Django==1.10.6
+Django==1.11.2
 django-rq==0.9.5
-easy-thumbnails==2.3
-Pillow==4.0.0
+easy-thumbnails==2.4.1
+Pillow==4.1.1
 psycopg2==2.7.1
-Scrapy==1.3.3
-service-identity==16.0.0
+Scrapy==1.4.0
+service-identity==17.0.0
 spidermonkey==54.0a2.post2
-
-# bpython==0.15.0
-# django-braces==1.9.0
-# django-model-utils==2.5.2
-# logutils==0.3.3
