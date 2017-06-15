@@ -141,10 +141,16 @@ class KissManga(MangaSpider):
             xp = './/a/text()'
             issue['name'] = line.xpath(xp).extract()
             # Number
+            # Some examples that this regex needs to address
+            #   1/11 Vol.003 Ch.009.006: Omake 004-koma
+            #   21st Century Boys 014
+            #   Mob Psycho 100 Ch.099.001: Mob
+            #   Mob Psycho 100 Ch.098.002
+            #   Fantastic World Vol.001 Ch.002
             xp = './/a/text()'
             number = line.xpath(xp).re_first(
-                r'(?:[Vv]ol.[.\d]+)?\s*'
-                r'(?:[Cc]h.|[Ee]p.|[Cc]haper|[Pp]art.)?(\d[.\d]+)')
+                r'(?:[Cc]h.|[Ee]p.|[Cc]haper|[Pp]art.)(\d[.\d]+)'
+                r'|(\d[.\d]+)$')
             issue['number'] = number
             # Order
             issue['order'] = len(lines) - len(manga['issues'])
