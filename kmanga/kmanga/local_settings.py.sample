@@ -16,6 +16,17 @@ STATIC_ROOT = '/full/path/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/full/path/media/'
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'kmanga',
+        'USER': 'user',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+
 CONTACT_EMAIL = 'admin@kmanga.net'
 
 RQ_QUEUES = {
