@@ -28,15 +28,16 @@ def print_table(title, header, body):
     print '=' * len(title)
     print
 
-    line = ' '.join('%-*s' % (j, i) for i, j in header)
+    line = ''.join('%-*s' % (j, i) for i, j in header)
     print line
     print '-' * len(line)
 
     _, size = zip(*header)
     for line in body:
-        line = ['%.*s' % (j, i) for i, j in zip(line, size)]
-        line = ' '.join('%-*s' % (j, i) for i, j in zip(line, size))
+        line = ['%.*s' % (j-1, i) for i, j in zip(line, size)]
+        line = ''.join('%-*s' % (j, i) for i, j in zip(line, size))
         print line
+    print '-' * len(line)
 
 
 class Command(BaseCommand):
