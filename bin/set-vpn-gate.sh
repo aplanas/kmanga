@@ -88,14 +88,14 @@ function run_openvpn() {
 	if pgrep --full "$proc" >/dev/null; then
 	    echo "Closing $OVPN_CONF connection..."
 	    pkill --signal SIGUSR1 --full "$proc"
-	    sleep 15
+	    sleep 30
 	fi
 	OVPN_CONF=$conf
 	echo "Starting $OVPN_CONF connection..."
 	pushd $VPN_PATH
 	openvpn --config "$OVPN_CONF" &
 	popd
-	sleep 15
+	sleep 30
 
 	# Check if the VPN is working
 	if sudo -u $AS_USER -- sh -c "$COMMAND"; then

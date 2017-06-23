@@ -117,11 +117,11 @@ function reload_openvpn() {
     fi
 
     # Check if the VPN is working
-    sleep 15
+    sleep 30
     until sudo -u $AS_USER -- sh -c "$COMMAND"; do
     	echo "VPN not valid! - reconnecting"
 	pkill --signal SIGUSR1 --full "$proc"
-	sleep 15
+	sleep 30
     done
 }
 
