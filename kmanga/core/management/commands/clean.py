@@ -59,6 +59,10 @@ class Command(BaseCommand):
             '-d', '--days', action='store', dest='days', default=None,
             help='Number of days to select objects (<number>).')
         parser.add_argument(
+            '-o', '--hours', action='store', dest='hours', default=None,
+            help='Number of hours to select objects (<number>). '
+                 'This is added to the `days` parameter.')
+        parser.add_argument(
             '-s', '--spiders', action='store', dest='spiders', default='all',
             help='List of spiders (<list_of_spiders|all>).')
         parser.add_argument(
@@ -95,11 +99,13 @@ class Command(BaseCommand):
             msg = 'Please, provide one action: %s' % '|'.join(actions)
             raise CommandError(msg)
 
-        # `cover` command do not use the `days` parameter
-        if not options['days'] and command not in ('cover',):
-            raise CommandError('Provide some days to find old objects.')
-        elif options['days']:
-            days = int(options['days'])
+        # `cover` command do not use the `days` nor `hours` parameter
+        if options['days'] is None and options['hours'] is None \
+           and command not in ('cover',):
+            raise CommandError('Provide some days/hours to find old objects.')
+        elif options['days'] or options['hours']:
+            hours = 24 * int(options['days'] if options['days'] else 0)
+            hours += int(options['hours'] if options['hours'] else 0)
 
         sources = self._get_sources(options['spiders'])
         remove = options['remove']
@@ -111,62 +117,70 @@ class Command(BaseCommand):
         logger.setLevel(loglevel)
 
         if command == 'manga':
-            self._clean_manga(days, sources, list_)
+            self._clean_manga(hours, sources, list_)
         elif command == 'user':
-            self._clean_user(days, remove, list_)
+            self._clean_user(hours, remove, list_)
         elif command == 'image-cache':
             cache = os.path.join(settings.IMAGES_STORE, 'full')
-            self._clean_image_cache(days, cache, list_)
+            self._clean_image_cache(hours, cache, list_)
         elif command == 'mobi-cache':
             cache = MobiCache(settings.MOBI_STORE)
-            self._clean_cache(days, cache, list_)
+            self._clean_cache(hours, cache, list_)
         elif command == 'issue-cache':
             cache = IssueCache(settings.ISSUES_STORE, settings.IMAGES_STORE)
-            self._clean_cache(days, cache, list_)
+            self._clean_cache(hours, cache, list_)
             mobi_cache = MobiCache(settings.MOBI_STORE)
             self._clean_broken_issue_cache(cache, mobi_cache, list_)
         elif command == 'cover':
             self._clean_cover(sources, list_)
         elif command == 'result-processing':
-            self._clean_result(days, Result.PROCESSING, list_)
+            self._clean_result(hours, Result.PROCESSING, list_)
         elif command == 'result-failed':
-            self._clean_result(days, Result.FAILED, list_)
+            self._clean_result(hours, Result.FAILED, list_)
         else:
             raise CommandError('Not valid command value.')
 
-    def _clean_manga(self, days, sources, list_):
+    def _fmt(self, timedelta=None, hours=None):
+        """String format hours to show days and hours."""
+        fmt = '%02dd %02dh'
+        if timedelta:
+            return fmt % (timedelta.days, timedelta.seconds // 3600)
+        if hours:
+            return fmt % (hours // 24, hours % 24)
+
+    def _clean_manga(self, hours, sources, list_):
         """Remove old mangas not updated (deleted)."""
         today = timezone.now()
-        since = today - timezone.timedelta(days=days)
+        since = today - timezone.timedelta(hours=hours)
         mangas = Manga.objects.filter(modified__lt=since)
         if sources:
             mangas = mangas.filter(source__in=sources)
 
         if list_:
-            title = 'Mangas to remove (days: %d)' % days
-            header = (('name', 35), ('url', 50), ('source', 11), ('days', 3))
+            title = 'Mangas to remove (age: %s)' % self._fmt(hours=hours)
+            header = (('name', 35), ('url', 46), ('source', 11), ('age', 7))
             body = []
 
         for manga in mangas:
-            old = (today - manga.modified).days
+            old = self._fmt(timedelta=(today - manga.modified))
             if list_:
                 body.append((manga.name, manga.url, manga.source.name, old))
             else:
-                logger.info('Removing %s (%s) from %s [%d].' % (manga.name,
-                                                                manga.url,
-                                                                manga.source,
-                                                                old))
+                logger.info(u'Removing %s (%s) from %s [%s].' % (manga.name,
+                                                                 manga.url,
+                                                                 manga.source,
+                                                                 old))
                 manga.delete()
 
         if list_:
             print_table(title, header, body)
 
-    def _clean_user(self, days, remove, list_):
+    def _clean_user(self, hours, remove, list_):
         """Remove or disable inactive user."""
         today = timezone.now()
-        since = today - timezone.timedelta(days=days)
-        # Get the users that not login in several days, and do not
-        # have recent results.
+        since = today - timezone.timedelta(hours=hours)
+        # Get the users that not login in several days/hours, and do
+        # not have recent results.
         userprofiles = UserProfile.objects.filter(
             user__last_login__lt=since
         ).annotate(
@@ -176,16 +190,17 @@ class Command(BaseCommand):
         )
 
         if list_:
-            title = 'Users to remove (days: %d)' % days
-            header = (('username', 20), ('email', 30),
-                      ('last login', 10), ('last sent', 10))
+            title = 'Users to remove (age: %d)' % hours
+            header = (('username', 30), ('email', 40), ('last login', 10),
+                      ('last sent', 10))
             body = []
 
         for userprofile in userprofiles:
             user = userprofile.user
-            last_login = (today - user.last_login).days
+            last_login = self._fmt(timedelta=(today - user.last_login))
             if userprofile.last_sent:
-                last_sent = (today - userprofile.last_sent).days
+                last_sent = self._fmt(
+                    timedelta=(today - userprofile.last_sent))
             else:
                 last_sent = 'never'
 
@@ -195,7 +210,7 @@ class Command(BaseCommand):
             else:
                 if remove:
                     logger.info(
-                        'Removing %s <%s> [login: %d] [result: %s].' % (
+                        u'Removing %s <%s> [login: %s] [result: %s].' % (
                             user.username,
                             user.email,
                             last_login,
@@ -203,7 +218,7 @@ class Command(BaseCommand):
                     user.delete()
                 else:
                     logger.info(
-                        'Disabling %s <%s> [login: %d] [result: %s].' % (
+                        u'Disabling %s <%s> [login: %s] [result: %s].' % (
                             user.username,
                             user.email,
                             last_login,
@@ -221,42 +236,46 @@ class Command(BaseCommand):
             mtime = mtime.replace(tzinfo=tzinfo)
         return mtime
 
-    def _clean_image_cache(self, days, cache, list_):
+    def _clean_image_cache(self, hours, cache, list_):
         """Remove old cached images."""
         today = timezone.now()
 
         if list_:
-            title = 'Image from the cache to remove (days: %d)' % days
-            header = (('image', 100), ('days', 3))
+            title = 'Image from the cache to remove ' \
+                '(age: %s)' % self._fmt(hours=hours)
+            header = (('image', 92), ('age', 7))
             body = []
 
         for file_ in os.listdir(cache):
             file_ = os.path.join(cache, file_)
             mtime = self._file_date(file_, today.tzinfo)
-            old = (today - mtime).days
-            if old >= days:
+            old = (today - mtime).total_seconds() // 3600
+            if old >= hours:
+                old = self._fmt(hours=old)
                 if list_:
                     body.append((file_, old))
                 else:
-                    logger.info('Removing %s [%d].' % (file_, old))
+                    logger.info(u'Removing %s [%s].' % (file_, old))
                     os.unlink(file_)
 
         if list_:
             print_table(title, header, body)
 
-    def _clean_cache(self, days, cache, list_):
+    def _clean_cache(self, hours, cache, list_):
         """Remove old cached mobi or issues."""
         today = timezone.now()
 
         if list_:
-            title = 'Items from the cache to remove (days: %d)' % days
-            header = (('manga', 35), ('issue', 5), ('source', 11), ('days', 3))
+            title = 'Items from the cache to remove ' \
+                '(age: %s)' % self._fmt(hours=hours)
+            header = (('manga', 54), ('issue', 23), ('source', 15), ('age', 7))
             body = []
 
         tzinfo = today.tzinfo
-        to_delete = ((k, (today - v[-1].replace(tzinfo=tzinfo)).days)
+        to_delete = ((k, today - v[-1].replace(tzinfo=tzinfo))
                      for k, v in cache.iteritems())
-        to_delete = ((k, o) for k, o in to_delete if o >= days)
+        to_delete = ((k, o) for k, o in to_delete
+                     if o.total_seconds() // 3600 >= hours)
 
         for key, old in to_delete:
             try:
@@ -267,11 +286,12 @@ class Command(BaseCommand):
                 issue = key
                 manga = '<UNKNOWN>'
                 spider = '<UNKNOWN>'
+            old = self._fmt(timedelta=old)
             if list_:
                 body.append((manga, issue, spider, old))
             else:
-                logger.info('Removing %s %s - %s [%d].' % (manga, issue,
-                                                           spider, old))
+                logger.info(u'Removing %s %s - %s [%s].' % (manga, issue,
+                                                            spider, old))
                 del cache[key]
 
         if list_:
@@ -286,7 +306,7 @@ class Command(BaseCommand):
 
         if list_:
             title = 'Issues with missing pages'
-            header = (('manga', 35), ('issue', 5), ('source', 11))
+            header = (('manga', 54), ('issue', 23), ('source', 15))
             body = []
 
         to_delete = [k for k, v in issue_cache.iteritems()
@@ -303,7 +323,7 @@ class Command(BaseCommand):
             if list_:
                 body.append((manga, issue, spider))
             else:
-                logger.info('Removing %s %s - %s.' % (manga, issue, spider))
+                logger.info(u'Removing %s %s - %s.' % (manga, issue, spider))
                 del mobi_cache[key]
                 del issue_cache[key]
 
@@ -316,7 +336,7 @@ class Command(BaseCommand):
 
         if list_:
             title = 'Covers to remove'
-            header = (('image', 100), ('source', 11))
+            header = (('image', 84), ('source', 15))
             body = []
 
         for source in sources:
@@ -334,26 +354,26 @@ class Command(BaseCommand):
                 if list_:
                     body.append((cover, source.spider))
                 else:
-                    logger.info('Removing %s - %s.' % (cover, source))
+                    logger.info(u'Removing %s - %s.' % (cover, source))
                     os.unlink(cover)
 
         if list_:
             print_table(title, header, body)
 
-    def _clean_result(self, days, status, list_):
+    def _clean_result(self, hours, status, list_):
         """Remove old results in a bad state."""
         today = timezone.now()
-        since = today - timezone.timedelta(days=days)
+        since = today - timezone.timedelta(hours=hours)
         results = Result.objects.filter(modified__lt=since, status=status)
 
         if list_:
-            title = 'Results to remove (days: %d)' % days
-            header = (('manga', 35), ('issue', 5), ('source', 11), ('user', 8),
-                      ('days', 3))
+            title = 'Results to remove (age: %s)' % self._fmt(hours=hours)
+            header = (('manga', 50), ('issue', 21), ('source', 13),
+                      ('user', 8), ('age', 7))
             body = []
 
         for result in results:
-            old = (today - result.modified).days
+            old = self._fmt(timedelta=(today - result.modified))
             if list_:
                 body.append((result.issue.manga.name,
                              result.issue.number,
@@ -361,7 +381,7 @@ class Command(BaseCommand):
                              result.subscription.user,
                              old))
             else:
-                logger.info('Removing %s (%s) for user %s [%d].' % (
+                logger.info(u'Removing %s (%s) for user %s [%s].' % (
                     result.issue,
                     result.status,
                     result.subscription.user,
