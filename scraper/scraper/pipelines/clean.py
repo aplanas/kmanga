@@ -464,14 +464,6 @@ class CleanPipeline(CleanBasePipeline):
         field = self._clean_field_str(field, optional=True, max_length=10)
         return re.sub(r'\b00?', '', field)
 
-    # -- SubmangaOrg fields
-    def clean_field_submangaorg_manga_status(self, field):
-        status = {
-            'En curso': 'O',
-            'Finalizado': 'C',
-        }
-        return self._clean_field_set(field, status.values(), translator=status)
-
     # -- UnionMangas fields
     def clean_field_unionmangas_manga_status(self, field):
         status = {

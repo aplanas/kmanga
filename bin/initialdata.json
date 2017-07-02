@@ -29,19 +29,6 @@
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
             "enabled": true,
-            "has_footer": false,
-            "modified": "2014-10-25T00:00:00.000Z",
-            "name": "SubmangaOrg",
-            "spider": "submangaorg",
-            "url": "http://submanga.org/"
-        },
-        "model": "core.source",
-        "pk": 3
-    },
-    {
-        "fields": {
-            "created": "2014-10-25T00:00:00.000Z",
-            "enabled": true,
             "has_footer": true,
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "MangaFox",
@@ -49,7 +36,7 @@
             "url": "http://mangafox.me/"
         },
         "model": "core.source",
-        "pk": 4
+        "pk": 3
     },
     {
         "fields": {
@@ -62,7 +49,7 @@
             "url": "http://www.mangahere.co/"
         },
         "model": "core.source",
-        "pk": 5
+        "pk": 4
     },
     {
         "fields": {
@@ -75,7 +62,7 @@
             "url": "http://kissmanga.com/"
         },
         "model": "core.source",
-        "pk": 6
+        "pk": 5
     },
     {
         "fields": {
@@ -88,7 +75,7 @@
             "url": "http://unionmangas.net/"
         },
         "model": "core.source",
-        "pk": 7
+        "pk": 6
     },
     {
         "fields": {
@@ -99,7 +86,7 @@
             "url": "http://mangaseeonline.us/"
         },
         "model": "core.source",
-        "pk": 8
+        "pk": 7
     },
     {
         "fields": {
@@ -184,7 +171,7 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
-            "language": "ES",
+            "language": "EN",
             "modified": "2014-10-25T00:00:00.000Z",
             "source": 3
         },
@@ -196,7 +183,7 @@
             "created": "2014-10-25T00:00:00.000Z",
             "language": "EN",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 3
+            "source": 4
         },
         "model": "core.sourcelanguage",
         "pk": 10
@@ -206,7 +193,7 @@
             "created": "2014-10-25T00:00:00.000Z",
             "language": "EN",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 4
+            "source": 5
         },
         "model": "core.sourcelanguage",
         "pk": 11
@@ -214,9 +201,9 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
-            "language": "EN",
+            "language": "PT",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 5
+            "source": 6
         },
         "model": "core.sourcelanguage",
         "pk": 12
@@ -226,29 +213,9 @@
             "created": "2014-10-25T00:00:00.000Z",
             "language": "EN",
             "modified": "2014-10-25T00:00:00.000Z",
-            "source": 6
+            "source": 7
         },
         "model": "core.sourcelanguage",
         "pk": 13
-    },
-    {
-        "fields": {
-            "created": "2014-10-25T00:00:00.000Z",
-            "language": "PT",
-            "modified": "2014-10-25T00:00:00.000Z",
-            "source": 7
-        },
-        "model": "core.sourcelanguage",
-        "pk": 14
-    },
-    {
-        "fields": {
-            "created": "2014-10-25T00:00:00.000Z",
-            "language": "EN",
-            "modified": "2014-10-25T00:00:00.000Z",
-            "source": 7
-        },
-        "model": "core.sourcelanguage",
-        "pk": 15
     }
 ]
