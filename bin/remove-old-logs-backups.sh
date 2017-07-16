@@ -9,7 +9,7 @@ fi
 source $KMANGA_CONF
 
 # Clean backups
-find $BACKUP_PATH/*.sql.gz -type f -mtime +5 -exec rm {} \; &> /dev/null || true
+find $BACKUP_PATH/*.sql.gz -type f -mtime +2 -exec rm {} \; &> /dev/null || true
 
 # Clean logs
-find $LOG_PATH/*.log -type f -mtime +5 -exec rm {} \; &> /dev/null || true
+find $LOG_PATH/*.log -type f -mtime +2 -exec rm {} \; &> /dev/null || true
