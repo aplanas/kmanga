@@ -147,9 +147,12 @@ class KissManga(MangaSpider):
             #   Mob Psycho 100 Ch.099.001: Mob
             #   Mob Psycho 100 Ch.098.002
             #   Fantastic World Vol.001 Ch.002
+            #   Black Clover 118 - Mage X
+            #   Black Clover 099: Family
             xp = './/a/text()'
-            number = line.xpath(xp).re_first(
+            number = line.xpath(xp).re(
                 r'(?:[Cc]h.|[Ee]p.|[Cc]haper|[Pp]art.)(\d[.\d]+)'
+                r'|(\d[.\d]+)[ :-]+'
                 r'|(\d[.\d]+)$')
             issue['number'] = number
             # Order
