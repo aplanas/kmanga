@@ -28,7 +28,7 @@ from scraper.items import Genres, Manga, Issue, IssuePage
 from .mangaspider import MangaSpider
 
 
-AJAX_SEARCH = 'http://bato.to/search_ajax?p=%d'
+AJAX_SEARCH = 'https://bato.to/search_ajax?p=%d'
 
 
 class Batoto(MangaSpider):
@@ -47,18 +47,18 @@ class Batoto(MangaSpider):
         return 'https://bato.to/forums/index.php?%s' % login
 
     def get_genres_url(self):
-        return 'http://bato.to/search?advanced=1'
+        return 'https://bato.to/search?advanced=1'
 
     def get_catalog_url(self):
         return AJAX_SEARCH % 1
 
     def get_latest_url(self, until):
-        return 'http://bato.to/'
+        return 'https://bato.to/'
 
     def parse_genres(self, response):
         """Generate the list of genres.
 
-        @url http://bato.to/search?advanced=1
+        @url https://bato.to/search?advanced=1
         @returns items 1
         @returns request 0
         @scrapes names
@@ -72,7 +72,7 @@ class Batoto(MangaSpider):
     def parse_catalog(self, response):
         """Generate the catalog (list of mangas) of the site.
 
-        @url http://bato.to/search_ajax?p=200
+        @url https://bato.to/search_ajax?p=200
         @returns items 0
         @returns request 30 40
         """
@@ -105,7 +105,7 @@ class Batoto(MangaSpider):
             # This makes the spider a bit faster, but we still needs
             # to update the real URL in the `parse_collection` side.
             url = manga['url'].split('_/')[-1]
-            url = 'http://bato.to/comic/_/comics/%s' % url
+            url = 'https://bato.to/comic/_/comics/%s' % url
             # Also use this URL in the Item to avoid duplicates.
             manga['url'] = url
             meta = {'manga': manga}
@@ -123,7 +123,7 @@ class Batoto(MangaSpider):
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
 
-        @url http://bato.to/comic/_/comics/angel-densetsu-r460
+        @url https://bato.to/comic/_/comics/angel-densetsu-r460
         @returns items 1
         @returns request 0
         @scrapes url name alt_name author artist reading_direction
@@ -195,7 +195,7 @@ class Batoto(MangaSpider):
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
-        @url http://bato.to
+        @url https://bato.to
         @returns items 0
         @returns request 25 100
         """
