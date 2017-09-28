@@ -32,18 +32,18 @@ class Mangafox(MangaSpider):
     allowed_domains = ['mangafox.me']
 
     def get_genres_url(self):
-        return 'http://mangafox.me/search.php'
+        return 'https://mangafox.me/search.php'
 
     def get_catalog_url(self):
-        return 'http://mangafox.me/directory/'
+        return 'https://mangafox.me/directory/'
 
     def get_latest_url(self, until):
-        return 'http://mangafox.me/releases/'
+        return 'https://mangafox.me/releases/'
 
     def parse_genres(self, response):
         """Generate the list of genres.
 
-        @url http://mangafox.me/search.php
+        @url https://mangafox.me/search.php
         @returns items 1
         @returns request 0
         @scrapes names
@@ -57,7 +57,7 @@ class Mangafox(MangaSpider):
     def parse_catalog(self, response):
         """Generate the catalog (list of mangas) of the site.
 
-        @url http://mangafox.me/directory/
+        @url https://mangafox.me/directory/
         @returns items 0
         @returns request 30 45
         """
@@ -67,7 +67,8 @@ class Mangafox(MangaSpider):
             manga = Manga()
             # URL
             xp = './/a[@class="title"]/@href'
-            manga['url'] = item.xpath(xp).extract_first()
+            url = item.xpath(xp).extract_first()
+            manga['url'] = response.urljoin(url)
             # Rank
             xp = './/p[@class="info"]/label/text()'
             manga['rank'] = item.xpath(xp).re('(\d+)')
@@ -88,7 +89,7 @@ class Mangafox(MangaSpider):
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
 
-        @url http://mangafox.me/manga/a_bias_girl/
+        @url https://mangafox.me/manga/a_bias_girl/
         @returns items 1
         @returns request 0
         @scrapes url name alt_name author artist reading_direction
@@ -156,14 +157,15 @@ class Mangafox(MangaSpider):
             issue['release'] = line.xpath(xp).extract()
             # URL
             xp = './/a[@class="tips"]/@href'
-            issue['url'] = line.xpath(xp).extract()
+            url = line.xpath(xp).extract_first()
+            issue['url'] = response.urljoin(url)
             manga['issues'].append(issue)
         return manga
 
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
-        @url http://mangafox.me/releases/
+        @url https://mangafox.me/releases/
         @returns items 0
         @returns request 25 100
         """
@@ -178,6 +180,7 @@ class Mangafox(MangaSpider):
         # `parse_collection`
         xp = '//h3[@class="title"]/a/@href'
         for url in response.xpath(xp).extract():
+            url = response.urljoin(url)
             manga = Manga(url=url)
             meta = {'manga': manga}
             request = scrapy.Request(url, self.parse_collection, meta=meta)
