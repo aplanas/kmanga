@@ -32,18 +32,18 @@ class MangaHere(MangaSpider):
     allowed_domains = ['mangahere.co']
 
     def get_genres_url(self):
-        return 'http://www.mangahere.co/advsearch.htm'
+        return 'https://www.mangahere.co/advsearch.htm'
 
     def get_catalog_url(self):
-        return 'http://www.mangahere.co/mangalist/'
+        return 'https://www.mangahere.co/mangalist/'
 
     def get_latest_url(self, until):
-        return 'http://www.mangahere.co/latest/'
+        return 'https://www.mangahere.co/latest/'
 
     def parse_genres(self, response):
         """Generate the list of genres.
 
-        @url http://www.mangahere.co/advsearch.htm
+        @url https://www.mangahere.co/advsearch.htm
         @returns items 1
         @returns request 0
         @scrapes names
@@ -57,7 +57,7 @@ class MangaHere(MangaSpider):
     def parse_catalog(self, response):
         """Generate the catalog (list of mangas) of the site.
 
-        @url http://www.mangahere.co/mangalist/
+        @url https://www.mangahere.co/mangalist/
         @returns items 0
         @returns request 15000 20000
         """
@@ -67,7 +67,8 @@ class MangaHere(MangaSpider):
             manga = Manga()
             # URL
             xp = './@href'
-            manga['url'] = response.urljoin(item.xpath(xp).extract_first())
+            url = item.xpath(xp).extract_first()
+            manga['url'] = response.urljoin(url)
             meta = {'manga': manga}
             request = scrapy.Request(manga['url'], self.parse_collection,
                                      meta=meta)
@@ -76,7 +77,7 @@ class MangaHere(MangaSpider):
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
 
-        @url http://www.mangahere.co/manga/angel_densetsu/
+        @url https://www.mangahere.co/manga/angel_densetsu/
         @returns items 1
         @returns request 0
         @scrapes url name alt_name author artist reading_direction
@@ -169,7 +170,7 @@ class MangaHere(MangaSpider):
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
-        @url http://www.mangahere.co/latest/
+        @url https://www.mangahere.co/latest/
         @returns items 0
         @returns request 25 200
         """
@@ -184,6 +185,7 @@ class MangaHere(MangaSpider):
         # `parse_collection`
         xp = '//a[@class="manga_info"]/@href'
         for url in response.xpath(xp).extract():
+            url = response.urljoin(url)
             manga = Manga(url=url)
             meta = {'manga': manga}
             request = scrapy.Request(url, self.parse_collection, meta=meta)
@@ -212,8 +214,8 @@ class MangaHere(MangaSpider):
                 'issue': issue,
                 'number': number + 1,
             }
-            yield scrapy.Request(response.urljoin(url),
-                                 self._parse_page, meta=meta)
+            url = response.urljoin(url)
+            yield scrapy.Request(url, self._parse_page, meta=meta)
 
     def _parse_page(self, response):
         manga = response.meta['manga']
