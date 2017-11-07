@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Load the configuration file if exist
 KMANGA_CONF=$(dirname $0)/kmanga.conf
