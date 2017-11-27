@@ -34,6 +34,7 @@ AJAX_SEARCH = 'https://bato.to/search_ajax?p=%d'
 class Batoto(MangaSpider):
     name = 'batoto'
     allowed_domains = ['bato.to']
+    cloudflare = True
 
     form_xpath = '//form[@id="login"]'
     username_field = 'ips_username'
