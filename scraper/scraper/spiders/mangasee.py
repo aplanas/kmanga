@@ -194,9 +194,7 @@ class MangaSee(MangaSpider):
         xp = '//a[@class="latestSeries"]/@href'
         for url in response.xpath(xp).extract():
             url = response.urljoin(url)
-            manga = Manga(url=url)
-            meta = {'manga': manga}
-            request = scrapy.Request(url, self.parse_collection, meta=meta)
+            request = scrapy.Request(url, self._parse_latest)
             yield request
 
         # Check the oldest update date
@@ -207,6 +205,15 @@ class MangaSee(MangaSpider):
             return
 
         # XXX TODO - move to the next page via 'Show More'
+
+    def _parse_latest(self, response):
+        xp = '//a[@class="list-link"]/@href'
+        url = response.xpath(xp).extract_first()
+        url = response.urljoin(url)
+        manga = Manga(url=url)
+        meta = {'manga': manga}
+        request = scrapy.Request(url, self.parse_collection, meta=meta)
+        return request
 
     def parse_manga(self, response, manga, issue):
         # Generate a whole-chapter URL.  The JavaScript code generate
