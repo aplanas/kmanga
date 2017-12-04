@@ -160,7 +160,7 @@ class MobiCtl(object):
         return mobi_info
 
 
-@job('default', timeout=60*60)
+@job('low', timeout=2*60*60)
 def _create_mobi(issue, result=None):
     """RQ job to create a single MOBI document."""
     issue_cache = IssueCache(settings.ISSUES_STORE, settings.IMAGES_STORE)
