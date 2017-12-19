@@ -29,21 +29,21 @@ from .mangaspider import MangaSpider
 
 class MangaHere(MangaSpider):
     name = 'mangahere'
-    allowed_domains = ['mangahere.co']
+    allowed_domains = ['mangahere.cc']
 
     def get_genres_url(self):
-        return 'http://www.mangahere.co/advsearch.htm'
+        return 'http://www.mangahere.cc/advsearch.htm'
 
     def get_catalog_url(self):
-        return 'http://www.mangahere.co/mangalist/'
+        return 'http://www.mangahere.cc/mangalist/'
 
     def get_latest_url(self, until):
-        return 'http://www.mangahere.co/latest/'
+        return 'http://www.mangahere.cc/latest/'
 
     def parse_genres(self, response):
         """Generate the list of genres.
 
-        @url http://www.mangahere.co/advsearch.htm
+        @url http://www.mangahere.cc/advsearch.htm
         @returns items 1
         @returns request 0
         @scrapes names
@@ -57,7 +57,7 @@ class MangaHere(MangaSpider):
     def parse_catalog(self, response):
         """Generate the catalog (list of mangas) of the site.
 
-        @url http://www.mangahere.co/mangalist/
+        @url http://www.mangahere.cc/mangalist/
         @returns items 0
         @returns request 15000 20000
         """
@@ -77,7 +77,7 @@ class MangaHere(MangaSpider):
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
 
-        @url http://www.mangahere.co/manga/angel_densetsu/
+        @url http://www.mangahere.cc/manga/angel_densetsu/
         @returns items 1
         @returns request 0
         @scrapes url name alt_name author artist reading_direction
@@ -170,7 +170,7 @@ class MangaHere(MangaSpider):
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
-        @url http://www.mangahere.co/latest/
+        @url http://www.mangahere.cc/latest/
         @returns items 0
         @returns request 25 200
         """

@@ -317,16 +317,16 @@ class TestSmartProxy(unittest.TestCase):
         self.assertFalse(self.proxy._valid_redirect(status, url_from, url_to))
 
         status = 302
-        url_from = 'http://mangahere.com/manga1'
+        url_from = 'http://mangahere.cc/manga1'
         url_to = '10.0.0.1'
         self.assertFalse(self.proxy._valid_redirect(status, url_from, url_to))
 
         status = 302
-        url_from = 'http://mangahere.com/manga1'
-        url_to = 'http://mangahere.com/manga1'
+        url_from = 'http://mangahere.cc/manga1'
+        url_to = 'http://mangahere.cc/manga1'
         self.assertFalse(self.proxy._valid_redirect(status, url_from, url_to))
 
         status = 302
-        url_from = 'http://mangahere.com/manga1.html'
-        url_to = 'http://mangahere.com/new/manga1.html'
+        url_from = 'http://mangahere.cc/manga1.html'
+        url_to = 'http://mangahere.cc/new/manga1.html'
         self.assertTrue(self.proxy._valid_redirect(status, url_from, url_to))
