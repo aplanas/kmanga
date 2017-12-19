@@ -32,18 +32,18 @@ class MangaHere(MangaSpider):
     allowed_domains = ['mangahere.co']
 
     def get_genres_url(self):
-        return 'https://www.mangahere.co/advsearch.htm'
+        return 'http://www.mangahere.co/advsearch.htm'
 
     def get_catalog_url(self):
-        return 'https://www.mangahere.co/mangalist/'
+        return 'http://www.mangahere.co/mangalist/'
 
     def get_latest_url(self, until):
-        return 'https://www.mangahere.co/latest/'
+        return 'http://www.mangahere.co/latest/'
 
     def parse_genres(self, response):
         """Generate the list of genres.
 
-        @url https://www.mangahere.co/advsearch.htm
+        @url http://www.mangahere.co/advsearch.htm
         @returns items 1
         @returns request 0
         @scrapes names
@@ -57,7 +57,7 @@ class MangaHere(MangaSpider):
     def parse_catalog(self, response):
         """Generate the catalog (list of mangas) of the site.
 
-        @url https://www.mangahere.co/mangalist/
+        @url http://www.mangahere.co/mangalist/
         @returns items 0
         @returns request 15000 20000
         """
@@ -77,7 +77,7 @@ class MangaHere(MangaSpider):
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
 
-        @url https://www.mangahere.co/manga/angel_densetsu/
+        @url http://www.mangahere.co/manga/angel_densetsu/
         @returns items 1
         @returns request 0
         @scrapes url name alt_name author artist reading_direction
@@ -170,7 +170,7 @@ class MangaHere(MangaSpider):
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
-        @url https://www.mangahere.co/latest/
+        @url http://www.mangahere.co/latest/
         @returns items 0
         @returns request 25 200
         """
