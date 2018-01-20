@@ -184,7 +184,7 @@ class UnionMangas(MangaSpider):
             yield request
 
     def parse_manga(self, response, manga, issue):
-        xp = '//img/@data-lazy'
+        xp = '//img/@src'
         for number, url in enumerate(response.xpath(xp).extract()):
             issue_page = IssuePage(
                 manga=manga,
