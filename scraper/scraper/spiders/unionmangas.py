@@ -186,6 +186,7 @@ class UnionMangas(MangaSpider):
     def parse_manga(self, response, manga, issue):
         xp = '//img/@src'
         for number, url in enumerate(response.xpath(xp).extract()):
+            url = response.urljoin(url)
             issue_page = IssuePage(
                 manga=manga,
                 issue=issue,
