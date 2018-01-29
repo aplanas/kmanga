@@ -25,7 +25,7 @@ VHOST = {
 # there is one, it will be considered as an invalid proxy)
 PROXY_MAP = {
     # 'mangafox': {
-    #     URL: 'http://mangafox.la/manga/sailor_moon/v01/c001/1.html',
+    #     URL: 'http://fanfox.net/manga/sailor_moon/v01/c001/1.html',
     #     VALID: [
     #         '<select onchange="change_page(this)" class="m">',
     #         'mfcdn.net/store/manga/203/01-001.0/compressed/f000.jpg',

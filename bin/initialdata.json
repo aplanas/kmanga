@@ -33,7 +33,7 @@
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "MangaFox",
             "spider": "mangafox",
-            "url": "http://mangafox.la/"
+            "url": "http://fanfox.net/"
         },
         "model": "core.source",
         "pk": 3

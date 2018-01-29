@@ -29,21 +29,21 @@ from .mangaspider import MangaSpider
 
 class Mangafox(MangaSpider):
     name = 'mangafox'
-    allowed_domains = ['mangafox.la']
+    allowed_domains = ['fanfox.net']
 
     def get_genres_url(self):
-        return 'http://mangafox.la/search.php'
+        return 'http://fanfox.net/search.php'
 
     def get_catalog_url(self):
-        return 'http://mangafox.la/directory/'
+        return 'http://fanfox.net/directory/'
 
     def get_latest_url(self, until):
-        return 'http://mangafox.la/releases/'
+        return 'http://fanfox.net/releases/'
 
     def parse_genres(self, response):
         """Generate the list of genres.
 
-        @url http://mangafox.la/search.php
+        @url http://fanfox.net/search.php
         @returns items 1
         @returns request 0
         @scrapes names
@@ -57,7 +57,7 @@ class Mangafox(MangaSpider):
     def parse_catalog(self, response):
         """Generate the catalog (list of mangas) of the site.
 
-        @url http://mangafox.la/directory/
+        @url http://fanfox.net/directory/
         @returns items 0
         @returns request 30 45
         """
@@ -89,7 +89,7 @@ class Mangafox(MangaSpider):
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
 
-        @url http://mangafox.la/manga/a_bias_girl/
+        @url http://fanfox.net/manga/a_bias_girl/
         @returns items 1
         @returns request 0
         @scrapes url name alt_name author artist reading_direction
@@ -165,7 +165,7 @@ class Mangafox(MangaSpider):
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
-        @url http://mangafox.la/releases/
+        @url http://fanfox.net/releases/
         @returns items 0
         @returns request 25 100
         """
