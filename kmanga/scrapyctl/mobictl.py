@@ -180,14 +180,14 @@ def _create_mobi(issue, result=None):
         mobictl.create_mobi()
 
 
-@job
+@job('high')
 def create_mobi(issues):
     """RQ job to create MOBI documents."""
     for issue in issues:
         _create_mobi.delay(issue)
 
 
-@job
+@job('high')
 def create_mobi_and_send(issues, user):
     """RQ job to create MOBI documents and send it to the user."""
     for issue in issues:
