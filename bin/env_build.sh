@@ -51,7 +51,7 @@ pip install Pillow
 pip install Scrapy service-identity
 pip install spidermonkey
 pip install 'Django<2.0'
-pip install easy-thumbnails django-rq psycopg2
+pip install easy-thumbnails django-rq psycopg2-binary
 
 if [ -n "$DEVEL" ]; then
     pip install mock coverage django-debug-toolbar
