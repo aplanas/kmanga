@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# (c) 2017 Alberto Planas <aplanas@gmail.com>
+# (c) 2018 Alberto Planas <aplanas@gmail.com>
 #
 # This file is part of KManga.
 #
