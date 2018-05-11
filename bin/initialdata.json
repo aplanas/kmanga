@@ -72,7 +72,7 @@
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "UnionMangas",
             "spider": "unionmangas",
-            "url": "http://unionmangas.cc/"
+            "url": "http://unionmangas.site/"
         },
         "model": "core.source",
         "pk": 6

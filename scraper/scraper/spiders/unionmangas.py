@@ -31,28 +31,28 @@ from .mangaspider import MangaSpider
 
 class UnionMangas(MangaSpider):
     name = 'unionmangas'
-    allowed_domains = ['unionmangas.cc']
+    allowed_domains = ['unionmangas.site']
     vhost_ip = '85.93.89.57'
 
     def get_genres_url(self):
-        return 'http://unionmangas.cc/mangas'
+        return 'http://unionmangas.site/mangas'
 
     def get_catalog_url(self):
-        return 'http://unionmangas.cc/mangas/a-z'
+        return 'http://unionmangas.site/mangas/a-z'
 
     def get_collection_url(self, manga):
-        return 'http://unionmangas.cc/manga/%s' % manga
+        return 'http://unionmangas.site/manga/%s' % manga
 
     def get_latest_url(self, until):
-        return 'http://unionmangas.cc/'
+        return 'http://unionmangas.site/'
 
     def get_manga_url(self, manga, issue):
-        return 'http://unionmangas.cc/%s/%s' % (manga, issue)
+        return 'http://unionmangas.site/%s/%s' % (manga, issue)
 
     def parse_genres(self, response):
         """Generate the list of genres.
 
-        @url http://unionmangas.cc/mangas
+        @url http://unionmangas.site/mangas
         @returns items 1
         @returns request 0
         @scrapes names
@@ -66,7 +66,7 @@ class UnionMangas(MangaSpider):
     def parse_catalog(self, response):
         """Generate the catalog (list of mangas) of the site.
 
-        @url http://unionmangas.cc/mangas/a-z/10
+        @url http://unionmangas.site/mangas/a-z/10
         @returns items 0
         @returns request 1 50
         """
@@ -97,7 +97,7 @@ class UnionMangas(MangaSpider):
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
 
-        @url http://unionmangas.cc/manga/bleach
+        @url http://unionmangas.site/manga/bleach
         @returns items 1
         @returns request 0
         @scrapes url name alt_name author artist reading_direction
@@ -163,7 +163,7 @@ class UnionMangas(MangaSpider):
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
-        @url http://unionmangas.cc/
+        @url http://unionmangas.site/
         @returns items 0
         @returns request 10 100
         """
