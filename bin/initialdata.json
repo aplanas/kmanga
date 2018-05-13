@@ -20,7 +20,7 @@
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "MangaReader",
             "spider": "mangareader",
-            "url": "http://mangareader.net/"
+            "url": "https://www.mangareader.net/"
         },
         "model": "core.source",
         "pk": 2

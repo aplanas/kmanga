@@ -32,20 +32,20 @@ class MangaReader(MangaSpider):
     allowed_domains = ['mangareader.net']
 
     def get_genres_url(self):
-        return 'http://www.mangareader.net/popular'
+        return 'https://www.mangareader.net/popular'
 
     get_catalog_url = get_genres_url
 
     def get_latest_url(self, until):
-        return 'http://www.mangareader.net/latest'
+        return 'https://www.mangareader.net/latest'
 
     def get_manga_url(self, manga, issue):
-        return 'http://www.mangareader.net/%s/%d' % (manga, int(issue))
+        return 'https://www.mangareader.net/%s/%d' % (manga, int(issue))
 
     def parse_genres(self, response):
         """Generate the list of genres.
 
-        @url http://www.mangareader.net/popular
+        @url https://www.mangareader.net/popular
         @returns items 1
         @returns request 0
         @scrapes names
@@ -59,7 +59,7 @@ class MangaReader(MangaSpider):
     def parse_catalog(self, response):
         """Generate the catalog (list of mangas) of the site.
 
-        @url http://www.mangareader.net/popular/3660
+        @url https://www.mangareader.net/popular/3660
         @returns items 0
         @returns request 30 40
         """
@@ -90,7 +90,7 @@ class MangaReader(MangaSpider):
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
 
-        @url http://www.mangareader.net/178/angel-densetsu.html
+        @url https://www.mangareader.net/178/angel-densetsu.html
         @returns items 1
         @returns request 0
         @scrapes url name alt_name author artist reading_direction
@@ -160,7 +160,7 @@ class MangaReader(MangaSpider):
     def parse_latest(self, response, until=None):
         """Generate the list of new mangas until a date
 
-        @url http://www.mangareader.net/latest
+        @url https://www.mangareader.net/latest
         @returns items 0
         @returns request 25 100
         """
