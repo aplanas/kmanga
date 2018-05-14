@@ -132,6 +132,9 @@ USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52
 # AutoThrottle
 AUTOTHROTTLE_ENABLED = True
 
+# Allow redirect for media documents
+MEDIA_ALLOW_REDIRECTS = True
+
 # Mail configuration
 MAIL_FROM = 'kindle@kmanga.net'
 MAIL_HOST = 'localhost'
