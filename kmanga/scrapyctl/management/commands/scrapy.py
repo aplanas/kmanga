@@ -304,7 +304,11 @@ class Command(BaseCommand):
         self.stdout.write('=' * len(header))
         self.stdout.write('')
         for name in spiders:
-            enabled = Source.objects.get(spider=name).enabled
+            enabled = False
+            try:
+                enabled = Source.objects.get(spider=name).enabled
+            except Source.DoesNotExist:
+                pass
             if enabled:
                 self.stdout.write('- %s' % name)
             else:
