@@ -77,6 +77,20 @@ def convert_to_date(str_, dmy=False):
         except AttributeError:
             pass
         return date.today() - timedelta(weeks=weeks)
+    elif str_.endswith(('months ago', 'month ago')):
+        months = 1
+        try:
+            months = int(re.search(r'(\d+) months? ago', str_).group(1))
+        except AttributeError:
+            pass
+        return date.today() - timedelta(days=months*30)
+    elif str_.endswith(('years ago', 'year ago')):
+        years = 1
+        try:
+            years = int(re.search(r'(\d+) years? ago', str_).group(1))
+        except AttributeError:
+            pass
+        return date.today() - timedelta(days=years*365)
     elif re.match(r'\d{2} \w+ \d{4} - \d{2}:\d{2} \w{2}', str_):
         return datetime.strptime(str_, '%d %B %Y - %I:%M %p').date()
     elif re.match(r'\d{2} \w{3} \d{4}', str_):
@@ -415,26 +429,19 @@ class CleanPipeline(CleanBasePipeline):
         return self.clean_item(item, spider, cleaning_plan)
 
     # -- Batoto fields
-    def clean_field_batoto_manga_status(self, field):
-        status = {
-            'Ongoing': 'O',
-            'Complete': 'C',
-        }
-        return self._clean_field_set(field, status.values(), translator=status)
-
-    def clean_field_batoto_manga_genres(self, field):
-        exclude = ('[no chapters]',)
-        return self._clean_field_list(field, optional=True, exclude=exclude)
+    def clean_field_batoto_genres_names(self, field):
+        field = [genre.title() for genre in field]
+        return self._clean_field_list(field)
 
     def clean_field_batoto_issue_language(self, field):
         lang = {
-            'German': GERMAN,
-            'English': ENGLISH,
-            'Spanish': SPANISH,
-            'French': FRENCH,
-            'Italian': ITALIAN,
-            'Russian': RUSSIAN,
-            'Portuguese': PORTUGUESE,
+            'flag_germany': GERMAN,
+            'flag_united_kingdom': ENGLISH,
+            'flag_spain': SPANISH,
+            'flag_france': FRENCH,
+            'flag_italy': ITALIAN,
+            'flag_russia': RUSSIAN,
+            'flag_portugal': PORTUGUESE,
         }
         return self._clean_field_set(field, lang.values(), translator=lang)
 

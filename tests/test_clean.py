@@ -72,6 +72,18 @@ class TestCleanBasePipeline(unittest.TestCase):
         self.assertEqual(convert_to_date('1 week ago'), one_week_ago)
         self.assertEqual(convert_to_date('2 weeks ago'), two_weeks_ago)
 
+        one_month_ago = date(year=2014, month=12, day=2)
+        two_months_ago = date(year=2014, month=11, day=2)
+        self.assertEqual(convert_to_date('one month ago'), one_month_ago)
+        self.assertEqual(convert_to_date('1 month ago'), one_month_ago)
+        self.assertEqual(convert_to_date('2 months ago'), two_months_ago)
+
+        one_year_ago = date(year=2014, month=1, day=1)
+        two_years_ago = date(year=2013, month=1, day=1)
+        self.assertEqual(convert_to_date('one year ago'), one_year_ago)
+        self.assertEqual(convert_to_date('1 year ago'), one_year_ago)
+        self.assertEqual(convert_to_date('2 years ago'), two_years_ago)
+
     def test_convert_to_date_absolute(self):
         today = date(year=2015, month=1, day=1)
         yesterday = date(year=2014, month=12, day=31)
