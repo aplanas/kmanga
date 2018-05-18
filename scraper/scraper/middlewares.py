@@ -242,7 +242,7 @@ class CloudFlare(object):
             init = response.xpath(xp).re_first(r'var s,t,o,p.*')
             challenge = response.xpath(xp).re_first(r'(.*;)a.value')
             variable = response.xpath(xp).re_first(r'\s+;(\w+\.\w+).=')
-            result = 'print(%s + %s)' % (variable, len(domain))
+            result = 'print((%s+%s).toFixed(10))' % (variable, len(domain))
             code = (init, challenge)
             proc = Spidermonkey(early_script_file='-', code=code)
             stdout, stderr = proc.communicate(result)
