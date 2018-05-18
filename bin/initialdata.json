@@ -7,7 +7,7 @@
             "modified": "2014-10-25T00:00:00.000Z",
             "name": "Batoto",
             "spider": "batoto",
-            "url": "http://bato.to/"
+            "url": "https://bato.to/"
         },
         "model": "core.source",
         "pk": 1
