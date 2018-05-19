@@ -44,7 +44,7 @@ done
 echo "Testing external components (mobi, scraper)"
 if [ $run_coverage -eq 0 ]; then
     DJANGO_SETTINGS_MODULE=kmanga.settings \
-			  python -m unittest discover -s ./tests
+			  $PYTHON -m unittest discover -s ./tests
 else
     DJANGO_SETTINGS_MODULE=kmanga.settings \
 			  coverage run --branch --source=mobi,scraper \

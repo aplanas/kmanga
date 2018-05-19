@@ -128,8 +128,8 @@ class UnionMangas(MangaSpider):
              '/following-sibling::span/text()'
         manga['status'] = response.xpath(xp).extract()
         # Genres
-        xp = u'//label[contains(text(), "Gênero(s):")]' \
-             u'/following-sibling::a/text()'
+        xp = '//label[contains(text(), "Gênero(s):")]' \
+             '/following-sibling::a/text()'
         manga['genres'] = response.xpath(xp).extract()
         # Description
         xp = '//div[@class="panel-body"]/text()'

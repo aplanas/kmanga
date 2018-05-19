@@ -1,11 +1,12 @@
 import gzip
+import io
 import itertools
 import logging
-from multiprocessing.pool import ThreadPool
 import re
-import StringIO
-import urllib2
-import urlparse
+import urllib.error
+import urllib.parse
+import urllib.request
+from multiprocessing.pool import ThreadPool
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ PROXY_MAP = {
     #     URL: 'http://fanfox.net/manga/sailor_moon/v01/c001/1.html',
     #     VALID: [
     #         '<select onchange="change_page(this)" class="m">',
-    #         'mfcdn.net/store/manga/203/01-001.0/compressed/f000.jpg',
+    #         '/store/manga/203/01-001.0/compressed/f000.jpg',
     #     ],
     #     INVALID: None
     # },
@@ -80,7 +81,7 @@ def update_proxy():
     for url, kind in PROXY_SOURCE:
         proxies.extend(collector[kind](url))
     # Remove duplicates and localhost references
-    proxies = list(set(proxies)-set(('127.0.0.1',)))
+    proxies = list(set(proxies)-{'127.0.0.1'})
     return check_proxy(proxies)
 
 
@@ -96,15 +97,17 @@ def needs_proxy(spider):
     return spider in PROXY_MAP
 
 
-def _get_url(url):
+def _get_url(url, as_string=True):
     """Get the content from a URL."""
     user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:49.0) '\
                  'Gecko/20100101 Firefox/49.0'
-    request = urllib2.Request(url)
+    request = urllib.request.Request(url)
     request.add_header('User-Agent', user_agent)
     body = ''
     try:
-        body = urllib2.urlopen(request).read()
+        body = urllib.request.urlopen(request).read()
+        if as_string:
+            body = body.decode('utf-8')
     except Exception:
         logger.warning('Fail URL %s' % url)
     return body
@@ -130,8 +133,8 @@ def _collect_proxies_xml(url):
 def _collect_proxies_gz(url):
     """Generate a lost of proxies from gzip file."""
     logger.info('Collecting proxies (gzip) from %s' % url)
-    body = StringIO.StringIO(_get_url(url))
-    body = gzip.GzipFile(fileobj=body).read()
+    body = io.BytesIO(_get_url(url, as_string=False))
+    body = gzip.open(body).read().decode('utf-8')
     proxy_re = re.compile(r'((?:\d{1,3}.){3}\d{1,3}:\d{1,4})')
     return proxy_re.findall(body)
 
@@ -140,28 +143,28 @@ def _is_valid_proxy(proxy_source):
     """Check if is a valid proxy for a specific Source."""
     proxy, source = proxy_source
 
-    _proxy = urllib2.ProxyHandler({'http': proxy})
-    opener = urllib2.build_opener(_proxy)
+    _proxy = urllib.request.ProxyHandler({'http': proxy})
+    opener = urllib.request.build_opener(_proxy)
 
     test = PROXY_MAP[source]
     url, valid, invalid = test[URL], test[VALID], test[INVALID]
 
     if source in VHOST:
-        parse = urlparse.urlparse(url)
+        parse = urllib.parse.urlparse(url)
         netloc = parse.netloc
         url = parse._replace(netloc=VHOST[source]).geturl()
-        req = urllib2.Request(url)
+        req = urllib.request.Request(url)
         req.add_unredirected_header('Host', netloc)
     else:
-        req = urllib2.Request(url)
+        req = urllib.request.Request(url)
 
     try:
         response = opener.open(req, timeout=TIMEOUT)
         if response.info().get('Content-Encoding') == 'gzip':
-            body = StringIO.StringIO(response.read())
-            body = gzip.GzipFile(fileobj=body).read()
+            body = io.BytesIO(response.read())
+            body = gzip.open(body).read().decode('utf-8')
         else:
-            body = response.read()
+            body = response.read().decode('utf-8')
     except Exception:
         return None
 

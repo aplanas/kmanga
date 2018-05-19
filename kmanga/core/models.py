@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import os.path
 
 from django.conf import settings
@@ -10,7 +8,6 @@ from django.db.models import Count
 from django.db.models import F
 from django.db.models import Q
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 
 
 class TimeStampedModel(models.Model):
@@ -21,7 +18,6 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 
-@python_2_unicode_compatible
 class Source(TimeStampedModel):
     name = models.CharField(max_length=200)
     spider = models.CharField(max_length=80)
@@ -33,7 +29,6 @@ class Source(TimeStampedModel):
         return self.name
 
 
-@python_2_unicode_compatible
 class SourceLanguage(TimeStampedModel):
     GERMAN = 'DE'
     ENGLISH = 'EN'
@@ -59,7 +54,6 @@ class SourceLanguage(TimeStampedModel):
         return '%s (%s)' % (self.get_language_display(), self.language)
 
 
-@python_2_unicode_compatible
 class ConsolidateGenre(TimeStampedModel):
     name = models.CharField(max_length=200)
 
@@ -67,7 +61,6 @@ class ConsolidateGenre(TimeStampedModel):
         return self.name
 
 
-@python_2_unicode_compatible
 class Genre(TimeStampedModel):
     name = models.CharField(max_length=200)
     source = models.ForeignKey(Source)
@@ -274,7 +267,6 @@ def _cover_path(instance, filename):
     return os.path.join(instance.source.spider, filename)
 
 
-@python_2_unicode_compatible
 class Manga(TimeStampedModel):
     LEFT_TO_RIGHT = 'LR'
     RIGHT_TO_LEFT = 'RL'
@@ -353,7 +345,6 @@ class Manga(TimeStampedModel):
                    .annotate(Count('language'))
 
 
-@python_2_unicode_compatible
 class AltName(TimeStampedModel):
     name = models.CharField(max_length=200)
     manga = models.ForeignKey(Manga)
@@ -362,7 +353,6 @@ class AltName(TimeStampedModel):
         return self.name
 
 
-@python_2_unicode_compatible
 class Issue(TimeStampedModel):
     name = models.CharField(max_length=200)
     number = models.CharField(max_length=10)
@@ -472,7 +462,6 @@ class SubscriptionActiveManager(models.Manager):
                          Q(paused=True) | Q(deleted=True))
 
 
-@python_2_unicode_compatible
 class Subscription(TimeStampedModel):
     # Number of retries before giving up in a FAILED result
     RETRY = 3
@@ -593,7 +582,6 @@ class ResultQuerySet(models.QuerySet):
         return self.latests(status=Result.FAILED)
 
 
-@python_2_unicode_compatible
 class Result(TimeStampedModel):
     PENDING = 'PE'
     PROCESSING = 'PR'

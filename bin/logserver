@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import asyncore
 import argparse
 import logging
@@ -86,7 +86,7 @@ def main(args):
     logging.config.dictConfig(CONF)
 
     LogRecordServer(args.host, args.port)
-    print 'Starting log server at %s:%s' % (args.host, args.port)
+    print('Starting log server at %s:%s' % (args.host, args.port))
     return asyncore.loop()
 
 if __name__ == '__main__':

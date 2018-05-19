@@ -19,7 +19,7 @@
 
 import logging
 import os.path
-import urlparse
+import urllib.parse
 
 from django.core.files import File
 from django.db import transaction
@@ -104,8 +104,8 @@ class UpdateDBPipeline(object):
                 if i in values_m2m:
                     rel_obj.add(values_m2m[i])
                 else:
-                    if isinstance(i, basestring):
-                        for (k, v) in values_m2m.iteritems():
+                    if isinstance(i, str):
+                        for (k, v) in values_m2m.items():
                             if i.lower() == k.lower():
                                 rel_obj.add(v)
                                 break
@@ -229,14 +229,15 @@ class UpdateDBPipeline(object):
 
         # cover
         if item['images']:
-            path = urlparse.urlparse(item['image_urls'][0]).path
+            path = urllib.parse.urlparse(item['image_urls'][0]).path
             name = os.path.basename(path)
             image_path = os.path.join(self.images_store,
                                       item['images'][0]['path'])
             # Update the cover always, so if we remove the image in
             # the MEDIA directory, this will be recreated.
             manga.cover.delete(save=False)
-            manga.cover.save(name, File(open(image_path, 'rb')))
+            with open(image_path, 'rb') as f:
+                manga.cover.save(name, File(f))
         elif manga.cover:
             manga.cover.delete()
 

@@ -13,15 +13,17 @@ if [ -d $VENV ]; then
     exit 1
 fi
 
-# Install Python virtual environment
-virtualenv $VENV
+python3 -m venv $VENV
 source $VENV/bin/activate
+
+# Update PIP, as we use the one from the system
+pip install --upgrade pip
 
 export LD_LIBRARY_PATH=$VENV/lib
 
 # Link some modules to the local library
-ln -rs mobi $VENV/lib/python2.7/site-packages/
-ln -rs scraper/scraper $VENV/lib/python2.7/site-packages/
+ln -rs mobi $VENV/lib/$PYTHON/site-packages/
+ln -rs scraper/scraper $VENV/lib/$PYTHON/site-packages/
 
 # Link the configuration file
 ln -rs bin/kmanga.conf $VENV/bin/
@@ -50,9 +52,8 @@ fi
 pip install Pillow
 pip install Scrapy service-identity
 pip install spidermonkey
-pip install 'Django<2.0'
-pip install easy-thumbnails django-rq psycopg2-binary
+pip install Django easy-thumbnails django-rq psycopg2-binary
 
 if [ -n "$DEVEL" ]; then
-    pip install mock coverage django-debug-toolbar
+    pip install coverage django-debug-toolbar
 fi

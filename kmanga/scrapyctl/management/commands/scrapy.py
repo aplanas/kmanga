@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import datetime
 import logging
 import logging.handlers
@@ -218,7 +216,7 @@ class Command(BaseCommand):
         elif command == 'update-latest':
             until = options['until']
 
-            if isinstance(until, basestring):
+            if isinstance(until, str):
                 until = datetime.datetime.strptime(until, '%d-%m-%Y').date()
             scrapy.update_latest(spiders, until, dry_run)
         elif command == 'search':
@@ -334,14 +332,14 @@ class Command(BaseCommand):
                     issues = issues.filter(language=lang)
                 for issue in issues.order_by('order'):
                     if details:
-                        self.stdout.write(u' [%s] [%s] [%s] [%s] %s' %
+                        self.stdout.write(' [%s] [%s] [%s] [%s] %s' %
                                           (issue.language,
                                            issue.order,
                                            issue.release,
                                            issue.url,
                                            issue.name))
                     else:
-                        self.stdout.write(u' [%s] [%s] %s' %
+                        self.stdout.write(' [%s] [%s] %s' %
                                           (issue.language,
                                            issue.order,
                                            issue.name))
@@ -368,7 +366,7 @@ class Command(BaseCommand):
                         user=user, manga=issue.manga)
                     self.stdout.write("Marking '%s' as sent" % issue)
                     subscription.add_sent(issue)
-            except:
+            except Exception:
                 msg = 'The user %s does not have a '\
                       'subscription to %s' % (user, issue.manga)
                 self.stdout.write(msg)

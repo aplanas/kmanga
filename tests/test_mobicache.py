@@ -90,7 +90,8 @@ class TestLockFile(unittest.TestCase):
                 f.write('parent')
         p.join()
         # We expect to find the text 'parentprocess'
-        self.assertEqual(open(self.FNAME).read(), 'parentprocess')
+        with open(self.FNAME) as f:
+            self.assertEqual(f.read(), 'parentprocess')
 
 
 def write_db(dbname, key, value):
@@ -138,6 +139,16 @@ class TestDB(unittest.TestCase):
         self.assertEqual(self.db.openers, 0)
         with self.assertRaises(Exception):
             self.db.close()
+
+    def test_missing_openers(self):
+        self.assertEqual(self.db.openers, 0)
+        del self.db._local.openers
+        self.assertEqual(self.db.openers, 0)
+
+    def test_missing_db(self):
+        self.assertEqual(self.db.db, None)
+        del self.db._local.db
+        self.assertEqual(self.db.db, None)
 
     def test_context(self):
         with self.db:
@@ -231,7 +242,7 @@ class TestMobiCache(unittest.TestCase):
         self.cache['url3'] = ['tests/fixtures/cache/mobi3.mobi']
         self.assertTrue(len(self.cache) == 3)
 
-        md5 = hashlib.md5('url1').hexdigest()
+        md5 = hashlib.md5(b'url1').hexdigest()
         self.assertEqual(
             self.cache['url1'][0],
             [('mobi1.mobi', 'tests/fixtures/tmp/data/%s-00' % md5)]

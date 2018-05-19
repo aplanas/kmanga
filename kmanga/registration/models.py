@@ -1,13 +1,9 @@
-from __future__ import unicode_literals
-
 from django.conf import settings
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 
 from core.models import Result
 
 
-@python_2_unicode_compatible
 class UserProfile(models.Model):
     FREE = 'F'
     PAY = 'P'

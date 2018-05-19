@@ -156,7 +156,7 @@ class Cache(collections.MutableMapping):
     # Configuration variables
     slots = 4096            # Number of slots in the cache file
     nclean = 1024           # Number of slots to remove when limit reached
-    dbname = 'cache.db'     # Name of the database file
+    dbname = 'cache.dbm'    # Name of the database file
 
     def __init__(self, store):
         self.store = store
@@ -170,26 +170,17 @@ class Cache(collections.MutableMapping):
 
     def __getitem__(self, key):
         with DB(self.cache) as db:
-            # BerkeleyDB only accept str (not unicode)
-            if isinstance(key, unicode):
-                key = key.encode('utf-8')
             # The value is composed of two components:
             #   (value, creation_date)
             return db[key]
 
     def __setitem__(self, key, value):
         with DB(self.cache) as db:
-            # BerkeleyDB only accept str (not unicode)
-            if isinstance(key, unicode):
-                key = key.encode('utf-8')
             now = datetime.utcnow()
             db[key] = (value, now)
 
     def __delitem__(self, key):
         with DB(self.cache) as db:
-            # BerkeleyDB only accept str (not unicode)
-            if isinstance(key, unicode):
-                key = key.encode('utf-8')
             del db[key]
 
     def __iter__(self):
@@ -206,7 +197,7 @@ class Cache(collections.MutableMapping):
         now = datetime.utcnow()
         # The last part of the value is the `ttl`
         to_delete = (
-            k for k, v in self.iteritems()
+            k for k, v in self.items()
             if (now - v[-1]).seconds > ttl
         )
         for key in to_delete:
@@ -215,7 +206,7 @@ class Cache(collections.MutableMapping):
     def free(self):
         """If the cache is too big, remove a fix number of elements."""
         if len(self) > self.slots:
-            elements = [(k, v[-1]) for k, v in self.iteritems()]
+            elements = [(k, v[-1]) for k, v in self.items()]
             elements = sorted(elements, key=lambda x: x[-1])
             for key, _ in elements[:self.nclean]:
                 del self[key]
@@ -283,7 +274,7 @@ class MobiCache(Cache):
 
     """
 
-    dbname = 'index.db'
+    dbname = 'index.dbm'
 
     def __init__(self, store):
         super(MobiCache, self).__init__(store)
@@ -296,9 +287,7 @@ class MobiCache(Cache):
     def __data_file(self, key):
         """Return the full path of the data file."""
         # hashlib.md5 do not accept unicode
-        if isinstance(key, unicode):
-            key = key.encode('utf-8')
-
+        key = key.encode('utf-8')
         name = hashlib.md5(key).hexdigest()
         return os.path.join(self.data, name)
 

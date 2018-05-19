@@ -132,7 +132,7 @@ class MangaSpider(scrapy.Spider):
                             '[-a user=USER -a password=PASSWD'
                             ' -a manga=name -a issue=number -a url=URL]',
                             '[-a dry_run=1]'))
-            print 'scrapy crawl %s SPIDER' % msg
+            print('scrapy crawl %s SPIDER' % msg)
             sys.exit(1)
 
     def parse(self, response):
@@ -221,7 +221,7 @@ class MangaSpider(scrapy.Spider):
     def parse_after_login(self, response):
         login_ok = self.login_check.get(MangaSpider.LOGIN_OK, None)
         login_err = self.login_check.get(MangaSpider.LOGIN_ERR, None)
-        body = response.body
+        body = response.body_as_unicode()
         if login_ok and login_err:
             is_logged = login_ok in body and login_err not in body
         elif login_ok:

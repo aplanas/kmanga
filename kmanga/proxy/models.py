@@ -1,7 +1,4 @@
-from __future__ import unicode_literals
-
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 
 from core.models import Source
 from core.models import TimeStampedModel
@@ -25,7 +22,6 @@ class ProxyQuerySet(models.QuerySet):
         return self.filter(source__spider=spider).count()
 
 
-@python_2_unicode_compatible
 class Proxy(TimeStampedModel):
     # Number of retries before giving up and removing the entry
     RETRY = 3

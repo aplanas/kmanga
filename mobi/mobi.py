@@ -354,7 +354,7 @@ class Container(object):
             #   new_height <= HEIGHT
             #
             width, height = img.size
-            ratio = min((WIDTH/float(width), HEIGHT/float(height)))
+            ratio = min(WIDTH/width, HEIGHT/height)
             width, height = int(ratio*width+0.5), int(ratio*height+0.5)
             resample = Image.BICUBIC if ratio > 1 else Image.ANTIALIAS
             img = img.resize((width, height), resample)
@@ -369,13 +369,13 @@ class Container(object):
 
             # Resize the current image
             width, height = size
-            ratio = min((WIDTH/float(width), HEIGHT/float(height)))
+            ratio = min(WIDTH/width, HEIGHT/height)
             width, height = int(ratio*width+0.5), int(ratio*height+0.5)
             resample = Image.BICUBIC if ratio > 1 else Image.ANTIALIAS
             resized_img = img.resize((width, height), resample)
 
             # Create a new white image and paste the resized image
-            x, y = (WIDTH - width) / 2, (HEIGHT - height) / 2
+            x, y = (WIDTH - width) // 2, (HEIGHT - height) // 2
             img = Image.new(mode, (WIDTH, HEIGHT), '#ffffff')
             img.paste(resized_img, (x, y))
             adjusted = True
@@ -384,7 +384,7 @@ class Container(object):
             # and rotate the image in this case.  Used for double page
             # images.
             width, height = img.size
-            if float(width) / float(height) > 1.0:
+            if width / height > 1.0:
                 img = img.transpose(Image.ROTATE_270)
                 adjusted = True
         # elif adjust == Container.SPLIT:
@@ -459,8 +459,8 @@ class Container(object):
     def split(self, size, clean=False):
         """Split the container in volumes of same size."""
         current_size = self.get_size()
-        nvolumes = 1 + current_size / size
-        volume_size = 1 + current_size / nvolumes
+        nvolumes = 1 + current_size // size
+        volume_size = 1 + current_size // nvolumes
 
         containers = [Container('%s_V%02d' % (self.path, i+1))
                       for i in range(nvolumes)]
@@ -660,7 +660,7 @@ class MangaMobi(object):
 
         tree = ET.ElementTree(package)
         with open(self.container.get_content_opf_path(), 'w') as f:
-            tree.write(f, encoding='utf-8', xml_declaration=True)
+            tree.write(f, encoding='unicode', xml_declaration=True)
 
     def _use_panel_view(self):
         """Evaluate if PanelView is used."""
@@ -677,7 +677,7 @@ class MangaMobi(object):
 
     def _img_scaled_size(self, size, scale=1.0):
         width, height = size
-        ratio = min((WIDTH/float(width), HEIGHT/float(height)))
+        ratio = min(WIDTH/width, HEIGHT/height)
         width, height = int(scale*ratio*width+0.5), int(scale*ratio*height+0.5)
         return width, height
 
@@ -688,7 +688,7 @@ class MangaMobi(object):
 
     def _img_style_margin(self, size):
         width, height = self._img_scaled_size(size)
-        mtop, mleft = (HEIGHT - height) / 2, (WIDTH - width) / 2
+        mtop, mleft = (HEIGHT - height) // 2, (WIDTH - width) // 2
         mbottom, mright = (HEIGHT - height) - mtop, (WIDTH - width) - mleft
         style = 'margin-top:%dpx;margin-bottom:%dpx;' % (mtop, mbottom)
         style += 'margin-left:%dpx;margin-right:%dpx;' % (mleft, mright)
@@ -792,8 +792,8 @@ class MangaMobi(object):
 
         tree = ET.ElementTree(html)
         with open(self.container.get_page_path(number), 'w') as f:
-            print >>f, '<!DOCTYPE html>'
-            tree.write(f, encoding='utf-8', xml_declaration=False)
+            print('<!DOCTYPE html>', file=f)
+            tree.write(f, encoding='unicode', xml_declaration=False)
 
     def toc_ncx(self):
         """Generate the logical table of content."""
@@ -838,10 +838,10 @@ class MangaMobi(object):
 
         tree = ET.ElementTree(ncx)
         with open(self.container.get_toc_ncx_path(), 'w') as f:
-            print >>f, '<?xml version="1.0" encoding="UTF-8"?>'
-            print >>f, '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" ' \
-                       '"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">'
-            tree.write(f, encoding='utf-8', xml_declaration=False)
+            print('<?xml version="1.0" encoding="UTF-8"?>', file=f)
+            print('<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" '
+                  '"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">', file=f)
+            tree.write(f, encoding='unicode', xml_declaration=False)
 
     def nav(self):
         """Generate the navigation file."""
@@ -881,10 +881,10 @@ class MangaMobi(object):
 
         tree = ET.ElementTree(html)
         with open(self.container.get_nav_path(), 'w') as f:
-            print >>f, '<?xml version="1.0" encoding="UTF-8"?>'
-            tree.write(f, encoding='utf-8', xml_declaration=False)
+            print('<?xml version="1.0" encoding="UTF-8"?>', file=f)
+            tree.write(f, encoding='unicode', xml_declaration=False)
 
     def style_css(self):
         """Generate the CSS."""
         with open(self.container.get_style_css_path(), 'w') as f:
-            print >>f, CSS
+            print(CSS, file=f)

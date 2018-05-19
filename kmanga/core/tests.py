@@ -16,8 +16,7 @@ class SourceTestCase(TestCase):
 
     def test_str(self):
         """Test source representation."""
-        self.assertEqual(str(Source.objects.get(pk=1)),
-                         'Source 1')
+        self.assertEqual(Source.objects.get(pk=1), 'Source 1')
 
 
 class SourceLanguageTestCase(TestCase):
@@ -25,7 +24,7 @@ class SourceLanguageTestCase(TestCase):
 
     def test_str(self):
         """Test source language representation."""
-        self.assertEqual(str(SourceLanguage.objects.get(pk=1)),
+        self.assertEqual(SourceLanguage.objects.get(pk=1),
                          'English (EN)')
 
 
@@ -34,8 +33,7 @@ class GenreTestCase(TestCase):
 
     def test_str(self):
         """Test genre representation."""
-        self.assertEqual(str(Genre.objects.get(pk=1)),
-                         'source1_genre1')
+        self.assertEqual(Genre.objects.get(pk=1), 'source1_genre1')
 
 
 class MangaTestCase(TestCase):
@@ -144,8 +142,7 @@ class MangaTestCase(TestCase):
 
     def test_str(self):
         """Test manga representation."""
-        self.assertEqual(str(Manga.objects.get(pk=1)),
-                         'Manga 1')
+        self.assertEqual(Manga.objects.get(pk=1), 'Manga 1')
 
     def test_subscribe(self):
         """Test the method to subscrive an user to a manga."""
@@ -182,8 +179,7 @@ class AltNameTestCase(TestCase):
 
     def test_str(self):
         """Test alt name representation."""
-        self.assertEqual(str(AltName.objects.get(pk=1)),
-                         'Manga One')
+        self.assertEqual(AltName.objects.get(pk=1), 'Manga One')
 
 
 class IssueTestCase(TestCase):
@@ -191,8 +187,7 @@ class IssueTestCase(TestCase):
 
     def test_str(self):
         """Test issue representation"""
-        self.assertEqual(str(Issue.objects.get(pk=1)),
-                         'manga 1 issue 1')
+        self.assertEqual(Issue.objects.get(pk=1), 'manga 1 issue 1')
 
     def test_is_sent(self):
         """Test if an issue was sent to an user."""
@@ -268,7 +263,7 @@ class SubscriptionTestCase(TestCase):
 
     def test_str(self):
         """Test subscription representation"""
-        self.assertEqual(str(Subscription.objects.get(pk=1)),
+        self.assertEqual(Subscription.objects.get(pk=1),
                          'Manga 1 (4 per day)')
 
     def test_issues_to_send(self):
@@ -382,5 +377,5 @@ class ResultTestCase(TestCase):
 
     def test_str(self):
         """Test result representation"""
-        self.assertEqual(str(Result.objects.get(pk=1)),
+        self.assertEqual(Result.objects.get(pk=1),
                          'manga 1 issue 1 (Sent)')

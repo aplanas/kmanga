@@ -19,9 +19,9 @@
 
 from datetime import date
 from datetime import datetime
+from unittest.mock import Mock
+from unittest.mock import patch
 import unittest
-
-import mock
 
 from scraper.pipelines import CleanBasePipeline
 from scraper.pipelines import convert_to_date
@@ -41,8 +41,8 @@ class TestCleanBasePipeline(unittest.TestCase):
     def tearDown(self):
         self.clean = None
 
-    @mock.patch('scraper.pipelines.clean.datetime')
-    @mock.patch('scraper.pipelines.clean.date')
+    @patch('scraper.pipelines.clean.datetime')
+    @patch('scraper.pipelines.clean.date')
     def test_convert_to_date_relative(self, date_mock, datetime_mock):
         today = date(year=2015, month=1, day=1)
         date_mock.today.return_value = today
@@ -116,44 +116,43 @@ class TestCleanBasePipeline(unittest.TestCase):
         self.assertEqual(convert_to_number('Not valid number', default=1), 1)
 
     def test_process_item_skip(self):
-        spider = mock.Mock(dry_run=True)
+        spider = Mock(dry_run=True)
         self.assertEqual(self.clean.process_item(None, spider), None)
 
     def test_process_item_no_method(self):
-        spider = mock.Mock()
+        spider = Mock()
         spider.name = 'spider'
         del spider.dry_run
         item = MyItem()
         self.assertEqual(self.clean.process_item(item, spider), item)
 
     def test_process_item_item_method(self):
-        spider = mock.Mock()
+        spider = Mock()
         spider.name = 'spider'
         del spider.dry_run
         item = MyItem()
-        self.clean.clean_myitem = mock.Mock(return_value=item)
+        self.clean.clean_myitem = Mock(return_value=item)
         self.assertEqual(self.clean.process_item(item, spider), item)
         self.clean.clean_myitem.assert_called_with(item, spider)
 
     def test_process_item_spider_method(self):
-        spider = mock.Mock()
+        spider = Mock()
         spider.name = 'spider'
         del spider.dry_run
         item = MyItem()
-        self.clean.clean_spider_myitem = mock.Mock(return_value=item)
+        self.clean.clean_spider_myitem = Mock(return_value=item)
         self.assertEqual(self.clean.process_item(item, spider), item)
         self.clean.clean_spider_myitem.assert_called_with(item, spider)
 
     def test_as_str(self):
-        self.assertEqual(self.clean._as_str([u' ', u' ']), u'')
-        self.assertEqual(self.clean._as_str([u' ', u'a']), u'a')
-        self.assertEqual(self.clean._as_str([u' 5', u' 0'], separator=''),
-                         u'50')
-        self.assertEqual(self.clean._as_str(u' '), u'')
-        self.assertEqual(self.clean._as_str(10), u'10')
+        self.assertEqual(self.clean._as_str([' ', ' ']), '')
+        self.assertEqual(self.clean._as_str([' ', 'a']), 'a')
+        self.assertEqual(self.clean._as_str([' 5', ' 0'], separator=''), '50')
+        self.assertEqual(self.clean._as_str(' '), '')
+        self.assertEqual(self.clean._as_str(10), '10')
 
     def test_as_list(self):
-        self.assertEqual(self.clean._as_list([u' 1', u' ']), [u' 1', u' '])
+        self.assertEqual(self.clean._as_list([' 1', ' ']), [' 1', ' '])
         self.assertEqual(self.clean._as_list(['1', ('a', 'b'), '2']),
                          ['1', 'a', 'b', '2'])
         self.assertEqual(self.clean._as_list(1), [1])

@@ -21,7 +21,7 @@ import logging
 import os.path
 import re
 import time
-from urlparse import urlparse
+import urllib.parse
 
 import scrapy
 from spidermonkey import Spidermonkey
@@ -169,8 +169,8 @@ class SmartProxy(object):
             return False
 
         # Same domain check
-        bn_from = os.path.basename(urlparse(url_from).path)
-        bn_to = os.path.basename(urlparse(url_to).path)
+        bn_from = os.path.basename(urllib.parse.urlparse(url_from).path)
+        bn_to = os.path.basename(urllib.parse.urlparse(url_to).path)
         if bn_from != bn_to:
             return False
 
@@ -200,7 +200,8 @@ class VHost(object):
     def process_response(self, request, response, spider):
         """Replace back the IP with the host name."""
         if hasattr(spider, 'vhost_ip'):
-            domain = request.headers.get('Host', spider.allowed_domains[0])
+            headers = request.headers.to_unicode_dict()
+            domain = headers.get('Host', spider.allowed_domains[0])
             ip = spider.vhost_ip
             url = re.sub(ip, domain, response.url)
             response = response.replace(url=url)

@@ -20,6 +20,7 @@
 import hashlib
 import os
 import unittest
+from unittest.mock import patch
 import shutil
 import xml.dom.minidom
 
@@ -91,11 +92,37 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(
             os.path.exists('tests/fixtures/dummy/images/010.png'))
 
-        self.assertEqual(self.container._npages, 11)
-        self.assertEqual(self.container.npages(), 11)
+        self.container.add_image('tests/fixtures/images/width-small.jpg',
+                                 _filter=Container.FILTER_FOOTER)
+        self.assertTrue(
+            os.path.exists('tests/fixtures/dummy/images/011.jpg'))
+
+        self.container.add_image('tests/fixtures/images/width-small.jpg',
+                                 _filter=Container.FILTER_MARGIN)
+        self.assertTrue(
+            os.path.exists('tests/fixtures/dummy/images/012.jpg'))
+
+        self.assertEqual(self.container._npages, 13)
+        self.assertEqual(self.container.npages(), 13)
 
     def test_add_images(self):
         pass
+
+    @patch('mobi.mobi.Container.get_image_info')
+    @patch('mobi.mobi.os.rename')
+    def test_set_image_adjust(self, rename, get_image_info):
+        self.container.set_image_adjust(0, None)
+        get_image_info.assert_not_called()
+        rename.assert_not_called()
+
+        get_image_info.return_value = [['some_path', Container.ROTATE]]
+        with self.assertRaises(ValueError):
+            self.container.set_image_adjust(0, Container.ROTATE)
+
+        get_image_info.return_value = [['some_path', None]]
+        self.container.set_image_adjust(0, Container.ROTATE)
+        rename.assert_called_with('tests/fixtures/dummy/some_path',
+                                  'tests/fixtures/dummy/some_path_rotate')
 
     def test_set_cover(self):
         os.unlink('tests/fixtures/dummy/cover.jpg')
@@ -360,7 +387,7 @@ class TestMangaMobi(unittest.TestCase):
         self.mangamobi.content_opf(identifier='id')
         with open('tests/fixtures/dummy/content.opf') as f1:
             with open('tests/fixtures/dummy/content.opf.reference') as f2:
-                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
+                self.assertEqual(_xml_pretty(f1.read()), f2.read())
 
     # XXX TODO - Since firmware 5.8.5 Virtual Panels feature seems
     # to be disabled, and the only way to zoom in a area (as far
@@ -371,7 +398,7 @@ class TestMangaMobi(unittest.TestCase):
     #     page = 'tests/fixtures/dummy/html/page-000.html'
     #     with open(page) as f1:
     #         with open(page+'.no-panel-view.reference') as f2:
-    #             self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
+    #             self.assertEqual(_xml_pretty(f1.read()), f2.read())
 
     def test_page_panel_view(self):
         self.container.add_image(
@@ -381,19 +408,19 @@ class TestMangaMobi(unittest.TestCase):
         page = 'tests/fixtures/dummy/html/page-000.html'
         with open(page) as f1:
             with open(page+'.panel-view.reference') as f2:
-                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
+                self.assertEqual(_xml_pretty(f1.read()), f2.read())
 
     def test_toc_ncx(self):
         self.mangamobi.toc_ncx()
         with open('tests/fixtures/dummy/toc.ncx') as f1:
             with open('tests/fixtures/dummy/toc.ncx.reference') as f2:
-                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
+                self.assertEqual(_xml_pretty(f1.read()), f2.read())
 
     def test_nav(self):
         self.mangamobi.nav()
         with open('tests/fixtures/dummy/nav.xhtml') as f1:
             with open('tests/fixtures/dummy/nav.xhtml.reference') as f2:
-                self.assertEqual(_xml_pretty(f1.read()), unicode(f2.read()))
+                self.assertEqual(_xml_pretty(f1.read()), f2.read())
 
     def test_style_css(self):
         self.mangamobi.style_css()

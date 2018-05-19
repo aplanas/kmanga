@@ -21,25 +21,6 @@ from registration.models import UserProfile
 logger = logging.getLogger(__name__)
 
 
-def print_table(title, header, body):
-    """Pretty print a table with constrains."""
-    print
-    print title
-    print '=' * len(title)
-    print
-
-    line = ''.join('%-*s' % (j, i) for i, j in header)
-    print line
-    print '-' * len(line)
-
-    _, size = zip(*header)
-    for line in body:
-        line = ['%.*s' % (j-1, i) for i, j in zip(line, size)]
-        line = ''.join('%-*s' % (j, i) for i, j in zip(line, size))
-        print line
-    print '-' * len(line)
-
-
 class Command(BaseCommand):
     help = 'Clean old resources from the system.'
 
@@ -79,6 +60,24 @@ class Command(BaseCommand):
         parser.add_argument(
             '--loglevel', action='store', dest='loglevel', default='WARNING',
             help='Log level (<CRITICAL|ERROR|WARNING|INFO|DEBUG>).')
+
+    def _print_table(self, title, header, body):
+        """Pretty print a table with constrains."""
+        self.stdout.write('')
+        self.stdout.write(title)
+        self.stdout.write('=' * len(title))
+        self.stdout.write('')
+
+        line = ''.join('%-*s' % (j, i) for i, j in header)
+        self.stdout.write(line)
+        self.stdout.write('-' * len(line))
+
+        _, size = zip(*header)
+        for line in body:
+            line = ['%.*s' % (j-1, i) for i, j in zip(line, size)]
+            line = ''.join('%-*s' % (j, i) for i, j in zip(line, size))
+            self.stdout.write(line)
+        self.stdout.write('-' * len(line))
 
     def _get_sources(self, spiders):
         """Parse the `spiders` option and return a valid list of Sources."""
@@ -166,14 +165,14 @@ class Command(BaseCommand):
             if list_:
                 body.append((manga.name, manga.url, manga.source.name, old))
             else:
-                logger.info(u'Removing %s (%s) from %s [%s].' % (manga.name,
-                                                                 manga.url,
-                                                                 manga.source,
-                                                                 old))
+                logger.info('Removing %s (%s) from %s [%s].' % (manga.name,
+                                                                manga.url,
+                                                                manga.source,
+                                                                old))
                 manga.delete()
 
         if list_:
-            print_table(title, header, body)
+            self._print_table(title, header, body)
 
     def _clean_user(self, hours, remove, list_):
         """Remove or disable inactive user."""
@@ -210,7 +209,7 @@ class Command(BaseCommand):
             else:
                 if remove:
                     logger.info(
-                        u'Removing %s <%s> [login: %s] [result: %s].' % (
+                        'Removing %s <%s> [login: %s] [result: %s].' % (
                             user.username,
                             user.email,
                             last_login,
@@ -218,7 +217,7 @@ class Command(BaseCommand):
                     user.delete()
                 else:
                     logger.info(
-                        u'Disabling %s <%s> [login: %s] [result: %s].' % (
+                        'Disabling %s <%s> [login: %s] [result: %s].' % (
                             user.username,
                             user.email,
                             last_login,
@@ -227,7 +226,7 @@ class Command(BaseCommand):
                     user.save()
 
         if list_:
-            print_table(title, header, body)
+            self._print_table(title, header, body)
 
     def _file_date(self, file_path, tzinfo=None):
         """Return the date of a file."""
@@ -255,11 +254,11 @@ class Command(BaseCommand):
                 if list_:
                     body.append((file_, old))
                 else:
-                    logger.info(u'Removing %s [%s].' % (file_, old))
+                    logger.info('Removing %s [%s].' % (file_, old))
                     os.unlink(file_)
 
         if list_:
-            print_table(title, header, body)
+            self._print_table(title, header, body)
 
     def _clean_cache(self, hours, cache, list_):
         """Remove old cached mobi or issues."""
@@ -273,7 +272,7 @@ class Command(BaseCommand):
 
         tzinfo = today.tzinfo
         to_delete = ((k, today - v[-1].replace(tzinfo=tzinfo))
-                     for k, v in cache.iteritems())
+                     for k, v in cache.items())
         to_delete = ((k, o) for k, o in to_delete
                      if o.total_seconds() // 3600 >= hours)
 
@@ -282,7 +281,7 @@ class Command(BaseCommand):
                 issue = Issue.objects.get(url=key)
                 manga = issue.manga
                 spider = manga.source.spider
-            except:
+            except Exception:
                 issue = key
                 manga = '<UNKNOWN>'
                 spider = '<UNKNOWN>'
@@ -290,12 +289,12 @@ class Command(BaseCommand):
             if list_:
                 body.append((manga, issue, spider, old))
             else:
-                logger.info(u'Removing %s %s - %s [%s].' % (manga, issue,
-                                                            spider, old))
+                logger.info('Removing %s %s - %s [%s].' % (manga, issue,
+                                                           spider, old))
                 del cache[key]
 
         if list_:
-            print_table(title, header, body)
+            self._print_table(title, header, body)
 
     def _missing_pages(self, images):
         """Check if there is a missing page."""
@@ -309,26 +308,26 @@ class Command(BaseCommand):
             header = (('manga', 54), ('issue', 23), ('source', 15))
             body = []
 
-        to_delete = [k for k, v in issue_cache.iteritems()
+        to_delete = [k for k, v in issue_cache.items()
                      if self._missing_pages(v[0])]
         for key in to_delete:
             try:
                 issue = Issue.objects.get(url=key)
                 manga = issue.manga
                 spider = manga.source.spider
-            except:
+            except Exception:
                 issue = key
                 manga = '<UNKNOWN>'
                 spider = '<UNKNOWN>'
             if list_:
                 body.append((manga, issue, spider))
             else:
-                logger.info(u'Removing %s %s - %s.' % (manga, issue, spider))
+                logger.info('Removing %s %s - %s.' % (manga, issue, spider))
                 del mobi_cache[key]
                 del issue_cache[key]
 
         if list_:
-            print_table(title, header, body)
+            self._print_table(title, header, body)
 
     def _clean_cover(self, sources, list_):
         """Remove unused cover images."""
@@ -354,11 +353,11 @@ class Command(BaseCommand):
                 if list_:
                     body.append((cover, source.spider))
                 else:
-                    logger.info(u'Removing %s - %s.' % (cover, source))
+                    logger.info('Removing %s - %s.' % (cover, source))
                     os.unlink(cover)
 
         if list_:
-            print_table(title, header, body)
+            self._print_table(title, header, body)
 
     def _clean_result(self, hours, status, list_):
         """Remove old results in a bad state."""
@@ -381,7 +380,7 @@ class Command(BaseCommand):
                              result.subscription.user,
                              old))
             else:
-                logger.info(u'Removing %s (%s) for user %s [%s].' % (
+                logger.info('Removing %s (%s) for user %s [%s].' % (
                     result.issue,
                     result.status,
                     result.subscription.user,
@@ -389,4 +388,4 @@ class Command(BaseCommand):
                 result.delete()
 
         if list_:
-            print_table(title, header, body)
+            self._print_table(title, header, body)

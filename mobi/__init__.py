@@ -17,5 +17,5 @@
 # You should have received a copy of the GNU General Public License
 # along with KManga.  If not, see <http://www.gnu.org/licenses/>.
 
-from mobi import Container
-from mobi import MangaMobi
+from .mobi import Container
+from .mobi import MangaMobi

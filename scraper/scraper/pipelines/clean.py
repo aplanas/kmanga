@@ -22,7 +22,7 @@ from datetime import datetime
 from datetime import timedelta
 import logging
 import re
-import urlparse
+import urllib.parse
 
 from scrapy.exceptions import DropItem
 from scrapy.utils.markup import remove_tags, replace_entities
@@ -176,7 +176,7 @@ class CleanBasePipeline(object):
         """
         if isinstance(obj, list):
             obj = separator.join(o.strip() for o in obj)
-        return unicode(obj).strip()
+        return str(obj).strip()
 
     def _as_list(self, obj):
         """Convert the object into a list of elements."""
@@ -309,7 +309,7 @@ class CleanBasePipeline(object):
         spider_name = spider.name.lower()
 
         _item = item.copy()
-        for field_name, value in item.iteritems():
+        for field_name, value in item.items():
             item_method = 'clean_field_%s_%s' % (item_name, field_name)
             spider_method = 'clean_field_%s_%s_%s' % (spider_name, item_name,
                                                       field_name)
@@ -332,7 +332,7 @@ class CleanBasePipeline(object):
                                                            field_name))
             except ValueError as e:
                 msg = 'Error processing %s: %s [%s]'
-                raise DropItem(msg % (field_name, str(value), e.message))
+                raise DropItem(msg % (field_name, str(value), e))
         return _item
 
 
@@ -464,7 +464,7 @@ class CleanPipeline(CleanBasePipeline):
         # problem in the updatedb part (can remove issues and replace
         # it with the equivalent ones, but with different URL)
         url = self._clean_field_str(field)
-        return urlparse.urljoin(url, '1.html')
+        return urllib.parse.urljoin(url, '1.html')
 
     # -- KissManga fields
     def clean_field_kissmanga_issue_number(self, field):
