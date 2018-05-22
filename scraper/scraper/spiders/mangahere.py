@@ -207,8 +207,14 @@ class MangaHere(MangaSpider):
             yield scrapy.Request(next_url, self.parse_latest, meta=meta)
 
     def parse_manga(self, response, manga, issue):
-        xp = '//select[@class="wid60"]/option/@value'
+        xp = '(//select[@class="wid60"])[1]/option/@value'
         for number, url in enumerate(response.xpath(xp).extract()):
+            # The last page do not contain an image.  Instead of
+            # getting the slice [:-1] we check ending of the URL, in
+            # case that change possition.
+            if url.endswith('featured.html'):
+                continue
+
             meta = {
                 'manga': manga,
                 'issue': issue,
