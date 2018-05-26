@@ -18,7 +18,7 @@ MEDIA_ROOT = '/full/path/media/'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'kmanga',
         'USER': 'user',
         'PASSWORD': 'password',

@@ -2,10 +2,10 @@ import bisect
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import InvalidPage, Paginator
-from django.core.urlresolvers import reverse_lazy
 from django.http import Http404
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.views.generic import DeleteView
 from django.views.generic import DetailView

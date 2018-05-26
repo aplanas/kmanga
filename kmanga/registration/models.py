@@ -39,6 +39,7 @@ class UserProfile(models.Model):
     }
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE,
                                 primary_key=True)
     mode = models.CharField(max_length=1, choices=MODE_CHOICES,
                             default=FREE)

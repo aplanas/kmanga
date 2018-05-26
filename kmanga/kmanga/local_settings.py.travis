@@ -1,5 +1,4 @@
 # Local settings for KManga
-from settings import INSTALLED_APPS
 
 SECRET_KEY = 'MySecrectKey'
 
@@ -17,15 +16,18 @@ DEBUG = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/tmp/media/'
 
-CONTACT_EMAIL = 'admin@kmanga.net'
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'kmanga',
         'HOST': 'localhost',
+        # 'PASSWORD': 'password',
+        # 'HOST': 'localhost',
+        # 'PORT': '5432',
     }
 }
+
+CONTACT_EMAIL = 'admin@kmanga.net'
 
 # RQ_QUEUES = {
 #     'default': {

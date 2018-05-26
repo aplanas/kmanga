@@ -1,12 +1,12 @@
 import os.path
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.db import connection
 from django.db import models
 from django.db.models import Count
 from django.db.models import F
 from django.db.models import Q
+from django.urls import reverse
 from django.utils import timezone
 
 
@@ -48,7 +48,7 @@ class SourceLanguage(TimeStampedModel):
     )
 
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES)
-    source = models.ForeignKey(Source)
+    source = models.ForeignKey(Source, on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s (%s)' % (self.get_language_display(), self.language)
@@ -63,8 +63,9 @@ class ConsolidateGenre(TimeStampedModel):
 
 class Genre(TimeStampedModel):
     name = models.CharField(max_length=200)
-    source = models.ForeignKey(Source)
-    # consolidategenre = models.ForeignKey(ConsolidateGenre)
+    source = models.ForeignKey(Source, on_delete=models.CASCADE)
+    # consolidategenre = models.ForeignKey(ConsolidateGenre,
+    #                                      on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -308,7 +309,7 @@ class Manga(TimeStampedModel):
     description = models.TextField()
     cover = models.ImageField(upload_to=_cover_path)
     url = models.URLField(unique=True, db_index=True)
-    source = models.ForeignKey(Source)
+    source = models.ForeignKey(Source, on_delete=models.CASCADE)
 
     objects = MangaQuerySet.as_manager()
 
@@ -347,7 +348,7 @@ class Manga(TimeStampedModel):
 
 class AltName(TimeStampedModel):
     name = models.CharField(max_length=200)
-    manga = models.ForeignKey(Manga)
+    manga = models.ForeignKey(Manga, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -361,7 +362,7 @@ class Issue(TimeStampedModel):
                                 choices=SourceLanguage.LANGUAGE_CHOICES)
     release = models.DateField()
     url = models.URLField(unique=True, max_length=255)
-    manga = models.ForeignKey(Manga)
+    manga = models.ForeignKey(Manga, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ('order', 'name')
@@ -466,8 +467,8 @@ class Subscription(TimeStampedModel):
     # Number of retries before giving up in a FAILED result
     RETRY = 3
 
-    manga = models.ForeignKey(Manga)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    manga = models.ForeignKey(Manga, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     language = models.CharField(max_length=2,
                                 choices=SourceLanguage.LANGUAGE_CHOICES)
     issues_per_day = models.IntegerField(default=4)
@@ -594,8 +595,8 @@ class Result(TimeStampedModel):
         (FAILED, 'Failed'),
     )
 
-    issue = models.ForeignKey(Issue)
-    subscription = models.ForeignKey(Subscription)
+    issue = models.ForeignKey(Issue, on_delete=models.CASCADE)
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES,
                               default=PENDING)
     missing_pages = models.IntegerField(default=0)

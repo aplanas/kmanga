@@ -1,12 +1,14 @@
 from datetime import date
+from unittest.mock import MagicMock
+from unittest.mock import Mock
+from unittest.mock import patch
 
 from django.core.management.base import CommandError
-from django.test import mock
 from django.test import TestCase
 
 from core.models import Manga
 from core.models import Source
-from registration.models import UserProfile
+# from registration.models import UserProfile
 from scrapyctl.management.commands.scrapy import Command
 from scrapyctl.mobictl import MobiInfo
 from scrapyctl.scrapyctl import ScrapyCtl
@@ -129,7 +131,7 @@ class CommandTestCase(TestCase):
         with self.assertRaises(CommandError):
             self.command.handle(command='bad-parameter', **options)
 
-    @mock.patch.object(Command, 'list_spiders')
+    @patch.object(Command, 'list_spiders')
     def test_handle_list(self, list_spiders):
         """Test the `list` handle method."""
 
@@ -144,7 +146,7 @@ class CommandTestCase(TestCase):
         c.handle(command='list', **options)
         list_spiders.assert_called_once_with(self.all_spiders)
 
-    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    @patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
     def test_handle_update_genres(self, scrapyctl):
         """Test the `update-genres` handle method."""
 
@@ -162,7 +164,7 @@ class CommandTestCase(TestCase):
         scrapyctl.update_genres.assert_called_once_with(self.all_spiders,
                                                         False)
 
-    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    @patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
     def test_handle_update_catalog(self, scrapyctl):
         """Test the `update-catalog` handle method."""
 
@@ -180,8 +182,8 @@ class CommandTestCase(TestCase):
         scrapyctl.update_catalog.assert_called_once_with(self.all_spiders,
                                                          False)
 
-    @mock.patch.object(Command, '_get_spiders')
-    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    @patch.object(Command, '_get_spiders')
+    @patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
     def test_handle_update_collection(self, scrapyctl, get_spiders):
         """Test the `update-collection` handle method."""
 
@@ -201,7 +203,7 @@ class CommandTestCase(TestCase):
         scrapyctl.update_collection.assert_called_once_with(
             ['source1'], 'Manga 1', 'http://source1.com/manga1', False)
 
-    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    @patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
     def test_handle_update_latest(self, scrapyctl):
         """Test the `update-latest` handle method."""
 
@@ -229,7 +231,7 @@ class CommandTestCase(TestCase):
         scrapyctl.update_latest.assert_called_once_with(
             self.all_spiders, until, False)
 
-    @mock.patch.object(Command, 'search')
+    @patch.object(Command, 'search')
     def test_handle_search(self, search):
         """Test the `search` handle method."""
 
@@ -248,9 +250,9 @@ class CommandTestCase(TestCase):
         search.assert_called_once_with(self.all_spiders, 'Manga 1',
                                        'EN', False)
 
-    @mock.patch.object(Command, 'subscribe')
-    @mock.patch.object(Command, '_get_spiders')
-    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    @patch.object(Command, 'subscribe')
+    @patch.object(Command, '_get_spiders')
+    @patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
     def test_handle_subscribe(self, scrapyctl, get_spiders, subscribe):
         """Test the `subscribe` handle method."""
 
@@ -274,12 +276,12 @@ class CommandTestCase(TestCase):
         c.handle(command='subscribe', **options)
         subscribe.assert_called_once_with('user1', manga, 'EN', 4)
 
-    @mock.patch.object(Command, 'send')
-    @mock.patch.object(Command, '_get_manga')
-    @mock.patch.object(Command, '_get_issues')
-    @mock.patch.object(Command, '_get_user_profile')
-    @mock.patch.object(Command, '_get_spiders')
-    @mock.patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
+    @patch.object(Command, 'send')
+    @patch.object(Command, '_get_manga')
+    @patch.object(Command, '_get_issues')
+    @patch.object(Command, '_get_user_profile')
+    @patch.object(Command, '_get_spiders')
+    @patch('scrapyctl.management.commands.scrapy.ScrapyCtl')
     def test_handle_send(self, scrapyctl, get_spiders, get_user_profile,
                          get_issues, get_manga, send):
         """Test the `send` handle method."""
@@ -308,8 +310,8 @@ class CommandTestCase(TestCase):
                                      options['do-not-send'])
 
     # XXX TODO - Split in different tests
-    # @mock.patch.object(Command, 'sendsub')
-    # @mock.patch.object(Command, '_get_user_profile')
+    # @patch.object(Command, 'sendsub')
+    # @patch.object(Command, '_get_user_profile')
     # def test_handle_sendsub(self, get_user_profile, sendsub):
     #     """Test the `sendsub` handle method."""
 
@@ -350,7 +352,7 @@ class MobiCtlTestCase(TestCase):
 
     def test_info_title(self):
         """Test the Info._title() method."""
-        issue = mock.Mock()
+        issue = Mock()
         issue.configure_mock(**{
             'name': '',
             'number': '',

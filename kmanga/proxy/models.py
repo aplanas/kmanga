@@ -27,7 +27,7 @@ class Proxy(TimeStampedModel):
     RETRY = 3
 
     proxy = models.CharField(max_length=32)
-    source = models.ForeignKey(Source)
+    source = models.ForeignKey(Source, on_delete=models.CASCADE)
     retry = models.IntegerField(default=0)
 
     objects = ProxyQuerySet.as_manager()
