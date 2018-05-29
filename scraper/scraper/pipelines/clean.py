@@ -181,8 +181,8 @@ class CleanBasePipeline(object):
     def _as_list(self, obj):
         """Convert the object into a list of elements."""
         if isinstance(obj, (list, tuple)):
-            l = [self._as_list(i) for i in obj]
-            return [j for i in l for j in i]
+            lst = [self._as_list(i) for i in obj]
+            return [j for i in lst for j in i]
         else:
             return [obj]
 
