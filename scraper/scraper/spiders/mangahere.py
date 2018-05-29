@@ -59,7 +59,7 @@ class MangaHere(MangaSpider):
 
         @url http://www.mangahere.cc/mangalist/
         @returns items 0
-        @returns request 15000 20000
+        @returns request 18000 22000
         """
 
         xp = '//a[@class="manga_info"]'
