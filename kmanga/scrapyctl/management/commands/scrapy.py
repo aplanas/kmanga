@@ -323,7 +323,10 @@ class Command(BaseCommand):
             self.stdout.write(header)
             self.stdout.write('=' * len(header))
             self.stdout.write('')
-            source = Source.objects.get(spider=name)
+            try:
+                source = Source.objects.get(spider=name)
+            except Source.DoesNotExist:
+                pass
             for manga in source.manga_set.filter(name__icontains=q):
                 self.stdout.write('- %s' % manga)
                 issues = manga.issue_set
