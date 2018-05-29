@@ -71,7 +71,7 @@ class Mangafox(MangaSpider):
             manga['url'] = response.urljoin(url)
             # Rank
             xp = './/p[@class="info"]/label/text()'
-            manga['rank'] = item.xpath(xp).re('(\d+)')
+            manga['rank'] = item.xpath(xp).re(r'(\d+)')
             # Rank order
             manga['rank_order'] = 'ASC'
             meta = {'manga': manga}
