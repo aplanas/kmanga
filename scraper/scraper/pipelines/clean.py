@@ -380,6 +380,7 @@ class CleanPipeline(CleanBasePipeline):
                        {
                            'optional': True,
                            'max_length': 200,
+                           'exclude': ('',),
                        }),
             'rank': (self._clean_field_int, {'optional': True}),
             'rank_order': (self._clean_field_set,
