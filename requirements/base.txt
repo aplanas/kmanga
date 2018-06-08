@@ -1,8 +1,8 @@
-Django==1.11.2
-django-rq==0.9.5
-easy-thumbnails==2.4.1
-Pillow==4.1.1
-psycopg2==2.7.1
-Scrapy==1.4.0
+Django==2.0.6
+django-rq==1.1.0
+easy-thumbnails==2.5
+Pillow==5.1.0
+psycopg2-binary==2.7.4
+Scrapy==1.5.0
 service-identity==17.0.0
-spidermonkey==54.0a2.post2
+spidermonkey==58.0a1.post2

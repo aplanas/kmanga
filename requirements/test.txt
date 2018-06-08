@@ -1,7 +1,6 @@
 # Test dependencies go here.
 -r base.txt
 
-coverage==4.4.1
-mock==2.0.0
+coverage==4.5.1
 
 # selenium==3.4.3
