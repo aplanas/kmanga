@@ -233,8 +233,7 @@ class MangaSpider(scrapy.Spider):
 
         if is_logged:
             for url in self.next_urls:
-                request = scrapy.Request(url, self.parse)
-                yield request
+                yield response.follow(url, self.parse)
         else:
             logger.error('Error during login in [%s]' % self.name)
 

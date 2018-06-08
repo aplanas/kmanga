@@ -19,13 +19,7 @@
 
 from datetime import date
 
-import scrapy
-
-from scraper.items import Genres
-from scraper.items import Manga
-from scraper.items import Issue
-from scraper.items import IssuePage
-
+from scraper.items import Genres, Manga, Issue, IssuePage
 from .mangaspider import MangaSpider
 
 
@@ -83,16 +77,14 @@ class UnionMangas(MangaSpider):
             # Rank order
             manga['rank_order'] = 'DESC'
             meta = {'manga': manga}
-            request = scrapy.Request(manga['url'], self.parse_collection,
-                                     meta=meta)
-            yield request
+            yield response.follow(manga['url'], self.parse_collection,
+                                  meta=meta)
 
         # Next page
         xp = '//ul[@class="pagination"]/li/a[contains(., "Next")]/@href'
         next_url = response.xpath(xp).extract_first()
         if next_url:
-            next_url = response.urljoin(next_url)
-            yield scrapy.Request(next_url, self.parse_catalog)
+            yield response.follow(next_url, self.parse_catalog)
 
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
@@ -180,8 +172,7 @@ class UnionMangas(MangaSpider):
         for url in response.xpath(xp).extract():
             manga = Manga(url=url)
             meta = {'manga': manga}
-            request = scrapy.Request(url, self.parse_collection, meta=meta)
-            yield request
+            yield response.follow(url, self.parse_collection, meta=meta)
 
     def parse_manga(self, response, manga, issue):
         xp = '//img/@src'

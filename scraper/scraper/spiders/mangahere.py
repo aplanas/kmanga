@@ -19,11 +19,8 @@
 
 from datetime import date
 
-import scrapy
-
 from scraper.pipelines import convert_to_date
 from scraper.items import Genres, Manga, Issue, IssuePage
-
 from .mangaspider import MangaSpider
 
 
@@ -70,9 +67,8 @@ class MangaHere(MangaSpider):
             url = item.xpath(xp).extract_first()
             manga['url'] = response.urljoin(url)
             meta = {'manga': manga}
-            request = scrapy.Request(manga['url'], self.parse_collection,
-                                     meta=meta)
-            yield request
+            yield response.follow(manga['url'], self.parse_collection,
+                                  meta=meta)
 
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
@@ -188,8 +184,7 @@ class MangaHere(MangaSpider):
             url = response.urljoin(url)
             manga = Manga(url=url)
             meta = {'manga': manga}
-            request = scrapy.Request(url, self.parse_collection, meta=meta)
-            yield request
+            yield response.follow(url, self.parse_collection, meta=meta)
 
         # Check the oldest update date
         xp = '//span[@class="time"]/text()'
@@ -202,9 +197,8 @@ class MangaHere(MangaSpider):
         xp = '//a[@class="next"]/@href'
         next_url = response.xpath(xp).extract_first()
         if next_url:
-            next_url = response.urljoin(next_url)
             meta = {'until': until}
-            yield scrapy.Request(next_url, self.parse_latest, meta=meta)
+            yield response.follow(next_url, self.parse_latest, meta=meta)
 
     def parse_manga(self, response, manga, issue):
         xp = '(//select[@class="wid60"])[1]/option/@value'
@@ -220,8 +214,7 @@ class MangaHere(MangaSpider):
                 'issue': issue,
                 'number': number + 1,
             }
-            url = response.urljoin(url)
-            yield scrapy.Request(url, self._parse_page, meta=meta)
+            yield response.follow(url, self._parse_page, meta=meta)
 
     def _parse_page(self, response):
         manga = response.meta['manga']

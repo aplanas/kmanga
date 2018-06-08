@@ -19,11 +19,8 @@
 
 from datetime import date
 
-import scrapy
-
 from scraper.pipelines import convert_to_date
 from scraper.items import Genres, Manga, Issue, IssuePage
-
 from .mangaspider import MangaSpider
 
 
@@ -76,16 +73,14 @@ class MangaReader(MangaSpider):
             # Rank order
             manga['rank_order'] = 'ASC'
             meta = {'manga': manga}
-            request = scrapy.Request(manga['url'], self.parse_collection,
-                                     meta=meta)
-            yield request
+            yield response.follow(manga['url'], self.parse_collection,
+                                  meta=meta)
 
         # Next page
         xp = '//div[@id="sp"]/a[contains(., ">")]/@href'
         next_url = response.xpath(xp).extract_first()
         if next_url:
-            next_url = response.urljoin(next_url)
-            yield scrapy.Request(next_url, self.parse_catalog)
+            yield response.follow(next_url, self.parse_catalog)
 
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
@@ -178,8 +173,7 @@ class MangaReader(MangaSpider):
             url = response.urljoin(url)
             manga = Manga(url=url)
             meta = {'manga': manga}
-            request = scrapy.Request(url, self.parse_collection, meta=meta)
-            yield request
+            yield response.follow(url, self.parse_collection, meta=meta)
 
         # Check the oldest update date
         xp = '//td[@class="c1"]/text()'
@@ -192,9 +186,8 @@ class MangaReader(MangaSpider):
         xp = '//div[@id="latest"]/div[@id="sp"]/a[contains(., ">")]/@href'
         next_url = response.xpath(xp).extract_first()
         if next_url:
-            next_url = response.urljoin(next_url)
             meta = {'until': until}
-            yield scrapy.Request(next_url, self.parse_latest, meta=meta)
+            yield response.follow(next_url, self.parse_latest, meta=meta)
 
     def parse_manga(self, response, manga, issue):
         xp = '//select[@id="pageMenu"]/option/@value'
@@ -204,8 +197,7 @@ class MangaReader(MangaSpider):
                 'issue': issue,
                 'number': number + 1,
             }
-            yield scrapy.Request(response.urljoin(url),
-                                 self._parse_page, meta=meta)
+            yield response.follow(url, self._parse_page, meta=meta)
 
     def _parse_page(self, response):
         manga = response.meta['manga']

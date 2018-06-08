@@ -19,11 +19,8 @@
 
 from datetime import date
 
-import scrapy
-
 from scraper.pipelines import convert_to_date
 from scraper.items import Genres, Manga, Issue, IssuePage
-
 from .mangaspider import MangaSpider
 
 
@@ -80,9 +77,8 @@ class MangaSee(MangaSpider):
             # URL
             manga['url'] = response.urljoin(url)
             meta = {'manga': manga}
-            request = scrapy.Request(manga['url'], self.parse_collection,
-                                     meta=meta)
-            yield request
+            yield response.follow(manga['url'], self.parse_collection,
+                                  meta=meta)
 
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
@@ -155,13 +151,13 @@ class MangaSee(MangaSpider):
             manga['issues'].append(issue)
 
         # Rank
-        url = response.urljoin('subscribe.button.php')
+        url = 'subscribe.button.php'
         xp = '//input[@class="IndexName"]/@value'
         index_name = response.xpath(xp).extract_first()
         form_data = {'IndexName': index_name}
         meta = {'manga': manga}
-        yield scrapy.FormRequest(url, self._parse_subscribe,
-                                 formdata=form_data, meta=meta)
+        yield response.follow(url, self._parse_subscribe,
+                              formdata=form_data, meta=meta)
 
     def _parse_subscribe(self, response):
         if 'manga' in response.meta:
@@ -193,9 +189,7 @@ class MangaSee(MangaSpider):
         # `parse_collection`
         xp = '//a[@class="latestSeries"]/@href'
         for url in response.xpath(xp).extract():
-            url = response.urljoin(url)
-            request = scrapy.Request(url, self._parse_latest)
-            yield request
+            yield response.follow(url, self._parse_latest)
 
         # Check the oldest update date
         xp = '//time[@class="timeago"]/@datetime'
@@ -212,8 +206,7 @@ class MangaSee(MangaSpider):
         url = response.urljoin(url)
         manga = Manga(url=url)
         meta = {'manga': manga}
-        request = scrapy.Request(url, self.parse_collection, meta=meta)
-        return request
+        return response.follow(url, self.parse_collection, meta=meta)
 
     def parse_manga(self, response, manga, issue):
         # Generate a whole-chapter URL.  The JavaScript code generate
@@ -225,8 +218,7 @@ class MangaSee(MangaSpider):
             'manga': manga,
             'issue': issue,
         }
-        request = scrapy.Request(url, self._parse_manga, meta=meta)
-        return request
+        return response.follow(url, self._parse_manga, meta=meta)
 
     def _parse_manga(self, response):
         manga = response.meta['manga']

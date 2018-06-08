@@ -19,11 +19,9 @@
 
 from datetime import date
 
-import scrapy
 from spidermonkey import Spidermonkey
 
 from scraper.items import Genres, Manga, Issue, IssuePage
-
 from .mangaspider import MangaSpider
 
 
@@ -70,16 +68,14 @@ class KissManga(MangaSpider):
             xp = 'a/@href'
             manga['url'] = response.urljoin(item.xpath(xp).extract_first())
             meta = {'manga': manga}
-            request = scrapy.Request(manga['url'], self.parse_collection,
-                                     meta=meta)
-            yield request
+            yield response.follow(manga['url'], self.parse_collection,
+                                  meta=meta)
 
         # Next page
         xp = '//ul[@class="pager"]/li/a[contains(., "Next")]/@href'
         next_url = response.xpath(xp).extract_first()
         if next_url:
-            next_url = response.urljoin(next_url)
-            yield scrapy.Request(next_url, self.parse_catalog)
+            yield response.follow(next_url, self.parse_catalog)
 
     def parse_collection(self, response, manga=None):
         """Generate the list of issues for a manga
@@ -188,8 +184,7 @@ class KissManga(MangaSpider):
             url = response.urljoin(url)
             manga = Manga(url=url)
             meta = {'manga': manga}
-            request = scrapy.Request(url, self.parse_collection, meta=meta)
-            yield request
+            yield response.follow(url, self.parse_collection, meta=meta)
 
         # XXX TODO - we ignore the `until` date, and make a full parse
         # of the initial scroll panel (that contains old entries)
@@ -204,20 +199,20 @@ class KissManga(MangaSpider):
             'manga': manga,
             'issue': issue,
         }
-        return scrapy.Request(response.urljoin('/Scripts/ca.js'),
-                              self._collect_asset_ca, meta=meta)
+        return response.follow('/Scripts/ca.js',
+                               self._collect_asset_ca, meta=meta)
 
     def _collect_asset_ca(self, response):
         meta = response.meta
         meta['ca'] = response.body
-        return scrapy.Request(response.urljoin('/Scripts/lo.js'),
-                              self._collect_asset_lo, meta=meta)
+        return response.follow('/Scripts/lo.js',
+                               self._collect_asset_lo, meta=meta)
 
     def _collect_asset_lo(self, response):
         meta = response.meta
         meta['lo'] = response.body
-        return scrapy.Request(meta['url'], self._parse_manga,
-                              dont_filter=True, meta=meta)
+        return response.follow(meta['url'], self._parse_manga,
+                               dont_filter=True, meta=meta)
 
     def _parse_manga(self, response):
         issue_pages = []
@@ -244,7 +239,7 @@ class KissManga(MangaSpider):
         ca = response.meta['ca']
         lo = response.meta['lo']
         # Get the list of keys
-        keys = response.xpath(xp).re('var _0x.*')
+        keys = response.xpath(xp).re(r'var _0x.*')
 
         # Generate the JavaScript program to show the URLs
         wrapKA = response.xpath(xp).re(r'lstImages.push\((.*)\);')

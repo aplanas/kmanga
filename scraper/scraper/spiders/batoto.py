@@ -20,10 +20,7 @@
 from datetime import date
 import re
 
-import scrapy
-
 from scraper.items import Genres, Manga, Issue, IssuePage
-
 from .mangaspider import MangaSpider
 
 
@@ -185,8 +182,7 @@ class Batoto(MangaSpider):
             url = response.urljoin(url)
             manga = Manga(url=url)
             meta = {'manga': manga}
-            request = scrapy.Request(url, self.parse_collection, meta=meta)
-            yield request
+            yield response.follow(url, self.parse_collection, meta=meta)
 
     def parse_manga(self, response, manga, issue):
         images = re.findall(r'"(\d+)":"([^"]+)"', response.body_as_unicode())
