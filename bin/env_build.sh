@@ -13,7 +13,7 @@ if [ -d $VENV ]; then
     exit 1
 fi
 
-python3 -m venv $VENV
+$PYTHON -m venv $VENV
 source $VENV/bin/activate
 
 # Update PIP, as we use the one from the system
