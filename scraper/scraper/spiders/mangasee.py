@@ -19,6 +19,8 @@
 
 from datetime import date
 
+import scrapy
+
 from scraper.pipelines import convert_to_date
 from scraper.items import Genres, Manga, Issue, IssuePage
 from .mangaspider import MangaSpider
@@ -151,13 +153,13 @@ class MangaSee(MangaSpider):
             manga['issues'].append(issue)
 
         # Rank
-        url = 'subscribe.button.php'
+        url = response.urljoin('subscribe.button.php')
         xp = '//input[@class="IndexName"]/@value'
         index_name = response.xpath(xp).extract_first()
         form_data = {'IndexName': index_name}
         meta = {'manga': manga}
-        yield response.follow(url, self._parse_subscribe,
-                              formdata=form_data, meta=meta)
+        return scrapy.FormRequest(url, self._parse_subscribe,
+                                  formdata=form_data, meta=meta)
 
     def _parse_subscribe(self, response):
         if 'manga' in response.meta:
