@@ -91,6 +91,17 @@
     {
         "fields": {
             "created": "2014-10-25T00:00:00.000Z",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "name": "MangaDex",
+            "spider": "mangadex",
+            "url": "https://mangadex.org/"
+        },
+        "model": "core.source",
+        "pk": 8
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
             "language": "DE",
             "modified": "2014-10-25T00:00:00.000Z",
             "source": 1
@@ -217,5 +228,75 @@
         },
         "model": "core.sourcelanguage",
         "pk": 13
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "DE",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 8
+        },
+        "model": "core.sourcelanguage",
+        "pk": 14
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "EN",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 8
+        },
+        "model": "core.sourcelanguage",
+        "pk": 15
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "ES",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 8
+        },
+        "model": "core.sourcelanguage",
+        "pk": 16
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "FR",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 8
+        },
+        "model": "core.sourcelanguage",
+        "pk": 17
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "IT",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 8
+        },
+        "model": "core.sourcelanguage",
+        "pk": 18
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "RU",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 8
+        },
+        "model": "core.sourcelanguage",
+        "pk": 19
+    },
+    {
+        "fields": {
+            "created": "2014-10-25T00:00:00.000Z",
+            "language": "PT",
+            "modified": "2014-10-25T00:00:00.000Z",
+            "source": 8
+        },
+        "model": "core.sourcelanguage",
+        "pk": 20
     }
 ]

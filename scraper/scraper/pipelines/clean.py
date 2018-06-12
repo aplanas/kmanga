@@ -108,6 +108,8 @@ def convert_to_date(str_, dmy=False):
             return datetime.strptime(str_, '%m/%d/%Y').date()
     elif re.match(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00', str_):
         return datetime.strptime(str_, '%Y-%m-%dT%H:%M:%S+00:00').date()
+    elif re.match(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC', str_):
+        return datetime.strptime(str_, '%Y-%m-%d %H:%M:%S UTC').date()
     else:
         raise ValueError('Format "%s" not recognized' % str_)
 
@@ -354,6 +356,7 @@ class CleanPipeline(CleanBasePipeline):
                          {
                              'optional': True,
                              'max_length': 200,
+                             'exclude': ('',),
                          }),
             'author': (self._clean_field_str,
                        {
@@ -503,3 +506,29 @@ class CleanPipeline(CleanBasePipeline):
 
     def clean_field_mangasee_manga_status(self, field):
         return 'O' if 'Ongoing' in field else 'C'
+
+    # -- MangaDex fields
+    def clean_field_mangadex_manga_reading_direction(self, field):
+        type_ = self._clean_field_str(field)
+        reading_direction = {
+            'Japanese': 'RL',
+            'Chinese (Simp)': 'RL',
+            'Korean': 'LR',
+        }.get(type_, 'LR')
+        return reading_direction
+
+    def clean_field_mangadex_manga_status(self, field):
+        # Some other status like 'Hiatus' are like Ongoing
+        return 'C' if 'Completed' in field else 'O'
+
+    def clean_field_mangadex_issue_language(self, field):
+        lang = {
+            'German': GERMAN,
+            'English': ENGLISH,
+            'Spanish (Es)': SPANISH,
+            'French': FRENCH,
+            'Italian': ITALIAN,
+            'Russian': RUSSIAN,
+            'Portuguese (Br)': PORTUGUESE,
+        }
+        return self._clean_field_set(field, lang.values(), translator=lang)
