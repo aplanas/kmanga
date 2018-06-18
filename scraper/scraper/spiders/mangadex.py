@@ -28,6 +28,8 @@ from .mangaspider import MangaSpider
 class MangaDex(MangaSpider):
     name = 'mangadex'
     allowed_domains = ['mangadex.org']
+    # Less that 500 hits every 10 minutes
+    download_delay = 0.8
 
     def get_genres_url(self):
         return 'https://mangadex.org/search'
