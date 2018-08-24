@@ -12,46 +12,46 @@ hardstatus alwayslastline '%{= kg}[ %{G}%H %{g}][%= %{w}%?%-Lw%?%{Y}%n*%f %t%?%{
 #   Default - used for normal scraper
 #   Low     - used for kindlegen
 screen -t "Worker 1 (HDL)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high default low^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker high default low; sleep 1; done^M"
 
 screen -t "Worker 2 (HDL)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high default low^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker high default low; sleep 1; done^M"
 
 screen -t "Worker 3 (HD)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high default^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker high default; sleep 1; done^M"
 
 screen -t "Worker 4 (HD)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high default^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker high default; sleep 1; done^M"
 
 screen -t "Worker 5 (HL)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high low^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker high low; sleep 1; done^M"
 
 screen -t "Worker 6 (HL)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high low^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker high low; sleep 1; done^M"
 
 screen -t "Worker 7 (DL)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker default low^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker default low; sleep 1; done^M"
 
 screen -t "Worker 8 (DL)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker default low^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker default low; sleep 1; done^M"
 
 screen -t "Worker 9 (H)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker high; sleep 1; done^M"
 
 screen -t "Worker 10 (H)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker high^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker high; sleep 1; done^M"
 
 screen -t "Worker 11 (D)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker default^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker default; sleep 1; done^M"
 
 screen -t "Worker 12 (D)"
-stuff ". bin/setenv.sh ; kmanga/manage.py rqworker default^M"
+stuff ". bin/setenv.sh; while true; do kmanga/manage.py rqworker default; sleep 1; done^M"
 
 screen -t "Log server"
-stuff ".  bin/kmanga.conf ; bin/logserver --log \$LOG_PATH/kmanga.log^M"
+stuff ".  bin/kmanga.conf; bin/logserver --log \$LOG_PATH/kmanga.log^M"
 
 # screen -t "Django Shell"
-# stuff ". bin/setenv.sh ; kmanga/manage.py shell^M"
+# stuff ". bin/setenv.sh; kmanga/manage.py shell^M"
 
 # screen -t "Shell"
 # stuff ". bin/setenv.sh^M"
