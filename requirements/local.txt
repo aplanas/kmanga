@@ -2,6 +2,6 @@
 -r base.txt
 
 coverage==4.5.1
-django-debug-toolbar==1.8
+django-debug-toolbar==1.11.1
 
 # selenium==3.4.3
