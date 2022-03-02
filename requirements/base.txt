@@ -3,6 +3,6 @@ django-rq==1.1.0
 easy-thumbnails==2.5
 Pillow==5.1.0
 psycopg2-binary==2.7.4
-Scrapy==1.5.0
+Scrapy==1.8.2
 service-identity==17.0.0
 spidermonkey==58.0a1.post2
